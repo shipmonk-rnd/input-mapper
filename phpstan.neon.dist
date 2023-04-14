@@ -1,0 +1,23 @@
+includes:
+    - phar://phpstan.phar/conf/config.levelmax.neon
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+    - ./vendor/phpstan/phpstan-phpunit/extension.neon
+    - ./vendor/phpstan/phpstan-phpunit/rules.neon
+    - ./vendor/phpstan/phpstan-strict-rules/rules.neon
+    - ./vendor/shipmonk/phpstan-rules/rules.neon
+
+parameters:
+    paths:
+        - src
+        - tests
+    tmpDir: cache/phpstan/
+    checkMissingCallableSignature: true
+    checkUninitializedProperties: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+
+    shipmonkRules:
+        allowNamedArgumentOnlyInAttributes:
+            enabled: false
+
+        forbidUnusedMatchResult:
+            enabled: false
