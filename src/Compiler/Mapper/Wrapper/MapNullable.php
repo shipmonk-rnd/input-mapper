@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper\Wrapper;
 
+use Attribute;
 use LogicException;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -12,11 +13,12 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use function is_array;
 use function is_string;
 
-class NullableMapperCompiler implements MapperCompiler
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+class MapNullable implements MapperCompiler
 {
 
     public function __construct(
-        private readonly MapperCompiler $mapperCompiler,
+        public readonly MapperCompiler $mapperCompiler,
     )
     {
     }
