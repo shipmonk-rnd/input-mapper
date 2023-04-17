@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Tests\Runtime\Data\Optional;
+namespace ShipMonkTests\InputMapper\Runtime\Data\Optional;
 
 use ShipMonk\InputMapper\Runtime\Optional;
 

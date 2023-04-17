@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Tests\Compiler\Type;
+namespace ShipMonkTests\InputMapper\Compiler\Type;
 
 use Countable;
 use DateTimeImmutable;

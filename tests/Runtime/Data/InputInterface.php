@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Tests\Runtime\Data;
+namespace ShipMonkTests\InputMapper\Runtime\Data;
 
 interface InputInterface
 {

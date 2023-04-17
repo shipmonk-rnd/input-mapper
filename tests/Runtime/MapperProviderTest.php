@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Tests\Runtime;
+namespace ShipMonkTests\InputMapper\Runtime;
 
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\Constraint\ExceptionMessage as ExceptionMessageConstraint;
@@ -9,12 +9,12 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\DummyMapper;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\EmptyInput;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\InputInterface;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\InterfaceImplementationInput;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\Optional\OptionalNotNullInput;
-use ShipMonkTests\InputMapper\Tests\Runtime\Data\Optional\OptionalNullableInput;
+use ShipMonkTests\InputMapper\Runtime\Data\DummyMapper;
+use ShipMonkTests\InputMapper\Runtime\Data\EmptyInput;
+use ShipMonkTests\InputMapper\Runtime\Data\InputInterface;
+use ShipMonkTests\InputMapper\Runtime\Data\InterfaceImplementationInput;
+use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNotNullInput;
+use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNullableInput;
 use Throwable;
 use function sys_get_temp_dir;
 
