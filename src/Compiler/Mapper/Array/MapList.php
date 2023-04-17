@@ -30,13 +30,16 @@ class MapList implements MapperCompiler
         $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
         $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
 
+        $isArray = $builder->funcCall($builder->importFunction('is_array'), [$value]);
+        $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
+
         $statements = [
             $builder->if(
-                $builder->not($builder->funcCall($builder->importFunction('array_is_list'), [$value])),
+                $builder->or($builder->not($isArray), $builder->not($isList)),
                 [$builder->throwNew($builder->importClass(MappingFailedException::class), [
                     $value,
                     $path,
-                    $builder->val('array'),
+                    $builder->val('list'),
                 ])],
             ),
 
