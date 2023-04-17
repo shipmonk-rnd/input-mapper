@@ -22,7 +22,6 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
-use ShipMonk\InputMapper\Attributes\Optional;
 use ShipMonk\InputMapper\Compiler\Exception\CannotInferMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
@@ -39,10 +38,12 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\NullableMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\OptionalMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
+use ShipMonk\InputMapper\Runtime\Optional;
 use function class_exists;
 use function count;
 use function strtolower;
@@ -93,7 +94,7 @@ class MapperCompilerFactory
     {
         $mappers = [];
         $validators = [];
-        $optional = false;
+        $optional = $type instanceof GenericTypeNode && $type->type->name === Optional::class;
 
         foreach ($reflection->getAttributes(MapperCompiler::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $mappers[] = $attribute->newInstance();
@@ -103,16 +104,17 @@ class MapperCompilerFactory
             $validators[] = $attribute->newInstance();
         }
 
-        foreach ($reflection->getAttributes(Optional::class, ReflectionAttribute::IS_INSTANCEOF) as $_) {
-            $optional = true;
-        }
-
         if (count($mappers) === 0) {
-            $mappers[] = $this->inferMapperFromType($type);
+            if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
+                $mappers[] = $this->inferMapperFromType($type->genericTypes[0]);
+            } else {
+                $mappers[] = $this->inferMapperFromType($type);
+            }
         }
 
         $mapper = count($mappers) > 1 ? new ChainMapperCompiler($mappers) : $mappers[0];
         $mapper = count($validators) > 0 ? new ValidatedMapperCompiler($mapper, $validators) : $mapper;
+        $mapper = $optional ? new OptionalMapperCompiler($mapper) : $mapper;
 
         return new PropertyMapping($name, $mapper, $optional);
     }
