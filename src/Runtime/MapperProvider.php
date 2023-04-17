@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Runtime;
 
+use LogicException;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
@@ -10,6 +11,8 @@ use RuntimeException;
 use ShipMonk\InputMapper\Compiler\Generator;
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use function class_exists;
+use function class_implements;
+use function class_parents;
 use function dirname;
 use function file_put_contents;
 use function flock;
@@ -34,6 +37,11 @@ class MapperProvider
      */
     private array $registry = [];
 
+    /**
+     * @var array<class-string, callable(never): Mapper<mixed>>
+     */
+    private array $factories = [];
+
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
@@ -55,11 +63,35 @@ class MapperProvider
 
     /**
      * @template T of object
+     * @param  class-string<T>       $inputClassName
+     * @param  callable(class-string<T>): Mapper<T> $mapperFactory
+     */
+    public function registerFactory(string $inputClassName, callable $mapperFactory): void
+    {
+        if (isset($this->registry[$inputClassName])) {
+            throw new LogicException("Mapper for '$inputClassName' already created.");
+        }
+
+        $this->factories[$inputClassName] = $mapperFactory;
+    }
+
+    /**
+     * @template T of object
      * @param  class-string<T> $inputClassName
      * @return Mapper<T>
      */
     private function create(string $inputClassName): Mapper
     {
+        $classNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
+
+        foreach ($classNames as $className => $_) {
+            if (isset($this->factories[$className])) {
+                /** @var callable(class-string<T>): Mapper<T> $factory */
+                $factory = $this->factories[$className];
+                return $factory($inputClassName);
+            }
+        }
+
         $mapperClassName = $this->getMapperClass($inputClassName);
 
         if (!class_exists($mapperClassName, autoload: false)) {
