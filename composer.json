@@ -27,7 +27,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ShipMonkTests\\InputMapper\\Tests\\": "tests/"
+            "ShipMonkTests\\InputMapper\\": "tests/"
         }
     },
     "config": {
