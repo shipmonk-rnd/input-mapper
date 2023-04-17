@@ -28,10 +28,14 @@ class MapperProviderTest extends TestCase
         $myCustomMapper = new DummyMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(EmptyInput::class, static function (string $inputClassName) use ($myCustomMapper): DummyMapper {
-            self::assertSame(EmptyInput::class, $inputClassName);
-            return $myCustomMapper;
-        });
+        $mapperProvider->registerFactory(
+            EmptyInput::class,
+            static function (string $inputClassName, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+                self::assertSame(EmptyInput::class, $inputClassName);
+                self::assertSame($mapperProvider, $provider);
+                return $myCustomMapper;
+            },
+        );
 
         self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
         self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
@@ -42,10 +46,14 @@ class MapperProviderTest extends TestCase
         $myCustomMapper = new DummyMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(InputInterface::class, static function (string $inputClassName) use ($myCustomMapper): DummyMapper {
-            self::assertSame(InterfaceImplementationInput::class, $inputClassName);
-            return $myCustomMapper;
-        });
+        $mapperProvider->registerFactory(
+            InputInterface::class,
+            static function (string $inputClassName, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+                self::assertSame(InterfaceImplementationInput::class, $inputClassName);
+                self::assertSame($mapperProvider, $provider);
+                return $myCustomMapper;
+            },
+        );
 
         self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
         self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));

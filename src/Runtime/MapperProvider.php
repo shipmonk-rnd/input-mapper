@@ -38,7 +38,7 @@ class MapperProvider
     private array $registry = [];
 
     /**
-     * @var array<class-string, callable(never): Mapper<mixed>>
+     * @var array<class-string, callable(never, self): Mapper<mixed>>
      */
     private array $factories = [];
 
@@ -64,7 +64,7 @@ class MapperProvider
     /**
      * @template T of object
      * @param  class-string<T>       $inputClassName
-     * @param  callable(class-string<T>): Mapper<T> $mapperFactory
+     * @param  callable(class-string<T>, self): Mapper<T> $mapperFactory
      */
     public function registerFactory(string $inputClassName, callable $mapperFactory): void
     {
@@ -82,13 +82,13 @@ class MapperProvider
      */
     private function create(string $inputClassName): Mapper
     {
-        $classNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
+        $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
 
-        foreach ($classNames as $className => $_) {
-            if (isset($this->factories[$className])) {
-                /** @var callable(class-string<T>): Mapper<T> $factory */
-                $factory = $this->factories[$className];
-                return $factory($inputClassName);
+        foreach ($classLikeNames as $classLikeName => $_) {
+            if (isset($this->factories[$classLikeName])) {
+                /** @var callable(class-string<T>, self): Mapper<T> $factory */
+                $factory = $this->factories[$classLikeName];
+                return $factory($inputClassName, $this);
             }
         }
 
