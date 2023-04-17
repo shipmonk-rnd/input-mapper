@@ -42,8 +42,11 @@ class AssertListItem implements ValidatorCompiler
             }
         }
 
+        $isArray = $builder->funcCall($builder->importFunction('is_array'), [$value]);
+        $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
+
         return [
-            $builder->if($builder->funcCall($builder->importFunction('array_is_list'), [$value]), [], [
+            $builder->if($builder->and($isArray, $isList), [], [
                 $builder->foreach(
                     $value,
                     $builder->var($itemVariableName),
