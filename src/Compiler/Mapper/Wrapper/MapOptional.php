@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper\Wrapper;
 
+use Attribute;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -12,11 +13,12 @@ use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Optional;
 
-class OptionalMapperCompiler implements UndefinedAwareMapperCompiler
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+class MapOptional implements UndefinedAwareMapperCompiler
 {
 
     public function __construct(
-        private readonly MapperCompiler $mapperCompiler,
+        public readonly MapperCompiler $mapperCompiler,
     )
     {
     }

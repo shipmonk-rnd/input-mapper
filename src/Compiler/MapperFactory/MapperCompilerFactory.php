@@ -37,8 +37,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\NullableMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\OptionalMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
@@ -114,7 +114,7 @@ class MapperCompilerFactory
 
         $mapper = count($mappers) > 1 ? new ChainMapperCompiler($mappers) : $mappers[0];
         $mapper = count($validators) > 0 ? new ValidatedMapperCompiler($mapper, $validators) : $mapper;
-        $mapper = $optional ? new OptionalMapperCompiler($mapper) : $mapper;
+        $mapper = $optional ? new MapOptional($mapper) : $mapper;
 
         return new PropertyMapping($name, $mapper, $optional);
     }
@@ -144,7 +144,7 @@ class MapperCompilerFactory
         }
 
         if ($type instanceof NullableTypeNode) {
-            return new NullableMapperCompiler($this->inferMapperFromType($type->type));
+            return new MapNullable($this->inferMapperFromType($type->type));
         }
 
         if ($type instanceof GenericTypeNode) {
