@@ -20,4 +20,4 @@ parameters:
             enabled: false
 
         forbidUnusedMatchResult:
-            enabled: false
+            enabled: false # false positive on nested match statements
