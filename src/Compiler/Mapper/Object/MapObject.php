@@ -15,6 +15,7 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_fill_keys;
 use function array_map;
 use function array_push;
+use function count;
 use function ucfirst;
 
 /**
@@ -66,14 +67,17 @@ class MapObject implements MapperCompiler
                     $propertyValueVarName = $builder->uniqVariableName($propertyMapping->name);
                     $fallbackValueMapper = $propertyMapping->mapper->compileUndefined($path, $builder);
 
-                    $statements[] = $builder->if(
-                        $isPresent,
-                        [$builder->assign($builder->var($propertyValueVarName), $propertyMapperCall)],
-                        [...$fallbackValueMapper->statements, $builder->assign($builder->var($propertyValueVarName), $fallbackValueMapper->expr)],
-                    );
+                    if (count($fallbackValueMapper->statements) > 0) {
+                        $statements[] = $builder->if(
+                            $isPresent,
+                            [$builder->assign($builder->var($propertyValueVarName), $propertyMapperCall)],
+                            [...$fallbackValueMapper->statements, $builder->assign($builder->var($propertyValueVarName), $fallbackValueMapper->expr)],
+                        );
 
-                    $args[] = $builder->var($propertyValueVarName);
-
+                        $args[] = $builder->var($propertyValueVarName);
+                    } else {
+                        $args[] = $builder->ternary($isPresent, $propertyMapperCall, $fallbackValueMapper->expr);
+                    }
                 } else {
                     $args[] = $builder->ternary($isPresent, $propertyMapperCall, $builder->val(null));
                 }
