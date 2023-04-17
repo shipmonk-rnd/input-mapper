@@ -412,6 +412,15 @@ class PhpDocTypeUtilsTest extends TestCase
 
         PhpDocTypeUtils::resolve($typeB, $context);
         self::assertSame(TestCase::class, $identifier->name);
+
+        $identifier = new IdentifierTypeNode('self');
+        $typeC = new UnionTypeNode([
+            $identifier,
+            new IdentifierTypeNode('string'),
+        ]);
+
+        PhpDocTypeUtils::resolve($typeC, $context);
+        self::assertSame(self::class, $identifier->name);
     }
 
 }

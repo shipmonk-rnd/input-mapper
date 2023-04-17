@@ -213,7 +213,7 @@ class PhpDocTypeUtils
                 self::resolve($item, $context);
             }
         } elseif ($type instanceof IdentifierTypeNode) {
-            if (!self::isKeyword($type)) {
+            if (!self::isKeyword($type) || $type->name === 'self' || $type->name === 'static' || $type->name === 'parent') {
                 $type->name = Reflection::expandClassName($type->name, $context);
             }
         } elseif ($type instanceof ArrayShapeItemNode) {
