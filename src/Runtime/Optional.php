@@ -8,10 +8,7 @@ namespace ShipMonk\InputMapper\Runtime;
 abstract class Optional
 {
 
-    /**
-     * @return OptionalNone
-     */
-    public static function none(): self
+    public static function none(): OptionalNone
     {
         return new OptionalNone();
     }
@@ -21,7 +18,7 @@ abstract class Optional
      * @param  R $value
      * @return OptionalSome<R>
      */
-    public static function of(mixed $value): self
+    public static function of(mixed $value): OptionalSome
     {
         return new OptionalSome($value);
     }
