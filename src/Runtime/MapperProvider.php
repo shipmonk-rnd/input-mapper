@@ -43,27 +43,27 @@ class MapperProvider
 
     /**
      * @template T of object
-     * @param  class-string<T> $className
+     * @param  class-string<T> $inputClassName
      * @return Mapper<T>
      */
-    public function get(string $className): Mapper
+    public function get(string $inputClassName): Mapper
     {
         /** @var Mapper<T> $mapper */
-        $mapper = $this->registry[$className] ??= $this->create($className);
+        $mapper = $this->registry[$inputClassName] ??= $this->create($inputClassName);
         return $mapper;
     }
 
     /**
      * @template T of object
-     * @param  class-string<T> $className
+     * @param  class-string<T> $inputClassName
      * @return Mapper<T>
      */
-    private function create(string $className): Mapper
+    private function create(string $inputClassName): Mapper
     {
-        $mapperClassName = $this->getMapperClass($className);
+        $mapperClassName = $this->getMapperClass($inputClassName);
 
         if (!class_exists($mapperClassName, autoload: false)) {
-            $this->load($className, $mapperClassName);
+            $this->load($inputClassName, $mapperClassName);
         }
 
         return new $mapperClassName($this);
@@ -71,10 +71,10 @@ class MapperProvider
 
     /**
      * @template T of object
-     * @param class-string<T>         $className
+     * @param class-string<T>         $inputClassName
      * @param class-string<Mapper<T>> $mapperClassName
      */
-    private function load(string $className, string $mapperClassName): void
+    private function load(string $inputClassName, string $mapperClassName): void
     {
         $path = $this->getMapperPath($mapperClassName);
 
@@ -97,7 +97,7 @@ class MapperProvider
         }
 
         if (!is_file($path) || $this->autoRefresh) {
-            $code = $this->compile($className, $mapperClassName);
+            $code = $this->compile($inputClassName, $mapperClassName);
 
             if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
                 @unlink("$path.tmp"); // @ file may not exist
@@ -114,10 +114,10 @@ class MapperProvider
 
     /**
      * @template T of object
-     * @param class-string<T>         $className
+     * @param class-string<T>         $inputClassName
      * @param class-string<Mapper<T>> $mapperClassName
      */
-    private function compile(string $className, string $mapperClassName): string
+    private function compile(string $inputClassName, string $mapperClassName): string
     {
         $phpDocLexer = new Lexer();
         $phpDocExprParser = new ConstExprParser();
@@ -125,7 +125,7 @@ class MapperProvider
         $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
 
         $mapperCompilerFactory = new MapperCompilerFactory($phpDocLexer, $phpDocParser);
-        $mapperCompiler = $mapperCompilerFactory->createObjectMapper($className);
+        $mapperCompiler = $mapperCompilerFactory->createObjectMapper($inputClassName);
 
         $generator = new Generator();
         return $generator->generateMapperFile($mapperClassName, $mapperCompiler);
