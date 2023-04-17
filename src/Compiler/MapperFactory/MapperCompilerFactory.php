@@ -167,6 +167,10 @@ class MapperCompilerFactory
                     1 => new MapList($this->inferMapperFromType($type->genericTypes[0])),
                     default => throw CannotInferMapperException::fromType($type),
                 },
+                Optional::class => match (count($type->genericTypes)) {
+                    1 => new MapOptional($this->inferMapperFromType($type->genericTypes[0])),
+                    default => throw CannotInferMapperException::fromType($type),
+                },
                 default => throw CannotInferMapperException::fromType($type),
             };
         }
