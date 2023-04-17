@@ -395,6 +395,49 @@ class PhpDocTypeUtilsTest extends TestCase
         ];
     }
 
+    /**
+     * @dataProvider provideMakeNotNullableData
+     */
+    public function testMakeNotNullable(TypeNode $type, TypeNode $expectedType): void
+    {
+        self::assertEquals($expectedType, PhpDocTypeUtils::makeNotNullable($type));
+    }
+
+    /**
+     * @return iterable<string, array{TypeNode, TypeNode}>
+     */
+    public function provideMakeNotNullableData(): iterable
+    {
+        yield 'int' => [
+            new IdentifierTypeNode('int'),
+            new IdentifierTypeNode('int'),
+        ];
+
+        yield '?int' => [
+            new NullableTypeNode(new IdentifierTypeNode('int')),
+            new IdentifierTypeNode('int'),
+        ];
+
+        yield '?(int|float)' => [
+            new NullableTypeNode(new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')])),
+            new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+        ];
+
+        yield 'int|float' => [
+            new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+            new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+        ];
+
+        yield 'int|float|null' => [
+            new UnionTypeNode([
+                new IdentifierTypeNode('int'),
+                new IdentifierTypeNode('float'),
+                new IdentifierTypeNode('null'),
+            ]),
+            new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+        ];
+    }
+
     public function testResolve(): void
     {
         $context = new ReflectionClass($this);
