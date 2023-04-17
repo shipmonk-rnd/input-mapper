@@ -23,10 +23,7 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
-use function array_filter;
 use function array_map;
-use function array_values;
-use function count;
 use function get_object_vars;
 use function is_array;
 use function is_object;
@@ -204,29 +201,6 @@ class PhpDocTypeUtils
         }
 
         return new NullableTypeNode($type);
-    }
-
-    public static function makeNotNullable(TypeNode $type): TypeNode
-    {
-        if ($type instanceof IdentifierTypeNode && $type->name === 'mixed') {
-            return $type;
-        }
-
-        if ($type instanceof NullableTypeNode) {
-            return $type->type;
-        }
-
-        if ($type instanceof UnionTypeNode) {
-            $subTypes = array_values(array_filter($type->types, static fn(TypeNode $type) => !self::isNull($type)));
-
-            return match (count($subTypes)) {
-                0 => new IdentifierTypeNode('never'),
-                1 => $subTypes[0],
-                default => new UnionTypeNode($subTypes),
-            };
-        }
-
-        return $type;
     }
 
     /**
