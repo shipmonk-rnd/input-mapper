@@ -152,7 +152,7 @@ class MapperProvider
     private function compile(string $inputClassName, string $mapperClassName): string
     {
         $phpDocLexer = new Lexer();
-        $phpDocExprParser = new ConstExprParser();
+        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
         $phpDocTypeParser = new TypeParser($phpDocExprParser);
         $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
 
