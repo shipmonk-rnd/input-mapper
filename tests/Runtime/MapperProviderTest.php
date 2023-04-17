@@ -2,13 +2,20 @@
 
 namespace ShipMonkTests\InputMapper\Tests\Runtime;
 
+use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
+use PHPUnit\Framework\Constraint\ExceptionMessage as ExceptionMessageConstraint;
 use PHPUnit\Framework\TestCase;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\Tests\Runtime\Data\DummyMapper;
 use ShipMonkTests\InputMapper\Tests\Runtime\Data\EmptyInput;
 use ShipMonkTests\InputMapper\Tests\Runtime\Data\InputInterface;
 use ShipMonkTests\InputMapper\Tests\Runtime\Data\InterfaceImplementationInput;
+use ShipMonkTests\InputMapper\Tests\Runtime\Data\Optional\OptionalNotNullInput;
+use ShipMonkTests\InputMapper\Tests\Runtime\Data\Optional\OptionalNullableInput;
+use Throwable;
 use function sys_get_temp_dir;
 
 class MapperProviderTest extends TestCase
@@ -59,10 +66,51 @@ class MapperProviderTest extends TestCase
         self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
     }
 
+    public function testMapperForOptionalNotNullInput(): void
+    {
+        $mapperProvider = $this->createMapperProvider();
+        $mapper = $mapperProvider->get(OptionalNotNullInput::class);
+        self::assertEquals(new OptionalNotNullInput(Optional::of(123)), $mapper->map(['number' => 123]));
+        self::assertEquals(new OptionalNotNullInput(Optional::none()), $mapper->map([]));
+
+        self::assertException(MappingFailedException::class, 'Failed to map data at path "number": expected int, got null', static function () use ($mapper): void {
+            $mapper->map(['number' => null]);
+        });
+    }
+
+    public function testMapperForOptionalNullableInput(): void
+    {
+        $mapperProvider = $this->createMapperProvider();
+        $mapper = $mapperProvider->get(OptionalNullableInput::class);
+        self::assertEquals(new OptionalNullableInput(Optional::of(123)), $mapper->map(['number' => 123]));
+        self::assertEquals(new OptionalNullableInput(Optional::of(null)), $mapper->map(['number' => null]));
+        self::assertEquals(new OptionalNullableInput(Optional::none()), $mapper->map([]));
+    }
+
     private function createMapperProvider(): MapperProvider
     {
         $tempDir = sys_get_temp_dir();
         return new MapperProvider($tempDir, autoRefresh: true);
+    }
+
+    /**
+     * @template T of Throwable
+     * @param  class-string<T>  $type
+     * @param  callable(): void $cb
+     */
+    protected static function assertException(string $type, ?string $message, callable $cb): void
+    {
+        try {
+            $cb();
+            self::assertThat(null, new ExceptionConstraint($type));
+
+        } catch (Throwable $e) {
+            self::assertThat($e, new ExceptionConstraint($type));
+
+            if ($message !== null) {
+                self::assertThat($e, new ExceptionMessageConstraint($message));
+            }
+        }
     }
 
 }

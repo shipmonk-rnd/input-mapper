@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_fill_keys;
@@ -53,13 +54,30 @@ class MapObject implements MapperCompiler
             $isPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($propertyMapping->name), $value]);
             $isMissing = $builder->not($isPresent);
 
-            if ($propertyMapping->optional) {
-                $propertyValueVarName = $builder->uniqVariableName($propertyMapping->name);
-                $propertyValue = $builder->var($propertyValueVarName);
-                $statements[] = $builder->assign($builder->var($propertyValueVarName), $builder->ternary($isPresent, $builder->arrayDimFetch($value, $builder->val($propertyMapping->name)), $builder->val(null)));
+            $propertyValue = $builder->arrayDimFetch($value, $builder->val($propertyMapping->name));
+            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyMapping->name));
+            $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyMapping->name));
+            $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $propertyMapping->mapper)->makePrivate()->getNode();
+            $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyPath]);
+            $builder->addMethod($propertyMapperMethod);
 
+            if ($propertyMapping->optional) {
+                if ($propertyMapping->mapper instanceof UndefinedAwareMapperCompiler) {
+                    $propertyValueVarName = $builder->uniqVariableName($propertyMapping->name);
+                    $fallbackValueMapper = $propertyMapping->mapper->compileUndefined($path, $builder);
+
+                    $statements[] = $builder->if(
+                        $isPresent,
+                        [$builder->assign($builder->var($propertyValueVarName), $propertyMapperCall)],
+                        [...$fallbackValueMapper->statements, $builder->assign($builder->var($propertyValueVarName), $fallbackValueMapper->expr)],
+                    );
+
+                    $args[] = $builder->var($propertyValueVarName);
+
+                } else {
+                    $args[] = $builder->ternary($isPresent, $propertyMapperCall, $builder->val(null));
+                }
             } else {
-                $propertyValue = $builder->arrayDimFetch($value, $builder->val($propertyMapping->name));
                 $statements[] = $builder->if($isMissing, [
                     $builder->throwNew($builder->importClass(MappingFailedException::class), [
                         $value,
@@ -67,14 +85,9 @@ class MapObject implements MapperCompiler
                         $builder->val("property {$propertyMapping->name} to exist"),
                     ]),
                 ]);
+
+                $args[] = $propertyMapperCall;
             }
-
-            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyMapping->name));
-
-            $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyMapping->name));
-            $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $propertyMapping->mapper)->makePrivate()->getNode();
-            $builder->addMethod($propertyMapperMethod);
-            $args[] = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyPath]);
         }
 
         if (!$this->allowExtraProperties) {
