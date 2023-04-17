@@ -18,6 +18,8 @@ use function array_fill_keys;
 use function array_map;
 use function array_push;
 use function count;
+use function json_encode;
+use function sprintf;
 use function ucfirst;
 
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
@@ -73,7 +75,7 @@ class MapArrayShape implements MapperCompiler
                     $builder->throwNew($builder->importClass(MappingFailedException::class), [
                         $value,
                         $path,
-                        $builder->val("key {$itemMapping->key} to exist"),
+                        $builder->val(sprintf('key %s to exist', json_encode($itemMapping->key))),
                     ]),
                 ]);
 
@@ -163,11 +165,9 @@ class MapArrayShape implements MapperCompiler
                 $value,
                 $path,
                 $builder->concat(
-                    $builder->val('have only the keys '),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->var($knownKeysVariableName)]),
-                    $builder->val(', but got '),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->var($extraKeysVariableName)]),
-                    $builder->val(' as well'),
+                    $builder->val('array to not have keys ['),
+                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])]),
+                    $builder->val(']'),
                 ),
             ]),
         ]);
