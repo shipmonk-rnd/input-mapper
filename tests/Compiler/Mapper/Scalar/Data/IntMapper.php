@@ -24,11 +24,7 @@ class IntMapper implements Mapper
     public function map(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;

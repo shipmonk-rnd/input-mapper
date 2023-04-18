@@ -22,11 +22,13 @@ class MapFloat implements MapperCompiler
 
         $statements = [
             $builder->if($builder->and($builder->not($isFloat), $builder->not($isInt)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('float'),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('float')],
+                    ),
+                ),
             ]),
         ];
 

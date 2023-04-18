@@ -73,7 +73,7 @@ class MapperProviderTest extends TestCase
         self::assertEquals(new OptionalNotNullInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNotNullInput(Optional::none()), $mapper->map([]));
 
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /number: expected int, got null', static function () use ($mapper): void {
+        self::assertException(MappingFailedException::class, 'Failed to map data at path /number: Expected int, got null', static function () use ($mapper): void {
             $mapper->map(['number' => null]);
         });
     }

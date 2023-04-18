@@ -51,32 +51,38 @@ class AssertStringLength implements ValidatorCompiler
         if ($this->min !== null && $this->max !== null && $this->min === $this->max) {
             return [
                 $builder->if($builder->notSame($length, $builder->val($this->min)), [
-                    $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                        $value,
-                        $path,
-                        $builder->val("string with exactly {$this->min} characters"),
-                    ]),
+                    $builder->throw(
+                        $builder->staticCall(
+                            $builder->importClass(MappingFailedException::class),
+                            'incorrectValue',
+                            [$value, $path, $builder->val("string with exactly {$this->min} characters")],
+                        ),
+                    ),
                 ]),
             ];
         }
 
         if ($this->min !== null) {
             $statements[] = $builder->if($builder->lt($length, $builder->val($this->min)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("string with at least {$this->min} characters"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("string with at least {$this->min} characters")],
+                    ),
+                ),
             ]);
         }
 
         if ($this->max !== null) {
             $statements[] = $builder->if($builder->gt($length, $builder->val($this->max)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("string with at most {$this->max} characters"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("string with at most {$this->max} characters")],
+                    ),
+                ),
             ]);
         }
 

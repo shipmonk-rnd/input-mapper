@@ -8,7 +8,6 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_diff_key;
 use function array_keys;
 use function count;
-use function implode;
 use function is_array;
 
 /**
@@ -29,11 +28,7 @@ class EmptySealedArrayShapeMapper implements Mapper
     public function map(mixed $data, array $path = []): array
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         $mapped = [];
@@ -41,11 +36,7 @@ class EmptySealedArrayShapeMapper implements Mapper
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array to not have keys [' . implode(', ', array_keys($extraKeys)) . ']',
-            );
+            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
         return $mapped;

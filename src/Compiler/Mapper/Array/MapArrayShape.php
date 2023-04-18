@@ -18,8 +18,6 @@ use function array_fill_keys;
 use function array_map;
 use function array_push;
 use function count;
-use function json_encode;
-use function sprintf;
 use function ucfirst;
 
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
@@ -43,11 +41,13 @@ class MapArrayShape implements MapperCompiler
 
         $isNotArray = $builder->not($builder->funcCall($builder->importFunction('is_array'), [$value]));
         $statements[] = $builder->if($isNotArray, [
-            $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                $value,
-                $path,
-                $builder->val('array'),
-            ]),
+            $builder->throw(
+                $builder->staticCall(
+                    $builder->importClass(MappingFailedException::class),
+                    'incorrectType',
+                    [$value, $path, $builder->val('array')],
+                ),
+            ),
         ]);
 
         $statements[] = $builder->assign($builder->var($mappedVariableName), $builder->val([]));
@@ -72,11 +72,13 @@ class MapArrayShape implements MapperCompiler
 
             } else {
                 $statements[] = $builder->if($isMissing, [
-                    $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                        $value,
-                        $path,
-                        $builder->val(sprintf('key %s to exist', json_encode($itemMapping->key))),
-                    ]),
+                    $builder->throw(
+                        $builder->staticCall(
+                            $builder->importClass(MappingFailedException::class),
+                            'missingKey',
+                            [$path, $builder->val($itemMapping->key)],
+                        ),
+                    ),
                 ]);
 
                 $statements[] = $itemAssignment;
@@ -161,15 +163,13 @@ class MapArrayShape implements MapperCompiler
 
         $hasExtraKeys = $builder->gt($builder->funcCall($builder->importFunction('count'), [$builder->var($extraKeysVariableName)]), $builder->val(0));
         $statements[] = $builder->if($hasExtraKeys, [
-            $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                $value,
-                $path,
-                $builder->concat(
-                    $builder->val('array to not have keys ['),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])]),
-                    $builder->val(']'),
+            $builder->throw(
+                $builder->staticCall(
+                    $builder->importClass(MappingFailedException::class),
+                    'extraKeys',
+                    [$path, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
                 ),
-            ]),
+            ),
         ]);
 
         return $statements;

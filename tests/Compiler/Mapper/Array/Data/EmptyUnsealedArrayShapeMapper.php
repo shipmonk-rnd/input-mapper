@@ -25,11 +25,7 @@ class EmptyUnsealedArrayShapeMapper implements Mapper
     public function map(mixed $data, array $path = []): array
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         $mapped = [];

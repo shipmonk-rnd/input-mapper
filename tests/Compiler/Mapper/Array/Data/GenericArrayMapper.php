@@ -27,30 +27,18 @@ class GenericArrayMapper implements Mapper
     public function map(mixed $data, array $path = []): array
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         $mapped = [];
 
         foreach ($data as $key => $value) {
             if (!is_string($key)) {
-                throw new MappingFailedException(
-                    $key,
-                    [...$path, $key],
-                    'string',
-                );
+                throw MappingFailedException::incorrectType($key, [...$path, $key], 'string');
             }
 
             if (!is_int($value)) {
-                throw new MappingFailedException(
-                    $value,
-                    [...$path, $key],
-                    'int',
-                );
+                throw MappingFailedException::incorrectType($value, [...$path, $key], 'int');
             }
 
             $mapped[$key] = $value;

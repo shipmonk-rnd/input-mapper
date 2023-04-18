@@ -11,7 +11,6 @@ use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
 use function count;
-use function implode;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -33,38 +32,22 @@ class PersonMapper implements Mapper
     public function map(mixed $data, array $path = []): PersonInput
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         if (!array_key_exists('id', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property id to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'id');
         }
 
         if (!array_key_exists('name', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property name to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'name');
         }
 
         $knownKeys = ['id' => true, 'name' => true, 'age' => true];
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array to not have keys [' . implode(', ', array_keys($extraKeys)) . ']',
-            );
+            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
         return new PersonInput(
@@ -81,11 +64,7 @@ class PersonMapper implements Mapper
     private function mapAge(mixed $data, array $path = []): Optional
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return Optional::of($data);
@@ -97,11 +76,7 @@ class PersonMapper implements Mapper
     private function mapName(mixed $data, array $path = []): string
     {
         if (!is_string($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'string',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
         return $data;
@@ -113,11 +88,7 @@ class PersonMapper implements Mapper
     private function mapId(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;

@@ -19,11 +19,13 @@ class MapInt implements MapperCompiler
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_int'), [$value])), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('int'),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('int')],
+                    ),
+                ),
             ]),
         ];
 

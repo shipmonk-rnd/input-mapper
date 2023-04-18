@@ -34,14 +34,15 @@ class MapList implements MapperCompiler
         $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
 
         $statements = [
-            $builder->if(
-                $builder->or($builder->not($isArray), $builder->not($isList)),
-                [$builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('list'),
-                ])],
-            ),
+            $builder->if($builder->or($builder->not($isArray), $builder->not($isList)), [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('list')],
+                    ),
+                ),
+            ]),
 
             $builder->assign($builder->var($mappedVariableName), $builder->val([])),
 

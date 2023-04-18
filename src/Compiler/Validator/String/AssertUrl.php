@@ -28,11 +28,13 @@ class AssertUrl implements ValidatorCompiler
 
         return [
             $builder->if($builder->and($isString, $builder->not($isUrl)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('valid URL'),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val('valid URL')],
+                    ),
+                ),
             ]),
         ];
     }

@@ -9,7 +9,6 @@ use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
 use function count;
-use function implode;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -32,21 +31,13 @@ class SealedArrayShapeMapper implements Mapper
     public function map(mixed $data, array $path = []): array
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         $mapped = [];
 
         if (!array_key_exists('a', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'key "a" to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'a');
         }
 
         $mapped['a'] = $this->mapA($data['a'], [...$path, 'a']);
@@ -59,11 +50,7 @@ class SealedArrayShapeMapper implements Mapper
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array to not have keys [' . implode(', ', array_keys($extraKeys)) . ']',
-            );
+            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
         return $mapped;
@@ -75,11 +62,7 @@ class SealedArrayShapeMapper implements Mapper
     private function mapB(mixed $data, array $path = []): string
     {
         if (!is_string($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'string',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
         return $data;
@@ -91,11 +74,7 @@ class SealedArrayShapeMapper implements Mapper
     private function mapA(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;
