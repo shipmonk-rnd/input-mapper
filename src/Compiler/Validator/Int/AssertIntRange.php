@@ -38,7 +38,7 @@ class AssertIntRange implements ValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compileValidator(
+    public function compile(
         Expr $value,
         Expr $path,
         PhpCodeBuilder $builder,
