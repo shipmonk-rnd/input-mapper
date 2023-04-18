@@ -20,7 +20,7 @@ final class OptionalSome extends Optional
 
     public function isDefined(): bool
     {
-        return false;
+        return true;
     }
 
     /**
