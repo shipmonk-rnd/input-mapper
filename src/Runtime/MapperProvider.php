@@ -35,12 +35,12 @@ class MapperProvider
     /**
      * @var array<class-string, Mapper<mixed>>
      */
-    private array $registry = [];
+    private array $mappers = [];
 
     /**
      * @var array<class-string, callable(never, self): Mapper<mixed>>
      */
-    private array $factories = [];
+    private array $mapperFactories = [];
 
     public function __construct(
         private readonly string $tempDir,
@@ -57,22 +57,22 @@ class MapperProvider
     public function get(string $inputClassName): Mapper
     {
         /** @var Mapper<T> $mapper */
-        $mapper = $this->registry[$inputClassName] ??= $this->create($inputClassName);
+        $mapper = $this->mappers[$inputClassName] ??= $this->create($inputClassName);
         return $mapper;
     }
 
     /**
      * @template T of object
-     * @param  class-string<T>       $inputClassName
+     * @param  class-string<T>                            $inputClassName
      * @param  callable(class-string<T>, self): Mapper<T> $mapperFactory
      */
     public function registerFactory(string $inputClassName, callable $mapperFactory): void
     {
-        if (isset($this->registry[$inputClassName])) {
+        if (isset($this->mappers[$inputClassName])) {
             throw new LogicException("Mapper for '$inputClassName' already created.");
         }
 
-        $this->factories[$inputClassName] = $mapperFactory;
+        $this->mapperFactories[$inputClassName] = $mapperFactory;
     }
 
     /**
@@ -85,9 +85,9 @@ class MapperProvider
         $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
 
         foreach ($classLikeNames as $classLikeName => $_) {
-            if (isset($this->factories[$classLikeName])) {
+            if (isset($this->mapperFactories[$classLikeName])) {
                 /** @var callable(class-string<T>, self): Mapper<T> $factory */
-                $factory = $this->factories[$classLikeName];
+                $factory = $this->mapperFactories[$classLikeName];
                 return $factory($inputClassName, $this);
             }
         }
