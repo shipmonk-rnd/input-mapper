@@ -24,12 +24,12 @@ class IntRangeValidatorWithInclusiveLowerAndUpperBoundMapper implements Mapper
     public function map(mixed $data, array $path = []): mixed
     {
         if (is_int($data)) {
-            if ($data > 10) {
-                throw MappingFailedException::incorrectValue($data, $path, 'value less than or equal to 10');
-            }
-
             if ($data < 5) {
                 throw MappingFailedException::incorrectValue($data, $path, 'value greater than or equal to 5');
+            }
+
+            if ($data > 10) {
+                throw MappingFailedException::incorrectValue($data, $path, 'value less than or equal to 10');
             }
         }
 

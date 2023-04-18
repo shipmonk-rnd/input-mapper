@@ -14,25 +14,13 @@ use function count;
 class AssertIntRange implements ValidatorCompiler
 {
 
-    private ?int $lt;
-
-    private ?int $lte;
-
-    private ?int $gt;
-
-    private ?int $gte;
-
     public function __construct(
-        ?int $lt = null,
-        ?int $lte = null,
-        ?int $gt = null,
-        ?int $gte = null,
+        public readonly ?int $gte = null,
+        public readonly ?int $gt = null,
+        public readonly ?int $lt = null,
+        public readonly ?int $lte = null,
     )
     {
-        $this->lt = $lt;
-        $this->lte = $lte;
-        $this->gt = $gt;
-        $this->gte = $gte;
     }
 
     /**
@@ -45,6 +33,30 @@ class AssertIntRange implements ValidatorCompiler
     ): array
     {
         $statements = [];
+
+        if ($this->gte !== null) {
+            $statements[] = $builder->if($builder->lt($value, $builder->val($this->gte)), [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value greater than or equal to {$this->gte}")],
+                    ),
+                ),
+            ]);
+        }
+
+        if ($this->gt !== null) {
+            $statements[] = $builder->if($builder->lte($value, $builder->val($this->gt)), [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value greater than {$this->gt}")],
+                    ),
+                ),
+            ]);
+        }
 
         if ($this->lt !== null) {
             $statements[] = $builder->if($builder->gte($value, $builder->val($this->lt)), [
@@ -70,30 +82,6 @@ class AssertIntRange implements ValidatorCompiler
             ]);
         }
 
-        if ($this->gt !== null) {
-            $statements[] = $builder->if($builder->lte($value, $builder->val($this->gt)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectValue',
-                        [$value, $path, $builder->val("value greater than {$this->gt}")],
-                    ),
-                ),
-            ]);
-        }
-
-        if ($this->gte !== null) {
-            $statements[] = $builder->if($builder->lt($value, $builder->val($this->gte)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectValue',
-                        [$value, $path, $builder->val("value greater than or equal to {$this->gte}")],
-                    ),
-                ),
-            ]);
-        }
-
         if (count($statements) > 0) {
             $isInt = $builder->funcCall($builder->importFunction('is_int'), [$value]);
             $statements = [$builder->if($isInt, $statements)];
@@ -108,20 +96,20 @@ class AssertIntRange implements ValidatorCompiler
      */
     public function toJsonSchema(array $schema): array
     {
-        if ($this->lt !== null) {
-            $schema['exclusiveMaximum'] = $this->lt;
-        }
-
-        if ($this->lte !== null) {
-            $schema['maximum'] = $this->lte;
+        if ($this->gte !== null) {
+            $schema['minimum'] = $this->gte;
         }
 
         if ($this->gt !== null) {
             $schema['exclusiveMinimum'] = $this->gt;
         }
 
-        if ($this->gte !== null) {
-            $schema['minimum'] = $this->gte;
+        if ($this->lt !== null) {
+            $schema['exclusiveMaximum'] = $this->lt;
+        }
+
+        if ($this->lte !== null) {
+            $schema['maximum'] = $this->lte;
         }
 
         return $schema;
