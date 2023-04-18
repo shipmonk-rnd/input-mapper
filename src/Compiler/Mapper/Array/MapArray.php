@@ -33,14 +33,15 @@ class MapArray implements MapperCompiler
         $itemValueMapper = $this->valueMapperCompiler->compile($builder->var($valueVariableName), $itemPath, $builder);
 
         $statements = [
-            $builder->if(
-                $builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])),
-                [$builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('array'),
-                ])],
-            ),
+            $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('array')],
+                    ),
+                ),
+            ]),
 
             $builder->assign($builder->var($mappedVariableName), $builder->val([])),
 

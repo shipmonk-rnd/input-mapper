@@ -62,10 +62,29 @@ class MapObjectTest extends MapperCompilerTestCase
 
         self::assertEquals($movieInputObject, $movieInputMapper->map($movieInputArray));
 
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /: expected array, got null', static fn() => $movieInputMapper->map(null));
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /: expected array, got 123', static fn() => $movieInputMapper->map(123));
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /: expected array to not have keys [extra], got {"id":1,"title":"The Matrix","description":"A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.","year":1999,"genres":["Action","Sci-Fi"],"director":{"id":7,"name":"Lana Wachowski"},"actors":[{"id":8,"name":"Keanu Reeves","age":56},{"id":9,"name":"Laurence Fishburne"}],"extra":1}', static fn() => $movieInputMapper->map($movieInputArray + ['extra' => 1]));
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /year: expected int, got "X"', static fn() => $movieInputMapper->map(['year' => 'X'] + $movieInputArray));
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected array, got null',
+            static fn() => $movieInputMapper->map(null),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected array, got 123',
+            static fn() => $movieInputMapper->map(123),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Unrecognized key "extra"',
+            static fn() => $movieInputMapper->map($movieInputArray + ['extra' => 1]),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /year: Expected int, got "X"',
+            static fn() => $movieInputMapper->map(['year' => 'X'] + $movieInputArray),
+        );
     }
 
     private function createMovieInputMapperCompiler(): MapperCompiler

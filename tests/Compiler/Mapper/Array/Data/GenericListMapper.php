@@ -27,22 +27,14 @@ class GenericListMapper implements Mapper
     public function map(mixed $data, array $path = []): array
     {
         if (!is_array($data) || !array_is_list($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'list',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'list');
         }
 
         $mapped = [];
 
         foreach ($data as $index => $item) {
             if (!is_int($item)) {
-                throw new MappingFailedException(
-                    $item,
-                    [...$path, $index],
-                    'int',
-                );
+                throw MappingFailedException::incorrectType($item, [...$path, $index], 'int');
             }
 
             $mapped[] = $item;

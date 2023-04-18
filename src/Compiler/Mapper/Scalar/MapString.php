@@ -19,11 +19,13 @@ class MapString implements MapperCompiler
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_string'), [$value])), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('string'),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('string')],
+                    ),
+                ),
             ]),
         ];
 

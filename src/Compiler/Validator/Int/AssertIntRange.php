@@ -48,41 +48,49 @@ class AssertIntRange implements ValidatorCompiler
 
         if ($this->lt !== null) {
             $statements[] = $builder->if($builder->gte($value, $builder->val($this->lt)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("value smaller than {$this->lt}"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value smaller than {$this->lt}")],
+                    ),
+                ),
             ]);
         }
 
         if ($this->lte !== null) {
             $statements[] = $builder->if($builder->gt($value, $builder->val($this->lte)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("value smaller or equal to {$this->lte}"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value smaller or equal to {$this->lte}")],
+                    ),
+                ),
             ]);
         }
 
         if ($this->gt !== null) {
             $statements[] = $builder->if($builder->lte($value, $builder->val($this->gt)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("value greater than {$this->gt}"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value greater than {$this->gt}")],
+                    ),
+                ),
             ]);
         }
 
         if ($this->gte !== null) {
             $statements[] = $builder->if($builder->lt($value, $builder->val($this->gte)), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val("value greater than or equal to {$this->gte}"),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("value greater than or equal to {$this->gte}")],
+                    ),
+                ),
             ]);
         }
 

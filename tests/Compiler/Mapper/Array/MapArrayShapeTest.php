@@ -21,19 +21,19 @@ class MapArrayShapeTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got null',
+            'Failed to map data at path /: Expected array, got null',
             static fn() => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got "1"',
+            'Failed to map data at path /: Expected array, got "1"',
             static fn() => $mapper->map('1'),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array to not have keys [a, b], got {"a":1,"b":2}',
+            'Failed to map data at path /: Unrecognized keys "a" and "b"',
             static fn() => $mapper->map(['a' => 1, 'b' => 2]),
         );
     }
@@ -48,13 +48,13 @@ class MapArrayShapeTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got null',
+            'Failed to map data at path /: Expected array, got null',
             static fn() => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got "1"',
+            'Failed to map data at path /: Expected array, got "1"',
             static fn() => $mapper->map('1'),
         );
     }
@@ -75,37 +75,37 @@ class MapArrayShapeTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got null',
+            'Failed to map data at path /: Expected array, got null',
             static fn() => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got "1"',
+            'Failed to map data at path /: Expected array, got "1"',
             static fn() => $mapper->map('1'),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected key "a" to exist, got []',
+            'Failed to map data at path /: Missing required key "a"',
             static fn() => $mapper->map([]),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /a: expected int, got null',
+            'Failed to map data at path /a: Expected int, got null',
             static fn() => $mapper->map(['a' => null]),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /b: expected string, got 2',
+            'Failed to map data at path /b: Expected string, got 2',
             static fn() => $mapper->map(['a' => 1, 'b' => 2]),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array to not have keys [c], got {"a":1,"c":2}',
+            'Failed to map data at path /: Unrecognized key "c"',
             static fn() => $mapper->map(['a' => 1, 'c' => 2]),
         );
     }

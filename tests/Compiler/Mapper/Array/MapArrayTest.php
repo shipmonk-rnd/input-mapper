@@ -24,25 +24,25 @@ class MapArrayTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got "1"',
+            'Failed to map data at path /: Expected array, got "1"',
             static fn() => $mapper->map('1'),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: expected array, got null',
+            'Failed to map data at path /: Expected array, got null',
             static fn() => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /a: expected int, got "1"',
+            'Failed to map data at path /a: Expected int, got "1"',
             static fn() => $mapper->map(['a' => '1']),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /0: expected string, got 0',
+            'Failed to map data at path /0: Expected string, got 0',
             static fn() => $mapper->map([1]),
         );
     }

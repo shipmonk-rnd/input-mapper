@@ -13,7 +13,6 @@ use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function count;
-use function implode;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -35,70 +34,38 @@ class MovieMapper implements Mapper
     public function map(mixed $data, array $path = []): MovieInput
     {
         if (!is_array($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
         if (!array_key_exists('id', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property id to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'id');
         }
 
         if (!array_key_exists('title', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property title to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'title');
         }
 
         if (!array_key_exists('year', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property year to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'year');
         }
 
         if (!array_key_exists('genres', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property genres to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'genres');
         }
 
         if (!array_key_exists('director', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property director to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'director');
         }
 
         if (!array_key_exists('actors', $data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'property actors to exist',
-            );
+            throw MappingFailedException::missingKey($path, 'actors');
         }
 
         $knownKeys = ['id' => true, 'title' => true, 'description' => true, 'year' => true, 'genres' => true, 'director' => true, 'actors' => true];
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'array to not have keys [' . implode(', ', array_keys($extraKeys)) . ']',
-            );
+            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
         return new MovieInput(
@@ -119,11 +86,7 @@ class MovieMapper implements Mapper
     private function mapActors(mixed $data, array $path = []): array
     {
         if (!is_array($data) || !array_is_list($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'list',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'list');
         }
 
         $mapped = [];
@@ -150,22 +113,14 @@ class MovieMapper implements Mapper
     private function mapGenres(mixed $data, array $path = []): array
     {
         if (!is_array($data) || !array_is_list($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'list',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'list');
         }
 
         $mapped = [];
 
         foreach ($data as $index => $item) {
             if (!is_string($item)) {
-                throw new MappingFailedException(
-                    $item,
-                    [...$path, $index],
-                    'string',
-                );
+                throw MappingFailedException::incorrectType($item, [...$path, $index], 'string');
             }
 
             $mapped[] = $item;
@@ -180,11 +135,7 @@ class MovieMapper implements Mapper
     private function mapYear(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;
@@ -197,11 +148,7 @@ class MovieMapper implements Mapper
     private function mapDescription(mixed $data, array $path = []): Optional
     {
         if (!is_string($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'string',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
         return Optional::of($data);
@@ -213,11 +160,7 @@ class MovieMapper implements Mapper
     private function mapTitle(mixed $data, array $path = []): string
     {
         if (!is_string($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'string',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
         return $data;
@@ -229,11 +172,7 @@ class MovieMapper implements Mapper
     private function mapId(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
-            throw new MappingFailedException(
-                $data,
-                $path,
-                'int',
-            );
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;

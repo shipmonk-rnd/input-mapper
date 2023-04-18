@@ -41,11 +41,13 @@ class MapObject implements MapperCompiler
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
-                $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                    $value,
-                    $path,
-                    $builder->val('array'),
-                ]),
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $builder->val('array')],
+                    ),
+                ),
             ]),
         ];
 
@@ -83,11 +85,13 @@ class MapObject implements MapperCompiler
                 }
             } else {
                 $statements[] = $builder->if($isMissing, [
-                    $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                        $value,
-                        $path,
-                        $builder->val("property {$propertyMapping->name} to exist"),
-                    ]),
+                    $builder->throw(
+                        $builder->staticCall(
+                            $builder->importClass(MappingFailedException::class),
+                            'missingKey',
+                            [$path, $builder->val($propertyMapping->name)],
+                        ),
+                    ),
                 ]);
 
                 $args[] = $propertyMapperCall;
@@ -153,15 +157,13 @@ class MapObject implements MapperCompiler
 
         $hasExtraKeys = $builder->gt($builder->funcCall($builder->importFunction('count'), [$builder->var($extraKeysVariableName)]), $builder->val(0));
         $statements[] = $builder->if($hasExtraKeys, [
-            $builder->throwNew($builder->importClass(MappingFailedException::class), [
-                $value,
-                $path,
-                $builder->concat(
-                    $builder->val('array to not have keys ['),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])]),
-                    $builder->val(']'),
+            $builder->throw(
+                $builder->staticCall(
+                    $builder->importClass(MappingFailedException::class),
+                    'extraKeys',
+                    [$path, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
                 ),
-            ]),
+            ),
         ]);
 
         return $statements;
