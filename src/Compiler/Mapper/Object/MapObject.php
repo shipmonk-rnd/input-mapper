@@ -13,7 +13,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_fill_keys;
-use function array_map;
+use function array_keys;
 use function array_push;
 use function count;
 use function ucfirst;
@@ -26,12 +26,12 @@ class MapObject implements MapperCompiler
 {
 
     /**
-     * @param class-string<T>       $className
-     * @param list<PropertyMapping> $properties
+     * @param  class-string<T>               $className
+     * @param  array<string, MapperCompiler> $constructorArgsMapperCompilers
      */
     public function __construct(
         public readonly string $className,
-        public readonly array $properties,
+        public readonly array $constructorArgsMapperCompilers,
         public readonly bool $allowExtraProperties = false,
     )
     {
@@ -53,35 +53,34 @@ class MapObject implements MapperCompiler
 
         $args = [];
 
-        foreach ($this->properties as $propertyMapping) {
-            $isPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($propertyMapping->name), $value]);
+        foreach ($this->constructorArgsMapperCompilers as $propertyName => $propertyMapperCompiler) {
+            $isPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($propertyName), $value]);
             $isMissing = $builder->not($isPresent);
 
-            $propertyValue = $builder->arrayDimFetch($value, $builder->val($propertyMapping->name));
-            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyMapping->name));
-            $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyMapping->name));
-            $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $propertyMapping->mapper)->makePrivate()->getNode();
+            $propertyValue = $builder->arrayDimFetch($value, $builder->val($propertyName));
+            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyName));
+            $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
+            $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
             $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyPath]);
             $builder->addMethod($propertyMapperMethod);
 
-            if ($propertyMapping->optional) {
-                if ($propertyMapping->mapper instanceof UndefinedAwareMapperCompiler) {
-                    $propertyValueVarName = $builder->uniqVariableName($propertyMapping->name);
-                    $fallbackValueMapper = $propertyMapping->mapper->compileUndefined($path, $builder);
+            if ($propertyMapperCompiler instanceof UndefinedAwareMapperCompiler) {
+                $propertyValueVarName = $builder->uniqVariableName($propertyName);
+                $fallbackValueMapper = $propertyMapperCompiler->compileUndefined($path, $builder);
 
-                    if (count($fallbackValueMapper->statements) > 0) {
-                        $statements[] = $builder->if(
-                            $isPresent,
-                            [$builder->assign($builder->var($propertyValueVarName), $propertyMapperCall)],
-                            [...$fallbackValueMapper->statements, $builder->assign($builder->var($propertyValueVarName), $fallbackValueMapper->expr)],
-                        );
+                if (count($fallbackValueMapper->statements) > 0) {
+                    $statements[] = $builder->if(
+                        $isPresent,
+                        [$builder->assign($builder->var($propertyValueVarName), $propertyMapperCall)],
+                        [
+                            ...$fallbackValueMapper->statements,
+                            $builder->assign($builder->var($propertyValueVarName), $fallbackValueMapper->expr),
+                        ],
+                    );
 
-                        $args[] = $builder->var($propertyValueVarName);
-                    } else {
-                        $args[] = $builder->ternary($isPresent, $propertyMapperCall, $fallbackValueMapper->expr);
-                    }
+                    $args[] = $builder->var($propertyValueVarName);
                 } else {
-                    $args[] = $builder->ternary($isPresent, $propertyMapperCall, $builder->val(null));
+                    $args[] = $builder->ternary($isPresent, $propertyMapperCall, $fallbackValueMapper->expr);
                 }
             } else {
                 $statements[] = $builder->if($isMissing, [
@@ -89,7 +88,7 @@ class MapObject implements MapperCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'missingKey',
-                            [$path, $builder->val($propertyMapping->name)],
+                            [$path, $propertyName],
                         ),
                     ),
                 ]);
@@ -116,11 +115,11 @@ class MapObject implements MapperCompiler
         $propertySchemas = [];
         $required = [];
 
-        foreach ($this->properties as $propertyMapping) {
-            $propertySchemas[$propertyMapping->name] = $propertyMapping->mapper->getJsonSchema();
+        foreach ($this->constructorArgsMapperCompilers as $propertyName => $propertyMapperCompiler) {
+            $propertySchemas[$propertyName] = $propertyMapperCompiler->getJsonSchema();
 
-            if (!$propertyMapping->optional) {
-                $required[] = $propertyMapping->name;
+            if (!$propertyMapperCompiler instanceof UndefinedAwareMapperCompiler) {
+                $required[] = $propertyName;
             }
         }
 
@@ -148,7 +147,7 @@ class MapObject implements MapperCompiler
     {
         $statements = [];
 
-        $knownKeySet = array_fill_keys(array_map(static fn (PropertyMapping $mapping) => $mapping->name, $this->properties), true);
+        $knownKeySet = array_fill_keys(array_keys($this->constructorArgsMapperCompilers), true);
         $knownKeysVariableName = $builder->uniqVariableName('knownKeys');
         $statements[] = $builder->assign($builder->var($knownKeysVariableName), $builder->val($knownKeySet));
 
