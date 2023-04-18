@@ -2,23 +2,20 @@
 
 namespace ShipMonkTests\InputMapper\Runtime;
 
-use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
-use PHPUnit\Framework\Constraint\ExceptionMessage as ExceptionMessageConstraint;
-use PHPUnit\Framework\TestCase;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonkTests\InputMapper\InputMapperTestCase;
 use ShipMonkTests\InputMapper\Runtime\Data\DummyMapper;
 use ShipMonkTests\InputMapper\Runtime\Data\EmptyInput;
 use ShipMonkTests\InputMapper\Runtime\Data\InputInterface;
 use ShipMonkTests\InputMapper\Runtime\Data\InterfaceImplementationInput;
 use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNotNullInput;
 use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNullableInput;
-use Throwable;
 use function sys_get_temp_dir;
 
-class MapperProviderTest extends TestCase
+class MapperProviderTest extends InputMapperTestCase
 {
 
     public function testGetMapperForEmptyInput(): void
@@ -73,9 +70,13 @@ class MapperProviderTest extends TestCase
         self::assertEquals(new OptionalNotNullInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNotNullInput(Optional::none()), $mapper->map([]));
 
-        self::assertException(MappingFailedException::class, 'Failed to map data at path /number: Expected int, got null', static function () use ($mapper): void {
-            $mapper->map(['number' => null]);
-        });
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /number: Expected int, got null',
+            static function () use ($mapper): void {
+                $mapper->map(['number' => null]);
+            },
+        );
     }
 
     public function testMapperForOptionalNullableInput(): void
@@ -91,26 +92,6 @@ class MapperProviderTest extends TestCase
     {
         $tempDir = sys_get_temp_dir();
         return new MapperProvider($tempDir, autoRefresh: true);
-    }
-
-    /**
-     * @template T of Throwable
-     * @param  class-string<T>  $type
-     * @param  callable(): void $cb
-     */
-    protected static function assertException(string $type, ?string $message, callable $cb): void
-    {
-        try {
-            $cb();
-            self::assertThat(null, new ExceptionConstraint($type));
-
-        } catch (Throwable $e) {
-            self::assertThat($e, new ExceptionConstraint($type));
-
-            if ($message !== null) {
-                self::assertThat($e, new ExceptionMessageConstraint($message));
-            }
-        }
     }
 
 }
