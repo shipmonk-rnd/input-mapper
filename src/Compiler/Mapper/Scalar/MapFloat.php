@@ -15,6 +15,13 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 class MapFloat implements MapperCompiler
 {
 
+    public function __construct(
+        public readonly bool $allowInfinity = false,
+        public readonly bool $allowNan = false,
+    )
+    {
+    }
+
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
         $isFloat = $builder->funcCall($builder->importFunction('is_float'), [$value]);
@@ -26,11 +33,40 @@ class MapFloat implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('float')],
+                        [$value, $path, 'float'],
                     ),
                 ),
             ]),
         ];
+
+        if (!$this->allowInfinity && !$this->allowNan) {
+            $finiteCheck = $builder->not($builder->funcCall($builder->importFunction('is_finite'), [$value]));
+            $finiteLabel = 'finite float';
+
+        } elseif (!$this->allowInfinity) {
+            $finiteCheck = $builder->funcCall($builder->importFunction('is_infinite'), [$value]);
+            $finiteLabel = 'finite float or NAN';
+
+        } elseif (!$this->allowNan) {
+            $finiteCheck = $builder->funcCall($builder->importFunction('is_nan'), [$value]);
+            $finiteLabel = 'finite float or INF';
+
+        } else {
+            $finiteCheck = null;
+            $finiteLabel = null;
+        }
+
+        if ($finiteCheck !== null) {
+            $statements[] = $builder->if($finiteCheck, [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectType',
+                        [$value, $path, $finiteLabel],
+                    ),
+                ),
+            ]);
+        }
 
         return new CompiledExpr($builder->funcCall($builder->importFunction('floatval'), [$value]), $statements);
     }

@@ -6,7 +6,6 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function floatval;
-use function is_finite;
 use function is_float;
 use function is_int;
 
@@ -15,7 +14,7 @@ use function is_int;
  *
  * @implements Mapper<float>
  */
-class FloatMapper implements Mapper
+class FloatWithAllowedInfinityAndNanMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -28,10 +27,6 @@ class FloatMapper implements Mapper
     {
         if (!is_float($data) && !is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'float');
-        }
-
-        if (!is_finite($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'finite float');
         }
 
         return floatval($data);
