@@ -49,41 +49,40 @@ class AssertStringLength implements ValidatorCompiler
         $length = $builder->funcCall($builder->importFunction('strlen'), [$value]);
 
         if ($this->min !== null && $this->max !== null && $this->min === $this->max) {
-            return [
-                $builder->if($builder->notSame($length, $builder->val($this->min)), [
+            $statements[] = $builder->if($builder->notSame($length, $builder->val($this->min)), [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, $builder->val("string with exactly {$this->min} characters")],
+                    ),
+                ),
+            ]);
+
+        } else {
+            if ($this->min !== null) {
+                $statements[] = $builder->if($builder->lt($length, $builder->val($this->min)), [
                     $builder->throw(
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'incorrectValue',
-                            [$value, $path, $builder->val("string with exactly {$this->min} characters")],
+                            [$value, $path, $builder->val("string with at least {$this->min} characters")],
                         ),
                     ),
-                ]),
-            ];
-        }
+                ]);
+            }
 
-        if ($this->min !== null) {
-            $statements[] = $builder->if($builder->lt($length, $builder->val($this->min)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectValue',
-                        [$value, $path, $builder->val("string with at least {$this->min} characters")],
+            if ($this->max !== null) {
+                $statements[] = $builder->if($builder->gt($length, $builder->val($this->max)), [
+                    $builder->throw(
+                        $builder->staticCall(
+                            $builder->importClass(MappingFailedException::class),
+                            'incorrectValue',
+                            [$value, $path, $builder->val("string with at most {$this->max} characters")],
+                        ),
                     ),
-                ),
-            ]);
-        }
-
-        if ($this->max !== null) {
-            $statements[] = $builder->if($builder->gt($length, $builder->val($this->max)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectValue',
-                        [$value, $path, $builder->val("string with at most {$this->max} characters")],
-                    ),
-                ),
-            ]);
+                ]);
+            }
         }
 
         if (count($statements) > 0) {
