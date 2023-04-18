@@ -37,6 +37,7 @@ class PhpCodePrinter extends Standard
         $code = Strings::replace($code, '#\{\n{2,}#', "{\n");
         $code = Strings::replace($code, '#\n{2,}\}#', "\n}");
         $code = Strings::replace($code, '#\n{3,}#', "\n\n");
+        $code = Strings::replace($code, '#\}\n{2,}(\h++\})#', "}\n$1");
         return $code . "\n";
     }
 

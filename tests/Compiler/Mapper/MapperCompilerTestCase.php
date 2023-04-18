@@ -34,7 +34,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
         $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
 
-        $mapperDir = strtr(str_replace(__NAMESPACE__, __DIR__, $mapperNamespace), '\\', '/');
+        $mapperDir = strtr(str_replace('ShipMonkTests\InputMapper', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
         $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
         $jsonSchemaPath = "{$mapperDir}/{$mapperShortClassName}.json";
 
