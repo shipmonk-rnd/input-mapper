@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
+use BackedEnum;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -20,6 +21,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionEnum;
 use ReflectionMethod;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Exception\CannotInferMapperException;
@@ -30,6 +32,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\PropertyMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
@@ -46,6 +49,7 @@ use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function class_exists;
 use function count;
+use function is_a;
 use function strtolower;
 use function substr;
 
@@ -86,6 +90,19 @@ class MapperCompilerFactory
         return new MapObject($classReflection->getName(), $mappings);
     }
 
+    /**
+     * @param class-string<BackedEnum> $enumName
+     */
+    public function createEnumMapper(string $enumName): MapperCompiler
+    {
+        $enumReflection = new ReflectionEnum($enumName);
+        $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
+        $backingType = PhpDocTypeUtils::fromReflectionType($backingReflectionType);
+        $backingTypeMapperCompiler = $this->inferMapperFromType($backingType);
+
+        return new MapEnum($enumName, $backingTypeMapperCompiler);
+    }
+
     private function createPropertyMapping(
         string $name,
         ReflectionParameter $reflection,
@@ -122,8 +139,16 @@ class MapperCompilerFactory
     private function inferMapperFromType(TypeNode $type): MapperCompiler
     {
         if ($type instanceof IdentifierTypeNode) {
-            if (!PhpDocTypeUtils::isKeyword($type) && class_exists($type->name)) {
-                return new DelegateMapperCompiler($type->name);
+            if (!PhpDocTypeUtils::isKeyword($type)) {
+                if (class_exists($type->name)) {
+                    return new DelegateMapperCompiler($type->name);
+                }
+
+                if (is_a($type->name, BackedEnum::class, allow_string: true)) {
+                    return $this->createEnumMapper($type->name);
+                }
+
+                throw CannotInferMapperException::fromType($type);
             }
 
             return match (strtolower($type->name)) {
