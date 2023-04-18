@@ -26,8 +26,8 @@ class Person
         public readonly string $name,
         public readonly int $age,
         public readonly Optional $email,
-        public array $hobbies,
-        public Optional $friends,
+        public readonly array $hobbies,
+        public readonly Optional $friends,
     ) {}
 }
 ```
