@@ -17,8 +17,8 @@ class ValidatedMapperCompiler implements MapperCompiler
      * @param list<ValidatorCompiler> $validatorCompilers
      */
     public function __construct(
-        private readonly MapperCompiler $mapperCompiler,
-        private readonly array $validatorCompilers,
+        public readonly MapperCompiler $mapperCompiler,
+        public readonly array $validatorCompilers,
     )
     {
     }
