@@ -1,0 +1,7 @@
+{
+    "items": {
+        "exclusiveMinimum": 0,
+        "minLength": 5,
+        "maxLength": 5
+    }
+}
