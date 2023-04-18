@@ -37,7 +37,7 @@ class MapBool implements MapperCompiler
      */
     public function getJsonSchema(): array
     {
-        return ['type' => 'bool'];
+        return ['type' => 'boolean'];
     }
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode
