@@ -24,10 +24,11 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonkTests\InputMapper\InputMapperTestCase;
 use Traversable;
 use function array_map;
 
-class PhpDocTypeUtilsTest extends TestCase
+class PhpDocTypeUtilsTest extends InputMapperTestCase
 {
 
     /**
