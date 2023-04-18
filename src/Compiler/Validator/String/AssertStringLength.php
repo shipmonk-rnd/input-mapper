@@ -15,9 +15,9 @@ use function count;
 class AssertStringLength implements ValidatorCompiler
 {
 
-    private ?int $min;
+    public readonly ?int $min;
 
-    private ?int $max;
+    public readonly ?int $max;
 
     public function __construct(
         ?int $exact = null,
@@ -25,15 +25,12 @@ class AssertStringLength implements ValidatorCompiler
         ?int $max = null,
     )
     {
-        if ($exact === null) {
-            $this->min = $min;
-            $this->max = $max;
-        } elseif ($min === null && $max === null) {
-            $this->min = $exact;
-            $this->max = $exact;
-        } else {
+        if ($exact !== null && ($min !== null || $max !== null)) {
             throw new LogicException('Cannot use exact with min/max');
         }
+
+        $this->min = $exact ?? $min;
+        $this->max = $exact ?? $max;
     }
 
     /**

@@ -17,7 +17,7 @@ class ChainMapperCompiler implements MapperCompiler
      * @param list<MapperCompiler> $mapperCompilers
      */
     public function __construct(
-        private readonly array $mapperCompilers,
+        public readonly array $mapperCompilers,
     )
     {
     }
