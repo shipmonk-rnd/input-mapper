@@ -38,14 +38,6 @@ class MapArrayShapeTest extends MapperCompilerTestCase
         );
     }
 
-    public function testGetJsonSchemaForEmptySealedArrayShape(): void
-    {
-        $mapperCompiler = new MapArrayShape([], sealed: true);
-        $jsonSchema = $mapperCompiler->getJsonSchema();
-
-        self::assertSame(['type' => 'object', 'additionalProperties' => false], $jsonSchema);
-    }
-
     public function testCompileEmptyUnsealedArrayShape(): void
     {
         $mapperCompiler = new MapArrayShape([], sealed: false);
@@ -65,14 +57,6 @@ class MapArrayShapeTest extends MapperCompilerTestCase
             'Failed to map data at path /: expected array, got "1"',
             static fn() => $mapper->map('1'),
         );
-    }
-
-    public function testGetJsonSchemaForEmptyUnsealedArrayShape(): void
-    {
-        $mapperCompiler = new MapArrayShape([], sealed: false);
-        $jsonSchema = $mapperCompiler->getJsonSchema();
-
-        self::assertSame(['type' => 'object'], $jsonSchema);
     }
 
     public function testCompileSealedArrayShape(): void
@@ -123,30 +107,6 @@ class MapArrayShapeTest extends MapperCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: expected array to not have keys [c], got {"a":1,"c":2}',
             static fn() => $mapper->map(['a' => 1, 'c' => 2]),
-        );
-    }
-
-    public function testGetJsonSchemaForSealedArrayShape(): void
-    {
-        $items = [
-            new ArrayShapeItemMapping('a', new MapInt()),
-            new ArrayShapeItemMapping('b', new MapString(), optional: true),
-        ];
-
-        $mapperCompiler = new MapArrayShape($items, sealed: true);
-        $jsonSchema = $mapperCompiler->getJsonSchema();
-
-        self::assertSame(
-            [
-                'type' => 'object',
-                'properties' => [
-                    'a' => ['type' => 'integer'],
-                    'b' => ['type' => 'string'],
-                ],
-                'required' => ['a'],
-                'additionalProperties' => false,
-            ],
-            $jsonSchema,
         );
     }
 

@@ -14,7 +14,7 @@ class MapMixedTest extends MapperCompilerTestCase
         $mapperCompiler = new MapMixed();
         $mapper = $this->compileMapper('Mixed', $mapperCompiler);
 
-        self::assertSame(null, $mapper->map(null));
+        self::assertNull($mapper->map(null));
         self::assertSame(1, $mapper->map(1));
         self::assertSame('A', $mapper->map('A'));
         self::assertSame([], $mapper->map([]));
@@ -22,12 +22,6 @@ class MapMixedTest extends MapperCompilerTestCase
 
         $object = new DateTimeImmutable();
         self::assertSame($object, $mapper->map($object));
-    }
-
-    public function testGetJsonSchema(): void
-    {
-        $mapperCompiler = new MapMixed();
-        self::assertSame([], $mapperCompiler->getJsonSchema());
     }
 
 }

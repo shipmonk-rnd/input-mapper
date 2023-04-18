@@ -39,11 +39,4 @@ class MapListTest extends MapperCompilerTestCase
         );
     }
 
-    public function testGetJsonSchema(): void
-    {
-        $itemMapperCompiler = new MapInt();
-        $mapperCompiler = new MapList($itemMapperCompiler);
-        self::assertSame(['type' => 'array', 'items' => ['type' => 'integer']], $mapperCompiler->getJsonSchema());
-    }
-
 }

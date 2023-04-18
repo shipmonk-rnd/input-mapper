@@ -47,12 +47,4 @@ class MapArrayTest extends MapperCompilerTestCase
         );
     }
 
-    public function testGetJsonSchema(): void
-    {
-        $keyMapperCompiler = new MapString();
-        $valueMapperCompiler = new MapInt();
-        $mapperCompiler = new MapArray($keyMapperCompiler, $valueMapperCompiler);
-        self::assertSame(['type' => 'object', 'additionalProperties' => ['type' => 'integer']], $mapperCompiler->getJsonSchema());
-    }
-
 }

@@ -22,10 +22,4 @@ class MapIntTest extends MapperCompilerTestCase
         self::assertException(MappingFailedException::class, null, static fn() => $mapper->map([]));
     }
 
-    public function testGetJsonSchema(): void
-    {
-        $mapperCompiler = new MapInt();
-        self::assertSame(['type' => 'integer'], $mapperCompiler->getJsonSchema());
-    }
-
 }
