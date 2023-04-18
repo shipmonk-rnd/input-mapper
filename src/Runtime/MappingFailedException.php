@@ -101,7 +101,7 @@ class MappingFailedException extends RuntimeException
     /**
      * @param  non-empty-list<string> $items
      */
-    public static function humanImplode(array $items): string
+    private static function humanImplode(array $items): string
     {
         return count($items) > 1
             ? implode(', ', array_slice($items, 0, -1)) . ' and ' . $items[count($items) - 1]
