@@ -37,7 +37,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\PropertyMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
@@ -74,7 +73,7 @@ class MapperCompilerFactory
     public function createObjectMapper(string $className): MapObject
     {
         $classReflection = new ReflectionClass($className);
-        $mappings = [];
+        $constructorParameterMapperCompilers = [];
 
         $constructor = $classReflection->getConstructor();
 
@@ -87,10 +86,10 @@ class MapperCompilerFactory
         foreach ($constructor->getParameters() as $parameter) {
             $name = $parameter->getName();
             $type = $constructorParameterTypes[$name];
-            $mappings[] = $this->createPropertyMapping($name, $parameter, $type);
+            $constructorParameterMapperCompilers[$name] = $this->createParameterMapper($parameter, $type);
         }
 
-        return new MapObject($classReflection->getName(), $mappings);
+        return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers);
     }
 
     /**
@@ -106,15 +105,10 @@ class MapperCompilerFactory
         return new MapEnum($enumName, $backingTypeMapperCompiler);
     }
 
-    private function createPropertyMapping(
-        string $name,
-        ReflectionParameter $reflection,
-        TypeNode $type
-    ): PropertyMapping
+    private function createParameterMapper(ReflectionParameter $reflection, TypeNode $type): MapperCompiler
     {
         $mappers = [];
         $validators = [];
-        $optional = $type instanceof GenericTypeNode && $type->type->name === Optional::class;
 
         foreach ($reflection->getAttributes(MapperCompiler::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $mappers[] = $attribute->newInstance();
@@ -134,9 +128,12 @@ class MapperCompilerFactory
 
         $mapper = count($mappers) > 1 ? new ChainMapperCompiler($mappers) : $mappers[0];
         $mapper = count($validators) > 0 ? new ValidatedMapperCompiler($mapper, $validators) : $mapper;
-        $mapper = $optional ? new MapOptional($mapper) : $mapper;
 
-        return new PropertyMapping($name, $mapper, $optional);
+        if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
+            $mapper = new MapOptional($mapper);
+        }
+
+        return $mapper;
     }
 
     private function inferMapperFromType(TypeNode $type): MapperCompiler

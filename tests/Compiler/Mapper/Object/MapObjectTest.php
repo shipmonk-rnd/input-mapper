@@ -6,7 +6,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\PropertyMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
@@ -90,22 +89,22 @@ class MapObjectTest extends MapperCompilerTestCase
     private function createMovieInputMapperCompiler(): MapperCompiler
     {
         return new MapObject(MovieInput::class, [
-            new PropertyMapping('id', new MapInt()),
-            new PropertyMapping('title', new MapString()),
-            new PropertyMapping('description', new MapOptional(new MapString()), optional: true),
-            new PropertyMapping('year', new MapInt()),
-            new PropertyMapping('genres', new MapList(new MapString())),
-            new PropertyMapping('director', new DelegateMapperCompiler(PersonInput::class)),
-            new PropertyMapping('actors', new MapList(new DelegateMapperCompiler(PersonInput::class))),
+            'id' => new MapInt(),
+            'title' => new MapString(),
+            'description' => new MapOptional(new MapString()),
+            'year' => new MapInt(),
+            'genres' => new MapList(new MapString()),
+            'director' => new DelegateMapperCompiler(PersonInput::class),
+            'actors' => new MapList(new DelegateMapperCompiler(PersonInput::class)),
         ]);
     }
 
     private function createPersonInputMapperCompiler(): MapperCompiler
     {
         return new MapObject(PersonInput::class, [
-            new PropertyMapping('id', new MapInt()),
-            new PropertyMapping('name', new MapString()),
-            new PropertyMapping('age', new MapOptional(new MapInt()), optional: true),
+            'id' => new MapInt(),
+            'name' => new MapString(),
+            'age' => new MapOptional(new MapInt()),
         ]);
     }
 
