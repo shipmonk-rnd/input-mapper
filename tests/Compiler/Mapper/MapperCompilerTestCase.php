@@ -25,12 +25,13 @@ abstract class MapperCompilerTestCase extends TestCase
 {
 
     /**
+     * @param  array<class-string, Mapper<mixed>> $mappers
      * @return Mapper<mixed>
      */
     protected function compileMapper(
         string $name,
         MapperCompiler $mapperCompiler,
-        ?MapperProvider $mapperProvider = null
+        array $mappers = [],
     ): Mapper
     {
         $testCaseReflection = new ReflectionClass($this);
@@ -52,7 +53,12 @@ abstract class MapperCompilerTestCase extends TestCase
             self::assertSnapshot($jsonSchemaPath, $jsonSchema);
         }
 
-        $mapperProvider ??= $this->createMock(MapperProvider::class);
+        $mapperProvider = $this->createMock(MapperProvider::class);
+
+        foreach ($mappers as $inputClassName => $mapper) {
+            $mapperProvider->expects(self::any())->method('get')->with($inputClassName)->willReturn($mapper);
+        }
+
         $mapper = new $mapperClassName($mapperProvider);
         assert($mapper instanceof Mapper);
 

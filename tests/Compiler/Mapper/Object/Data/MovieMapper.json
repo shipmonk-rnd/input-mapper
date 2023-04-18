@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer"
+        },
+        "title": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "year": {
+            "type": "integer"
+        },
+        "genres": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "director": {
+            "$ref": "ShipMonkTests\\InputMapper\\Compiler\\Mapper\\Object\\Data\\PersonInput"
+        },
+        "actors": {
+            "type": "array",
+            "items": {
+                "$ref": "ShipMonkTests\\InputMapper\\Compiler\\Mapper\\Object\\Data\\PersonInput"
+            }
+        }
+    },
+    "required": [
+        "id",
+        "title",
+        "year",
+        "genres",
+        "director",
+        "actors"
+    ]
+}

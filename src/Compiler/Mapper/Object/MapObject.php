@@ -157,11 +157,9 @@ class MapObject implements MapperCompiler
                 $value,
                 $path,
                 $builder->concat(
-                    $builder->val('have only the keys '),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->var($knownKeysVariableName)]),
-                    $builder->val(', but got '),
-                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->var($extraKeysVariableName)]),
-                    $builder->val(' as well'),
+                    $builder->val('array to not have keys ['),
+                    $builder->funcCall($builder->importFunction('implode'), [$builder->val(', '), $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])]),
+                    $builder->val(']'),
                 ),
             ]),
         ]);
