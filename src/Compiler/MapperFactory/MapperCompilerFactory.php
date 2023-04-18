@@ -3,6 +3,8 @@
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
 use BackedEnum;
+use DateTimeImmutable;
+use DateTimeInterface;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -32,6 +34,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\PropertyMapping;
@@ -140,6 +143,10 @@ class MapperCompilerFactory
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
+                if ($type->name === DateTimeInterface::class || $type->name === DateTimeImmutable::class) {
+                    return new MapDateTimeImmutable();
+                }
+
                 if (class_exists($type->name)) {
                     return new DelegateMapperCompiler($type->name);
                 }
