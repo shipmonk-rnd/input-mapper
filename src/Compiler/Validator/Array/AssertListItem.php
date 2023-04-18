@@ -28,7 +28,7 @@ class AssertListItem implements ValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compileValidator(Expr $value, Expr $path, PhpCodeBuilder $builder,): array
+    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder,): array
     {
         [$itemVariableName, $indexVariableName] = $builder->uniqVariableNames('item', 'index');
         $foreachBody = [];
@@ -37,7 +37,7 @@ class AssertListItem implements ValidatorCompiler
             $itemValue = $builder->var($itemVariableName);
             $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
 
-            foreach ($validator->compileValidator($itemValue, $itemPath, $builder) as $statement) {
+            foreach ($validator->compile($itemValue, $itemPath, $builder) as $statement) {
                 $foreachBody[] = $statement;
             }
         }

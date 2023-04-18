@@ -38,7 +38,7 @@ class ValidatedMapperCompiler implements MapperCompiler
         }
 
         foreach ($this->validatorCompilers as $validatorCompiler) {
-            foreach ($validatorCompiler->compileValidator($mapperVariable, $path, $builder) as $statement) {
+            foreach ($validatorCompiler->compile($mapperVariable, $path, $builder) as $statement) {
                 $statements[] = $statement;
             }
         }
