@@ -9,7 +9,7 @@ class CompiledExpr
 {
 
     /**
-     * @param list<Stmt> $statements
+     * @param list<Stmt> $statements list of statements to be executed before the expression
      */
     public function __construct(
         public readonly Expr $expr,
