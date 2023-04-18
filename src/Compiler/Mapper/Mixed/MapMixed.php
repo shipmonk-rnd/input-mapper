@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class MapMixed implements MapperCompiler
 {
 
