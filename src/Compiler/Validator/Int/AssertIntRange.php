@@ -52,7 +52,7 @@ class AssertIntRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value smaller than {$this->lt}")],
+                        [$value, $path, $builder->val("value less than {$this->lt}")],
                     ),
                 ),
             ]);
@@ -64,7 +64,7 @@ class AssertIntRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value smaller or equal to {$this->lte}")],
+                        [$value, $path, $builder->val("value less than or equal to {$this->lte}")],
                     ),
                 ),
             ]);
