@@ -3,6 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Mapper;
 
 use Nette\Utils\FileSystem;
+use Nette\Utils\Json;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\Constraint\ExceptionMessage as ExceptionMessageConstraint;
 use PHPUnit\Framework\TestCase;
@@ -37,24 +38,18 @@ abstract class MapperCompilerTestCase extends TestCase
         $mapperShortClassName = ucfirst($name) . 'Mapper';
         $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
         $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
-        $mapperPath = strtr(str_replace(__NAMESPACE__, __DIR__, $mapperNamespace), '\\', '/') . '/' . $mapperShortClassName . '.php';
+
+        $mapperDir = strtr(str_replace(__NAMESPACE__, __DIR__, $mapperNamespace), '\\', '/');
+        $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
+        $jsonSchemaPath = "{$mapperDir}/{$mapperShortClassName}.json";
 
         if (!class_exists($mapperClassName, autoload: false)) {
             $generator = new Generator();
-            $expectedMapperCode = $generator->generateMapperFile($mapperClassName, $mapperCompiler);
-
-            if (is_file($mapperPath) && getenv('REGENERATE_MAPPERS') === false) {
-                $actualMapperCode = FileSystem::read($mapperPath);
-                self::assertSame($expectedMapperCode, $actualMapperCode);
-
-            } elseif (getenv('CI') === false) {
-                FileSystem::write($mapperPath, $expectedMapperCode);
-
-            } else {
-                self::fail("Mapper file {$mapperPath} does not exist. Run tests locally to generate it.");
-            }
-
+            self::assertSnapshot($mapperPath, $generator->generateMapperFile($mapperClassName, $mapperCompiler));
             require $mapperPath;
+
+            $jsonSchema = Json::encode($mapperCompiler->getJsonSchema(), pretty: true) . "\n";
+            self::assertSnapshot($jsonSchemaPath, $jsonSchema);
         }
 
         $mapperProvider ??= $this->createMock(MapperProvider::class);
@@ -62,6 +57,20 @@ abstract class MapperCompilerTestCase extends TestCase
         assert($mapper instanceof Mapper);
 
         return $mapper;
+    }
+
+    protected static function assertSnapshot(string $snapshotPath, string $actual): void
+    {
+        if (is_file($snapshotPath) && getenv('UPDATE_SNAPSHOTS') === false) {
+            $expected = FileSystem::read($snapshotPath);
+            self::assertSame($expected, $actual);
+
+        } elseif (getenv('CI') === false) {
+            FileSystem::write($snapshotPath, $actual);
+
+        } else {
+            self::fail("Snapshot file {$snapshotPath} does not exist. Run tests locally to generate it.");
+        }
     }
 
     /**
