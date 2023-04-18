@@ -84,8 +84,8 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
-     * @param  non-empty-list<string>     $extraKeys
+     * @param  list<string|int>           $path
+     * @param  non-empty-list<string|int> $extraKeys
      */
     public static function extraKeys(
         array $path,

@@ -14,6 +14,7 @@ parameters:
     checkMissingCallableSignature: true
     checkUninitializedProperties: true
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkBenevolentUnionTypes: true
 
     shipmonkRules:
         allowNamedArgumentOnlyInAttributes:
