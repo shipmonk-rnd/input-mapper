@@ -16,7 +16,7 @@ class MapArrayTest extends MapperCompilerTestCase
         $keyMapperCompiler = new MapString();
         $valueMapperCompiler = new MapInt();
         $mapperCompiler = new MapArray($keyMapperCompiler, $valueMapperCompiler);
-        $mapper = $this->compileMapper($mapperCompiler);
+        $mapper = $this->compileMapper('GenericArray', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
         self::assertSame(['a' => 1], $mapper->map(['a' => 1]));

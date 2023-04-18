@@ -15,7 +15,7 @@ class MapArrayShapeTest extends MapperCompilerTestCase
     public function testCompileEmptySealedArrayShape(): void
     {
         $mapperCompiler = new MapArrayShape([], sealed: true);
-        $mapper = $this->compileMapper($mapperCompiler);
+        $mapper = $this->compileMapper('EmptySealedArrayShape', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
 
@@ -49,7 +49,7 @@ class MapArrayShapeTest extends MapperCompilerTestCase
     public function testCompileEmptyUnsealedArrayShape(): void
     {
         $mapperCompiler = new MapArrayShape([], sealed: false);
-        $mapper = $this->compileMapper($mapperCompiler);
+        $mapper = $this->compileMapper('EmptyUnsealedArrayShape', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
         self::assertSame([], $mapper->map(['a' => 1, 'b' => 2]));
@@ -83,7 +83,7 @@ class MapArrayShapeTest extends MapperCompilerTestCase
         ];
 
         $mapperCompiler = new MapArrayShape($items, sealed: true);
-        $mapper = $this->compileMapper($mapperCompiler);
+        $mapper = $this->compileMapper('SealedArrayShape', $mapperCompiler);
 
         self::assertSame(['a' => 1, 'b' => '2'], $mapper->map(['a' => 1, 'b' => '2']));
         self::assertSame(['a' => 1, 'b' => '2'], $mapper->map(['b' => '2', 'a' => 1]));

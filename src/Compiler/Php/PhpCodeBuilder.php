@@ -349,7 +349,7 @@ class PhpCodeBuilder extends BuilderFactory
         );
 
         $phpDoc = PhpDocHelper::fromLines([
-            "Generated mapper for {$outputType}",
+            'Generated mapper. Do not edit directly.',
             '',
             "@implements {$implementsType}",
         ]);

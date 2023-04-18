@@ -21,3 +21,8 @@ parameters:
 
         forbidUnusedMatchResult:
             enabled: false # false positive on nested match statements
+
+    ignoreErrors:
+        -
+            message: '#Property [\w\\]++::\$provider is never read, only written\.#'
+            paths: [tests/**/Data/*.php]
