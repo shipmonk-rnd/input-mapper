@@ -7,22 +7,18 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
-use function array_values;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class AssertListItem implements ValidatorCompiler
 {
 
     /**
-     * @var list<ValidatorCompiler>
+     * @param  list<ValidatorCompiler> $validators
      */
-    private array $validators;
-
     public function __construct(
-        ValidatorCompiler ...$validators,
+        public readonly array $validators,
     )
     {
-        $this->validators = array_values($validators);
     }
 
     /**
@@ -46,7 +42,7 @@ class AssertListItem implements ValidatorCompiler
         $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
 
         return [
-            $builder->if($builder->and($isArray, $isList), [], [
+            $builder->if($builder->and($isArray, $isList), [
                 $builder->foreach(
                     $value,
                     $builder->var($itemVariableName),
@@ -63,9 +59,14 @@ class AssertListItem implements ValidatorCompiler
      */
     public function toJsonSchema(array $schema): array
     {
+        /** @var array<string, mixed> $itemsSchema */
+        $itemsSchema = $schema['items'] ?? [];
+
         foreach ($this->validators as $validator) {
-            $schema = $validator->toJsonSchema($schema);
+            $itemsSchema = $validator->toJsonSchema($itemsSchema);
         }
+
+        $schema['items'] = $itemsSchema;
 
         return $schema;
     }
