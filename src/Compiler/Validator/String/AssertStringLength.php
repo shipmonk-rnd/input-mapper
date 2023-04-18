@@ -20,9 +20,9 @@ class AssertStringLength implements ValidatorCompiler
     private ?int $max;
 
     public function __construct(
+        ?int $exact = null,
         ?int $min = null,
         ?int $max = null,
-        ?int $exact = null,
     )
     {
         if ($exact === null) {
