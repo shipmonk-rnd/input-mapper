@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function count;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class AssertStringLength implements ValidatorCompiler
 {
 

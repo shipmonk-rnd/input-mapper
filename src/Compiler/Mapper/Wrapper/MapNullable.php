@@ -13,7 +13,7 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use function is_array;
 use function is_string;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class MapNullable implements MapperCompiler
 {
 

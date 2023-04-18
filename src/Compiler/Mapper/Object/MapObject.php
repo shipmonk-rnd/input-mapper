@@ -21,7 +21,7 @@ use function ucfirst;
 /**
  * @template T of object
  */
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class MapObject implements MapperCompiler
 {
 

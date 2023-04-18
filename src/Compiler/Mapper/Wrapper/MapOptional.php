@@ -13,7 +13,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Optional;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class MapOptional implements UndefinedAwareMapperCompiler
 {
 

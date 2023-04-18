@@ -20,7 +20,7 @@ use function array_push;
 use function count;
 use function ucfirst;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class MapArrayShape implements MapperCompiler
 {
 

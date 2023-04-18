@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use function array_values;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER)]
 class AssertListItem implements ValidatorCompiler
 {
 
