@@ -41,6 +41,7 @@ use ShipMonk\InputMapper\Compiler\PhpDoc\PhpDocHelper;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_pop;
 use function array_reverse;
 use function array_values;
@@ -316,6 +317,7 @@ class PhpCodeBuilder extends BuilderFactory
             $phpDocInputTypeUseful ? "@param  {$inputType} \${$dataVarName}" : null,
             "@param  list<string|int> \${$pathVarName}",
             $phpDocOutputTypeUseful ? "@return {$outputType}" : null,
+            '@throws ' . $this->importClass(MappingFailedException::class),
         ]);
 
         return $this->method($methodName)

@@ -11,6 +11,7 @@ interface Mapper
     /**
      * @param  list<string|int> $path
      * @return T
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed;
 

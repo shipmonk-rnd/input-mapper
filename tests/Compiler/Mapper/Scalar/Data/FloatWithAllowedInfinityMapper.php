@@ -23,6 +23,7 @@ class FloatWithAllowedInfinityMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): float
     {

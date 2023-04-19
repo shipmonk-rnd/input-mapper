@@ -23,6 +23,7 @@ class GenericListMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return list<int>
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): array
     {

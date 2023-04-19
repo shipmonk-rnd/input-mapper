@@ -4,6 +4,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\String\Data;
 
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function strlen;
 
 /**
@@ -19,6 +20,7 @@ class NoopStringLengthValidatorMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed
     {

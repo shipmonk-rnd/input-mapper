@@ -4,6 +4,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\Int\Data;
 
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\MappingFailedException;
 
 /**
  * Generated mapper. Do not edit directly.
@@ -18,6 +19,7 @@ class NoopIntRangeValidatorMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed
     {

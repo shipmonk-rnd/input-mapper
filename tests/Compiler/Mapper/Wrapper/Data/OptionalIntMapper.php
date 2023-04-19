@@ -22,6 +22,7 @@ class OptionalIntMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return Optional<int>
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): Optional
     {
