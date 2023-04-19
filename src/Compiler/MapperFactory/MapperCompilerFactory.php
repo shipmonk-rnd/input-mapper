@@ -192,15 +192,17 @@ class MapperCompilerFactory
                     ]),
                     default => throw CannotInferMapperException::fromType($type),
                 },
-                'list' => match (count($type->genericTypes)) {
-                    1 => new MapList($this->inferMapperFromType($type->genericTypes[0])),
+                default => match ($type->type->name) {
+                    'list' => match (count($type->genericTypes)) {
+                        1 => new MapList($this->inferMapperFromType($type->genericTypes[0])),
+                        default => throw CannotInferMapperException::fromType($type),
+                    },
+                    Optional::class => match (count($type->genericTypes)) {
+                        1 => new MapOptional($this->inferMapperFromType($type->genericTypes[0])),
+                        default => throw CannotInferMapperException::fromType($type),
+                    },
                     default => throw CannotInferMapperException::fromType($type),
                 },
-                Optional::class => match (count($type->genericTypes)) {
-                    1 => new MapOptional($this->inferMapperFromType($type->genericTypes[0])),
-                    default => throw CannotInferMapperException::fromType($type),
-                },
-                default => throw CannotInferMapperException::fromType($type),
             };
         }
 
