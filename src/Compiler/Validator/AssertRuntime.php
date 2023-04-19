@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Validator;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Expression;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 
@@ -26,10 +27,12 @@ abstract class AssertRuntime implements ValidatorCompiler
     ): array
     {
         return [
-            $builder->staticCall(
-                $builder->importClass(static::class),
-                'assertValue',
-                [$value, $path],
+            new Expression(
+                $builder->staticCall(
+                    $builder->importClass(static::class),
+                    'assertValue',
+                    [$value, $path],
+                ),
             ),
         ];
     }
