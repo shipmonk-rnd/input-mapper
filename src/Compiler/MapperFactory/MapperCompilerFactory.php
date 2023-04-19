@@ -144,12 +144,12 @@ class MapperCompilerFactory
                     return new MapDateTimeImmutable();
                 }
 
-                if (class_exists($type->name)) {
-                    return new DelegateMapperCompiler($type->name);
-                }
-
                 if (is_a($type->name, BackedEnum::class, allow_string: true)) {
                     return $this->createEnumMapper($type->name);
+                }
+
+                if (class_exists($type->name)) {
+                    return new DelegateMapperCompiler($type->name);
                 }
 
                 throw CannotInferMapperException::fromType($type);
