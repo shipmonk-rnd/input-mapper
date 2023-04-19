@@ -20,6 +20,12 @@ class OptionalSomeTest extends InputMapperTestCase
         self::assertNull(Optional::of(null)->get()); // @phpstan-ignore-line always true
     }
 
+    public function testRequire(): void
+    {
+        self::assertSame(123, Optional::of(123)->require());
+        self::assertNull(Optional::of(null)->require()); // @phpstan-ignore-line always true
+    }
+
     public function testGetOrElse(): void
     {
         self::assertSame(123, Optional::of(123)->getOrElse(456));

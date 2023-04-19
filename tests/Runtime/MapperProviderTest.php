@@ -68,7 +68,7 @@ class MapperProviderTest extends InputMapperTestCase
         $mapperProvider = $this->createMapperProvider();
         $mapper = $mapperProvider->get(OptionalNotNullInput::class);
         self::assertEquals(new OptionalNotNullInput(Optional::of(123)), $mapper->map(['number' => 123]));
-        self::assertEquals(new OptionalNotNullInput(Optional::none()), $mapper->map([]));
+        self::assertEquals(new OptionalNotNullInput(Optional::none([], 'number')), $mapper->map([]));
 
         self::assertException(
             MappingFailedException::class,
@@ -85,7 +85,7 @@ class MapperProviderTest extends InputMapperTestCase
         $mapper = $mapperProvider->get(OptionalNullableInput::class);
         self::assertEquals(new OptionalNullableInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNullableInput(Optional::of(null)), $mapper->map(['number' => null]));
-        self::assertEquals(new OptionalNullableInput(Optional::none()), $mapper->map([]));
+        self::assertEquals(new OptionalNullableInput(Optional::none([], 'number')), $mapper->map([]));
     }
 
     private function createMapperProvider(): MapperProvider

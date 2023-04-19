@@ -10,7 +10,13 @@ use LogicException;
 final class OptionalNone extends Optional
 {
 
-    protected function __construct()
+    /**
+     * @param  list<string|int> $path
+     */
+    protected function __construct(
+        private readonly array $path,
+        private readonly string $key,
+    )
     {
     }
 
@@ -22,6 +28,14 @@ final class OptionalNone extends Optional
     public function get(): never
     {
         throw new LogicException('Optional is not defined');
+    }
+
+    /**
+     * @throws MappingFailedException
+     */
+    public function require(): never
+    {
+        throw MappingFailedException::missingKey($this->path, $this->key);
     }
 
     /**
