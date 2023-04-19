@@ -29,10 +29,10 @@ class MapObjectTest extends MapperCompilerTestCase
             description: Optional::of('A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.'),
             year: 1_999,
             genres: ['Action', 'Sci-Fi'],
-            director: new PersonInput(7, 'Lana Wachowski', Optional::none()),
+            director: new PersonInput(7, 'Lana Wachowski', Optional::none(['director'], 'age')),
             actors: [
                 new PersonInput(8, 'Keanu Reeves', age: Optional::of(56)),
-                new PersonInput(9, 'Laurence Fishburne', Optional::none()),
+                new PersonInput(9, 'Laurence Fishburne', Optional::none(['actors', 1], 'age')),
             ],
         );
 

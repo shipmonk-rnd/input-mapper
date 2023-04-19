@@ -66,7 +66,7 @@ class MapObject implements MapperCompiler
 
             if ($propertyMapperCompiler instanceof UndefinedAwareMapperCompiler) {
                 $propertyValueVarName = $builder->uniqVariableName($propertyName);
-                $fallbackValueMapper = $propertyMapperCompiler->compileUndefined($path, $builder);
+                $fallbackValueMapper = $propertyMapperCompiler->compileUndefined($path, $builder->val($propertyName), $builder);
 
                 if (count($fallbackValueMapper->statements) > 0) {
                     $statements[] = $builder->if(

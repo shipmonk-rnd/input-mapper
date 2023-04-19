@@ -9,6 +9,6 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 interface UndefinedAwareMapperCompiler extends MapperCompiler
 {
 
-    public function compileUndefined(Expr $path, PhpCodeBuilder $builder): CompiledExpr;
+    public function compileUndefined(Expr $path, Expr $key, PhpCodeBuilder $builder): CompiledExpr;
 
 }

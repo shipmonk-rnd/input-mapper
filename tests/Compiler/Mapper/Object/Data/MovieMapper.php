@@ -71,7 +71,7 @@ class MovieMapper implements Mapper
         return new MovieInput(
             $this->mapId($data['id'], [...$path, 'id']),
             $this->mapTitle($data['title'], [...$path, 'title']),
-            array_key_exists('description', $data) ? $this->mapDescription($data['description'], [...$path, 'description']) : Optional::none(),
+            array_key_exists('description', $data) ? $this->mapDescription($data['description'], [...$path, 'description']) : Optional::none($path, 'description'),
             $this->mapYear($data['year'], [...$path, 'year']),
             $this->mapGenres($data['genres'], [...$path, 'genres']),
             $this->mapDirector($data['director'], [...$path, 'director']),

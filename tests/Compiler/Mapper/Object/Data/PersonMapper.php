@@ -53,7 +53,7 @@ class PersonMapper implements Mapper
         return new PersonInput(
             $this->mapId($data['id'], [...$path, 'id']),
             $this->mapName($data['name'], [...$path, 'name']),
-            array_key_exists('age', $data) ? $this->mapAge($data['age'], [...$path, 'age']) : Optional::none(),
+            array_key_exists('age', $data) ? $this->mapAge($data['age'], [...$path, 'age']) : Optional::none($path, 'age'),
         );
     }
 

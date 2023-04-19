@@ -10,7 +10,7 @@ final class OptionalSome extends Optional
 {
 
     /**
-     * @param T $value
+     * @param  T $value
      */
     protected function __construct(
         private readonly mixed $value,
@@ -27,6 +27,14 @@ final class OptionalSome extends Optional
      * @return T
      */
     public function get(): mixed
+    {
+        return $this->value;
+    }
+
+    /**
+     * @return T
+     */
+    public function require(): mixed
     {
         return $this->value;
     }

@@ -8,9 +8,12 @@ namespace ShipMonk\InputMapper\Runtime;
 abstract class Optional
 {
 
-    public static function none(): OptionalNone
+    /**
+     * @param  list<string|int> $path
+     */
+    public static function none(array $path, string $key): OptionalNone
     {
-        return new OptionalNone();
+        return new OptionalNone($path, $key);
     }
 
     /**
@@ -29,6 +32,12 @@ abstract class Optional
      * @return T
      */
     abstract public function get(): mixed;
+
+    /**
+     * @return T
+     * @throws MappingFailedException
+     */
+    abstract public function require(): mixed;
 
     /**
      * @template D of T
