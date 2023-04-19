@@ -27,6 +27,7 @@ class SealedArrayShapeMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return array{a: int, b?: string}
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): array
     {
@@ -58,6 +59,7 @@ class SealedArrayShapeMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapB(mixed $data, array $path = []): string
     {
@@ -70,6 +72,7 @@ class SealedArrayShapeMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapA(mixed $data, array $path = []): int
     {

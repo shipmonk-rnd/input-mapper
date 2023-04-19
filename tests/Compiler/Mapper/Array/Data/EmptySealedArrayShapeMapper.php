@@ -24,6 +24,7 @@ class EmptySealedArrayShapeMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return array{}
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): array
     {

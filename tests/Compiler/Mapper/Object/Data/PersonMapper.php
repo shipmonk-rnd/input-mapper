@@ -28,6 +28,7 @@ class PersonMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): PersonInput
     {
@@ -60,6 +61,7 @@ class PersonMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return Optional<int>
+     * @throws MappingFailedException
      */
     private function mapAge(mixed $data, array $path = []): Optional
     {
@@ -72,6 +74,7 @@ class PersonMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapName(mixed $data, array $path = []): string
     {
@@ -84,6 +87,7 @@ class PersonMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapId(mixed $data, array $path = []): int
     {

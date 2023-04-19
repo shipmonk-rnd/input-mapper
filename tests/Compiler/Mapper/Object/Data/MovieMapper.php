@@ -30,6 +30,7 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): MovieInput
     {
@@ -82,6 +83,7 @@ class MovieMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return list<PersonInput>
+     * @throws MappingFailedException
      */
     private function mapActors(mixed $data, array $path = []): array
     {
@@ -100,6 +102,7 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapDirector(mixed $data, array $path = []): PersonInput
     {
@@ -109,6 +112,7 @@ class MovieMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return list<string>
+     * @throws MappingFailedException
      */
     private function mapGenres(mixed $data, array $path = []): array
     {
@@ -131,6 +135,7 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapYear(mixed $data, array $path = []): int
     {
@@ -144,6 +149,7 @@ class MovieMapper implements Mapper
     /**
      * @param  list<string|int> $path
      * @return Optional<string>
+     * @throws MappingFailedException
      */
     private function mapDescription(mixed $data, array $path = []): Optional
     {
@@ -156,6 +162,7 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapTitle(mixed $data, array $path = []): string
     {
@@ -168,6 +175,7 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @throws MappingFailedException
      */
     private function mapId(mixed $data, array $path = []): int
     {
