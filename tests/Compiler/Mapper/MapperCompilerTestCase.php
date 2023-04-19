@@ -2,7 +2,6 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper;
 
-use Nette\Utils\Json;
 use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\Generator;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -11,9 +10,13 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function assert;
 use function class_exists;
+use function json_encode;
 use function str_replace;
 use function strtr;
 use function ucfirst;
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_UNICODE;
 
 abstract class MapperCompilerTestCase extends InputMapperTestCase
 {
@@ -43,7 +46,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
             self::assertSnapshot($mapperPath, $generator->generateMapperFile($mapperClassName, $mapperCompiler));
             require $mapperPath;
 
-            $jsonSchema = Json::encode($mapperCompiler->getJsonSchema(), pretty: true) . "\n";
+            $jsonSchema = json_encode($mapperCompiler->getJsonSchema(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
             self::assertSnapshot($jsonSchemaPath, $jsonSchema);
         }
 
