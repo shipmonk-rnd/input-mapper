@@ -18,14 +18,14 @@ class MapNullable implements MapperCompiler
 {
 
     public function __construct(
-        public readonly MapperCompiler $mapperCompiler,
+        public readonly MapperCompiler $innerMapperCompiler,
     )
     {
     }
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
-        $mapper = $this->mapperCompiler->compile($value, $path, $builder);
+        $mapper = $this->innerMapperCompiler->compile($value, $path, $builder);
         $mappedVariableName = $builder->uniqVariableName('mapped');
 
         $statements = [
@@ -49,7 +49,7 @@ class MapNullable implements MapperCompiler
      */
     public function getJsonSchema(): array
     {
-        $schema = $this->mapperCompiler->getJsonSchema();
+        $schema = $this->innerMapperCompiler->getJsonSchema();
 
         if (!isset($schema['type'])) {
             $schema['type'] = ['null'];
@@ -66,12 +66,12 @@ class MapNullable implements MapperCompiler
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
-        return PhpDocTypeUtils::makeNullable($this->mapperCompiler->getInputType($builder));
+        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getInputType($builder));
     }
 
     public function getOutputType(PhpCodeBuilder $builder): TypeNode
     {
-        return PhpDocTypeUtils::makeNullable($this->mapperCompiler->getOutputType($builder));
+        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getOutputType($builder));
     }
 
 }
