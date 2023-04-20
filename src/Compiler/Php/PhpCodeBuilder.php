@@ -43,7 +43,6 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_pop;
-use function array_reverse;
 use function array_values;
 use function assert;
 use function count;
@@ -365,7 +364,7 @@ class PhpCodeBuilder extends BuilderFactory
             ->implement($this->importClass(Mapper::class))
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
-            ->addStmts(array_reverse($this->getMethods()));
+            ->addStmts($this->getMethods());
     }
 
     /**
