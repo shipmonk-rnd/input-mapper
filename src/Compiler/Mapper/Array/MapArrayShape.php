@@ -29,7 +29,7 @@ class MapArrayShape implements MapperCompiler
      */
     public function __construct(
         public readonly array $items,
-        public readonly bool $sealed,
+        public readonly bool $sealed = true,
     )
     {
     }
