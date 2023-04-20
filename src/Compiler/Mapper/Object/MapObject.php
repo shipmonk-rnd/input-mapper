@@ -123,11 +123,20 @@ class MapObject implements MapperCompiler
             }
         }
 
-        return [
+        $schema = [
             'type' => 'object',
             'properties' => $propertySchemas,
-            'required' => $required,
         ];
+
+        if (count($required) > 0) {
+            $schema['required'] = $required;
+        }
+
+        if (!$this->allowExtraProperties) {
+            $schema['additionalProperties'] = false;
+        }
+
+        return $schema;
     }
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode

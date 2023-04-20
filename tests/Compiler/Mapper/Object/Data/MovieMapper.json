@@ -36,5 +36,6 @@
         "genres",
         "director",
         "actors"
-    ]
+    ],
+    "additionalProperties": false
 }
