@@ -6,6 +6,8 @@ use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\SuitEnum;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use function array_column;
+use function implode;
 use function is_string;
 
 /**
@@ -32,7 +34,7 @@ class SuitEnumMapper implements Mapper
         $enum = SuitEnum::tryFrom($data);
 
         if ($enum === null) {
-            throw MappingFailedException::incorrectValue($data, $path, 'one of H, D, C, S');
+            throw MappingFailedException::incorrectValue($data, $path, 'one of ' . implode(', ', array_column(SuitEnum::cases(), 'value')));
         }
 
         return $enum;
