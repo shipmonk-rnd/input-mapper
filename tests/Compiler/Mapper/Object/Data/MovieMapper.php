@@ -82,31 +82,55 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return list<PersonInput>
      * @throws MappingFailedException
      */
-    private function mapActors(mixed $data, array $path = []): array
+    private function mapId(mixed $data, array $path = []): int
     {
-        if (!is_array($data) || !array_is_list($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'list');
+        if (!is_int($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        $mapped = [];
-
-        foreach ($data as $index => $item) {
-            $mapped[] = $this->provider->get(PersonInput::class)->map($item, [...$path, $index]);
-        }
-
-        return $mapped;
+        return $data;
     }
 
     /**
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapDirector(mixed $data, array $path = []): PersonInput
+    private function mapTitle(mixed $data, array $path = []): string
     {
-        return $this->provider->get(PersonInput::class)->map($data, $path);
+        if (!is_string($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'string');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  list<string|int> $path
+     * @return Optional<string>
+     * @throws MappingFailedException
+     */
+    private function mapDescription(mixed $data, array $path = []): Optional
+    {
+        if (!is_string($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'string');
+        }
+
+        return Optional::of($data);
+    }
+
+    /**
+     * @param  list<string|int> $path
+     * @throws MappingFailedException
+     */
+    private function mapYear(mixed $data, array $path = []): int
+    {
+        if (!is_int($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'int');
+        }
+
+        return $data;
     }
 
     /**
@@ -137,52 +161,28 @@ class MovieMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapYear(mixed $data, array $path = []): int
+    private function mapDirector(mixed $data, array $path = []): PersonInput
     {
-        if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
-        }
-
-        return $data;
+        return $this->provider->get(PersonInput::class)->map($data, $path);
     }
 
     /**
      * @param  list<string|int> $path
-     * @return Optional<string>
+     * @return list<PersonInput>
      * @throws MappingFailedException
      */
-    private function mapDescription(mixed $data, array $path = []): Optional
+    private function mapActors(mixed $data, array $path = []): array
     {
-        if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+        if (!is_array($data) || !array_is_list($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'list');
         }
 
-        return Optional::of($data);
-    }
+        $mapped = [];
 
-    /**
-     * @param  list<string|int> $path
-     * @throws MappingFailedException
-     */
-    private function mapTitle(mixed $data, array $path = []): string
-    {
-        if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+        foreach ($data as $index => $item) {
+            $mapped[] = $this->provider->get(PersonInput::class)->map($item, [...$path, $index]);
         }
 
-        return $data;
-    }
-
-    /**
-     * @param  list<string|int> $path
-     * @throws MappingFailedException
-     */
-    private function mapId(mixed $data, array $path = []): int
-    {
-        if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
-        }
-
-        return $data;
+        return $mapped;
     }
 }

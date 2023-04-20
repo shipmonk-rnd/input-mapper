@@ -61,10 +61,10 @@ class SealedArrayShapeMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapB(mixed $data, array $path = []): string
+    private function mapA(mixed $data, array $path = []): int
     {
-        if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+        if (!is_int($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
         return $data;
@@ -74,10 +74,10 @@ class SealedArrayShapeMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapA(mixed $data, array $path = []): int
+    private function mapB(mixed $data, array $path = []): string
     {
-        if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+        if (!is_string($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
         return $data;

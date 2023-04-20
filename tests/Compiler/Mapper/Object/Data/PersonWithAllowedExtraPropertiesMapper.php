@@ -50,16 +50,15 @@ class PersonWithAllowedExtraPropertiesMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return Optional<int>
      * @throws MappingFailedException
      */
-    private function mapAge(mixed $data, array $path = []): Optional
+    private function mapId(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        return Optional::of($data);
+        return $data;
     }
 
     /**
@@ -77,14 +76,15 @@ class PersonWithAllowedExtraPropertiesMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @return Optional<int>
      * @throws MappingFailedException
      */
-    private function mapId(mixed $data, array $path = []): int
+    private function mapAge(mixed $data, array $path = []): Optional
     {
         if (!is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        return $data;
+        return Optional::of($data);
     }
 }
