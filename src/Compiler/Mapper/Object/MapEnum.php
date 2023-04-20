@@ -12,7 +12,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_column;
-use function implode;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class MapEnum implements MapperCompiler
@@ -36,13 +35,24 @@ class MapEnum implements MapperCompiler
         $enumOrNull = $builder->staticCall($builder->importClass($this->enumName), 'tryFrom', [$backingValueMapper->expr]);
         $enumVariableName = $builder->uniqVariableName('enum');
 
+        $expectedDescription = $builder->concat(
+            'one of ',
+            $builder->funcCall($builder->importFunction('implode'), [
+                ', ',
+                $builder->funcCall($builder->importFunction('array_column'), [
+                    $builder->staticCall($builder->importClass($this->enumName), 'cases'),
+                    $builder->val('value'),
+                ]),
+            ]),
+        );
+
         $statements[] = $builder->assign($builder->var($enumVariableName), $enumOrNull);
         $statements[] = $builder->if($builder->same($builder->var($enumVariableName), $builder->val(null)), [
             $builder->throw(
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'incorrectValue',
-                    [$value, $path, 'one of ' . implode(', ', array_column($this->enumName::cases(), 'value'))],
+                    [$value, $path, $expectedDescription],
                 ),
             ),
         ]);
