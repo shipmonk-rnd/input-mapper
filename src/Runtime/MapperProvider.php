@@ -3,13 +3,10 @@
 namespace ShipMonk\InputMapper\Runtime;
 
 use LogicException;
-use PHPStan\PhpDocParser\Lexer\Lexer;
-use PHPStan\PhpDocParser\Parser\ConstExprParser;
-use PHPStan\PhpDocParser\Parser\PhpDocParser;
-use PHPStan\PhpDocParser\Parser\TypeParser;
 use RuntimeException;
 use ShipMonk\InputMapper\Compiler\Generator;
-use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -45,6 +42,7 @@ class MapperProvider
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
+        private readonly MapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultMapperCompilerFactoryProvider(),
     )
     {
     }
@@ -151,13 +149,8 @@ class MapperProvider
      */
     private function compile(string $inputClassName, string $mapperClassName): string
     {
-        $phpDocLexer = new Lexer();
-        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocTypeParser = new TypeParser($phpDocExprParser);
-        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
-
-        $mapperCompilerFactory = new MapperCompilerFactory($phpDocLexer, $phpDocParser);
-        $mapperCompiler = $mapperCompilerFactory->createObjectMapper($inputClassName);
+        $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
+        $mapperCompiler = $mapperCompilerFactory->createObjectMapperCompiler($inputClassName);
 
         $generator = new Generator();
         return $generator->generateMapperFile($mapperClassName, $mapperCompiler);
