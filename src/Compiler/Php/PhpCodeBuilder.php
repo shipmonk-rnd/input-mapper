@@ -172,6 +172,11 @@ class PhpCodeBuilder extends BuilderFactory
         return new Array_($items, ['kind' => Array_::KIND_SHORT]);
     }
 
+    public function arrayItem(Expr $value, ?Expr $key): ArrayItem
+    {
+        return new ArrayItem($value, $key);
+    }
+
     public function arrayImmutableAppend(Expr $path, Expr $item): Expr
     {
         if ($path instanceof Array_) {
