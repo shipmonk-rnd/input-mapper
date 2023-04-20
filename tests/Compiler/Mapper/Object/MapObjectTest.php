@@ -86,6 +86,26 @@ class MapObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithAllowExtraProperties(): void
+    {
+        $mapperCompiler = new MapObject(
+            PersonInput::class,
+            [
+                'id' => new MapInt(),
+                'name' => new MapString(),
+                'age' => new MapOptional(new MapInt()),
+            ],
+            allowExtraProperties: true,
+        );
+
+        $mapper = $this->compileMapper('PersonWithAllowedExtraProperties', $mapperCompiler);
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::none([], 'age')),
+            $mapper->map(['id' => 1, 'name' => 'John', 'extra' => 'X']),
+        );
+    }
+
     private function createMovieInputMapperCompiler(): MapperCompiler
     {
         return new MapObject(MovieInput::class, [
