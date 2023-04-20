@@ -40,9 +40,9 @@ final class OptionalSome extends Optional
     }
 
     /**
-     * @template D of T
+     * @template D
      * @param  D $default
-     * @return T|D
+     * @return T
      */
     public function getOrElse(mixed $default): mixed
     {

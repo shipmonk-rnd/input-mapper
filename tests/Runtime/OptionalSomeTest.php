@@ -29,7 +29,7 @@ class OptionalSomeTest extends InputMapperTestCase
     public function testGetOrElse(): void
     {
         self::assertSame(123, Optional::of(123)->getOrElse(456));
-        self::assertNull(Optional::of(null)->getOrElse(456));
+        self::assertNull(Optional::of(null)->getOrElse(456)); // @phpstan-ignore-line always true
     }
 
 }
