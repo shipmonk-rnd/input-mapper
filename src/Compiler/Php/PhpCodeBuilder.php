@@ -305,7 +305,6 @@ class PhpCodeBuilder extends BuilderFactory
 
     public function mapperMethod(string $methodName, MapperCompiler $mapperCompiler): Method
     {
-        /** @var CompiledExpr $mapper */
         $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
             [$dataVarName, $pathVarName] = $this->uniqVariableNames('data', 'path');
             return $mapperCompiler->compile($this->var($dataVarName), $this->var($pathVarName), $this);
