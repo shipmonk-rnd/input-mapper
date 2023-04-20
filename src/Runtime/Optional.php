@@ -40,7 +40,7 @@ abstract class Optional
     abstract public function require(): mixed;
 
     /**
-     * @template D of T
+     * @template D
      * @param  D $default
      * @return T|D
      */
