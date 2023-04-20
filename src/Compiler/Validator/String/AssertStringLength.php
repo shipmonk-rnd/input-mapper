@@ -26,7 +26,7 @@ class AssertStringLength implements ValidatorCompiler
     )
     {
         if ($exact !== null && ($min !== null || $max !== null)) {
-            throw new LogicException('Cannot use exact with min/max');
+            throw new LogicException('Cannot use "exact" and "min" or "max" at the same time');
         }
 
         $this->min = $exact ?? $min;
