@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -92,6 +93,15 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with exactly 5 characters, got ""',
             static fn() => $validator->map(''),
+        );
+    }
+
+    public function testInvalidCombinationOfExactWithMinMax(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Cannot use "exact" and "min" or "max" at the same time',
+            static fn() => new AssertStringLength(exact: 5, min: 1),
         );
     }
 
