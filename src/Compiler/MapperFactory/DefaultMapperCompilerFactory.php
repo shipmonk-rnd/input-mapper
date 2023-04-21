@@ -78,6 +78,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             throw new LogicException("Class {$className} has no constructor");
         }
 
+        if (!$constructor->isPublic()) {
+            throw new LogicException("Class {$className} has a non-public constructor");
+        }
+
         $constructorParameterMapperCompilers = [];
         $constructorParameterTypes = $this->getConstructorParameterTypes($constructor);
 
