@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
@@ -30,6 +31,16 @@ class MapNullableTest extends MapperCompilerTestCase
             'Failed to map data at path /: Expected int, got array',
             static fn() => $mapper->map([]),
         );
+    }
+
+    public function testCompileWithMixed(): void
+    {
+        $mapperCompiler = new MapNullable(new MapMixed());
+        $mapper = $this->compileMapper('NullableMixed', $mapperCompiler);
+
+        self::assertNull($mapper->map(null));
+        self::assertSame(1, $mapper->map(1));
+        self::assertSame('A', $mapper->map('A'));
     }
 
 }

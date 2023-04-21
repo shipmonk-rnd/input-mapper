@@ -52,7 +52,7 @@ class MapNullable implements MapperCompiler
         $schema = $this->innerMapperCompiler->getJsonSchema();
 
         if (!isset($schema['type'])) {
-            $schema['type'] = ['null'];
+            $schema = ['anyOf' => [$schema, ['type' => 'null']]];
         } elseif (is_string($schema['type'])) {
             $schema['type'] = [$schema['type'], 'null'];
         } elseif (is_array($schema['type'])) {
