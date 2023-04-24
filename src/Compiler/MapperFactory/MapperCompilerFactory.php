@@ -2,14 +2,12 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 
 interface MapperCompilerFactory
 {
 
-    /**
-     * @param  class-string $className
-     */
-    public function createObjectMapperCompiler(string $className): MapperCompiler;
+    public function create(TypeNode $type, bool $delegateObjectMapping = true): MapperCompiler;
 
 }

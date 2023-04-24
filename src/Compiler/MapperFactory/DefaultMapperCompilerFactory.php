@@ -50,25 +50,146 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function class_exists;
+use function class_implements;
+use function class_parents;
 use function count;
-use function is_a;
+use function enum_exists;
+use function interface_exists;
 use function strtolower;
 use function substr;
 
 class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
+    /**
+     * @param  array<class-string, callable(class-string): MapperCompiler> $mapperCompilerFactories
+     */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
         protected readonly PhpDocParser $phpDocParser,
+        protected array $mapperCompilerFactories = [],
     )
     {
+        $this->addMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompiler(...));
+        $this->addMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompiler(...));
+    }
+
+    /**
+     * @template T of object
+     * @param  class-string<T>                           $className
+     * @param  callable(class-string<T>): MapperCompiler $factory
+     */
+    public function addMapperCompilerFactory(string $className, callable $factory): void
+    {
+        $this->mapperCompilerFactories[$className] = $factory; // @phpstan-ignore-line
+    }
+
+    public function create(TypeNode $type, bool $delegateObjectMapping = true): MapperCompiler
+    {
+        if ($type instanceof IdentifierTypeNode) {
+            if (!PhpDocTypeUtils::isKeyword($type)) {
+                if (!class_exists($type->name) && !interface_exists($type->name) && !enum_exists($type->name)) {
+                    throw CannotInferMapperException::fromType($type);
+                }
+
+                return $delegateObjectMapping ? new DelegateMapperCompiler($type->name) : $this->createObjectMapperCompiler($type->name);
+            }
+
+            return match (strtolower($type->name)) {
+                'array' => new MapArray(new MapMixed(), new MapMixed()),
+                'bool' => new MapBool(),
+                'float' => new MapFloat(),
+                'int' => new MapInt(),
+                'mixed' => new MapMixed(),
+                'string' => new MapString(),
+
+                default => match ($type->name) {
+                    'list' => new MapList(new MapMixed()),
+                    'negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(lt: 0)]),
+                    'positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(gt: 0)]),
+                    default => throw CannotInferMapperException::fromType($type),
+                },
+            };
+        }
+
+        if ($type instanceof NullableTypeNode) {
+            return new MapNullable($this->create($type->type));
+        }
+
+        if ($type instanceof GenericTypeNode) {
+            return match (strtolower($type->type->name)) {
+                'array' => match (count($type->genericTypes)) {
+                    1 => new MapArray(new MapMixed(), $this->create($type->genericTypes[0])),
+                    2 => new MapArray($this->create($type->genericTypes[0]), $this->create($type->genericTypes[1])),
+                    default => throw CannotInferMapperException::fromType($type),
+                },
+                'int' => match (count($type->genericTypes)) {
+                    2 => new ValidatedMapperCompiler(new MapInt(), [
+                        new AssertIntRange(
+                            gte: $this->resolveIntegerBoundary($type->genericTypes[0], 'min'),
+                            lte: $this->resolveIntegerBoundary($type->genericTypes[1], 'max'),
+                        ),
+                    ]),
+                    default => throw CannotInferMapperException::fromType($type),
+                },
+                default => match ($type->type->name) {
+                    'list' => match (count($type->genericTypes)) {
+                        1 => new MapList($this->create($type->genericTypes[0])),
+                        default => throw CannotInferMapperException::fromType($type),
+                    },
+                    Optional::class => match (count($type->genericTypes)) {
+                        1 => new MapOptional($this->create($type->genericTypes[0])),
+                        default => throw CannotInferMapperException::fromType($type),
+                    },
+                    default => throw CannotInferMapperException::fromType($type),
+                },
+            };
+        }
+
+        if ($type instanceof ArrayTypeNode) {
+            return new MapArray(new MapMixed(), $this->create($type->type));
+        }
+
+        if ($type instanceof ArrayShapeNode) {
+            $items = [];
+
+            foreach ($type->items as $item) {
+                $key = match (true) {
+                    $item->keyName instanceof ConstExprStringNode => $item->keyName->value,
+                    $item->keyName instanceof IdentifierTypeNode => $item->keyName->name,
+                    default => throw CannotInferMapperException::fromType($type),
+                };
+
+                $items[] = new ArrayShapeItemMapping($key, $this->create($item->valueType), $item->optional);
+            }
+
+            return new MapArrayShape($items, $type->sealed);
+        }
+
+        throw CannotInferMapperException::fromType($type);
+    }
+
+    /**
+     * @param  class-string $inputClassName
+     */
+    protected function createObjectMapperCompiler(string $inputClassName): MapperCompiler
+    {
+        $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
+
+        foreach ($classLikeNames as $classLikeName => $_) {
+            if (isset($this->mapperCompilerFactories[$classLikeName])) {
+                $factory = $this->mapperCompilerFactories[$classLikeName];
+                return $factory($inputClassName);
+            }
+        }
+
+        return $this->createObjectMappingByConstructorInvocation($inputClassName);
     }
 
     /**
      * @param  class-string $className
      */
-    public function createObjectMapperCompiler(string $className): MapperCompiler
+    protected function createObjectMappingByConstructorInvocation(string $className): MapperCompiler
     {
         $classReflection = new ReflectionClass($className);
 
@@ -141,9 +262,9 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         if (count($mappers) === 0) {
             if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
-                $mappers[] = $this->inferMapperFromType($type->genericTypes[0]);
+                $mappers[] = $this->create($type->genericTypes[0]);
             } else {
-                $mappers[] = $this->inferMapperFromType($type);
+                $mappers[] = $this->create($type);
             }
         }
 
@@ -158,109 +279,25 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param class-string<BackedEnum> $enumName
+     * @param  class-string<BackedEnum> $enumName
      */
     protected function createEnumMapperCompiler(string $enumName): MapperCompiler
     {
         $enumReflection = new ReflectionEnum($enumName);
         $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
         $backingType = PhpDocTypeUtils::fromReflectionType($backingReflectionType);
-        $backingTypeMapperCompiler = $this->inferMapperFromType($backingType);
+        $backingTypeMapperCompiler = $this->create($backingType);
 
         return new MapEnum($enumName, $backingTypeMapperCompiler);
     }
 
-    protected function inferMapperFromType(TypeNode $type): MapperCompiler
+    protected function createDateTimeMapperCompiler(string $className): MapperCompiler
     {
-        if ($type instanceof IdentifierTypeNode) {
-            if (!PhpDocTypeUtils::isKeyword($type)) {
-                if ($type->name === DateTimeInterface::class || $type->name === DateTimeImmutable::class) {
-                    return new MapDateTimeImmutable();
-                }
-
-                if (is_a($type->name, BackedEnum::class, allow_string: true)) {
-                    return $this->createEnumMapperCompiler($type->name);
-                }
-
-                if (class_exists($type->name)) {
-                    return new DelegateMapperCompiler($type->name);
-                }
-
-                throw CannotInferMapperException::fromType($type);
-            }
-
-            return match (strtolower($type->name)) {
-                'array' => new MapArray(new MapMixed(), new MapMixed()),
-                'bool' => new MapBool(),
-                'float' => new MapFloat(),
-                'int' => new MapInt(),
-                'mixed' => new MapMixed(),
-                'string' => new MapString(),
-
-                default => match ($type->name) {
-                    'list' => new MapList(new MapMixed()),
-                    'negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(lt: 0)]),
-                    'positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(gt: 0)]),
-                    default => throw CannotInferMapperException::fromType($type),
-                },
-            };
+        if ($className === DateTimeInterface::class || $className === DateTimeImmutable::class) {
+            return new MapDateTimeImmutable();
         }
 
-        if ($type instanceof NullableTypeNode) {
-            return new MapNullable($this->inferMapperFromType($type->type));
-        }
-
-        if ($type instanceof GenericTypeNode) {
-            return match (strtolower($type->type->name)) {
-                'array' => match (count($type->genericTypes)) {
-                    1 => new MapArray(new MapMixed(), $this->inferMapperFromType($type->genericTypes[0])),
-                    2 => new MapArray($this->inferMapperFromType($type->genericTypes[0]), $this->inferMapperFromType($type->genericTypes[1])),
-                    default => throw CannotInferMapperException::fromType($type),
-                },
-                'int' => match (count($type->genericTypes)) {
-                    2 => new ValidatedMapperCompiler(new MapInt(), [
-                        new AssertIntRange(
-                            gte: $this->resolveIntegerBoundary($type->genericTypes[0], 'min'),
-                            lte: $this->resolveIntegerBoundary($type->genericTypes[1], 'max'),
-                        ),
-                    ]),
-                    default => throw CannotInferMapperException::fromType($type),
-                },
-                default => match ($type->type->name) {
-                    'list' => match (count($type->genericTypes)) {
-                        1 => new MapList($this->inferMapperFromType($type->genericTypes[0])),
-                        default => throw CannotInferMapperException::fromType($type),
-                    },
-                    Optional::class => match (count($type->genericTypes)) {
-                        1 => new MapOptional($this->inferMapperFromType($type->genericTypes[0])),
-                        default => throw CannotInferMapperException::fromType($type),
-                    },
-                    default => throw CannotInferMapperException::fromType($type),
-                },
-            };
-        }
-
-        if ($type instanceof ArrayTypeNode) {
-            return new MapArray(new MapMixed(), $this->inferMapperFromType($type->type));
-        }
-
-        if ($type instanceof ArrayShapeNode) {
-            $items = [];
-
-            foreach ($type->items as $item) {
-                $key = match (true) {
-                    $item->keyName instanceof ConstExprStringNode => $item->keyName->value,
-                    $item->keyName instanceof IdentifierTypeNode => $item->keyName->name,
-                    default => throw CannotInferMapperException::fromType($type),
-                };
-
-                $items[] = new ArrayShapeItemMapping($key, $this->inferMapperFromType($item->valueType), $item->optional);
-            }
-
-            return new MapArrayShape($items, $type->sealed);
-        }
-
-        throw CannotInferMapperException::fromType($type);
+        throw CannotInferMapperException::fromType(new IdentifierTypeNode($className));
     }
 
     protected function resolveIntegerBoundary(TypeNode $type, string $extremeName): ?int
