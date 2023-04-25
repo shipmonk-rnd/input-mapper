@@ -46,20 +46,6 @@ class ValidatedMapperCompiler implements MapperCompiler
         return new CompiledExpr($mapperVariable, $statements);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        $schema = $this->mapperCompiler->getJsonSchema();
-
-        foreach ($this->validatorCompilers as $validatorCompiler) {
-            $schema = $validatorCompiler->toJsonSchema($schema);
-        }
-
-        return $schema;
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return $this->mapperCompiler->getInputType($builder);

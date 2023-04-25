@@ -10,13 +10,9 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function assert;
 use function class_exists;
-use function json_encode;
 use function str_replace;
 use function strtr;
 use function ucfirst;
-use const JSON_PRETTY_PRINT;
-use const JSON_THROW_ON_ERROR;
-use const JSON_UNESCAPED_UNICODE;
 
 abstract class MapperCompilerTestCase extends InputMapperTestCase
 {
@@ -39,15 +35,11 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $mapperDir = strtr(str_replace('ShipMonkTests\InputMapper', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
         $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
-        $jsonSchemaPath = "{$mapperDir}/{$mapperShortClassName}.json";
 
         if (!class_exists($mapperClassName, autoload: false)) {
             $generator = new Generator();
             self::assertSnapshot($mapperPath, $generator->generateMapperFile($mapperClassName, $mapperCompiler));
             require $mapperPath;
-
-            $jsonSchema = json_encode($mapperCompiler->getJsonSchema(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n";
-            self::assertSnapshot($jsonSchemaPath, $jsonSchema);
         }
 
         $mapperProvider = $this->createMock(MapperProvider::class);

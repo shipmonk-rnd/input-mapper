@@ -32,14 +32,6 @@ class MapInt implements MapperCompiler
         return new CompiledExpr($value, $statements);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return ['type' => 'integer'];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

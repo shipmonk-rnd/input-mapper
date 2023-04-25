@@ -19,14 +19,6 @@ class MapMixed implements MapperCompiler
         return new CompiledExpr($value);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return [];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

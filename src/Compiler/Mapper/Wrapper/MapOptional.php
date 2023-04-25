@@ -36,14 +36,6 @@ class MapOptional implements UndefinedAwareMapperCompiler
         return new CompiledExpr($mapped);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return $this->mapperCompiler->getJsonSchema();
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return $this->mapperCompiler->getInputType($builder);

@@ -21,11 +21,6 @@ class MapMultiplyBySeven extends MapRuntime
         return $value * 7;
     }
 
-    public function getJsonSchema(): array
-    {
-        return ['type' => 'integer'];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

@@ -47,14 +47,6 @@ class ChainMapperCompiler implements MapperCompiler
         return new CompiledExpr($value, $statements);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return $this->mapperCompilers[0]->getJsonSchema();
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         $first = 0;
