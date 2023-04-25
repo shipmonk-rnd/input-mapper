@@ -19,9 +19,6 @@ parameters:
         allowNamedArgumentOnlyInAttributes:
             enabled: false
 
-        forbidUnusedMatchResult:
-            enabled: false # false positive on nested match statements
-
     ignoreErrors:
         -
             message: '#Property [\w\\]++::\$provider is never read, only written\.#'
