@@ -107,38 +107,6 @@ class MapObject implements MapperCompiler
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        $propertySchemas = [];
-        $required = [];
-
-        foreach ($this->constructorArgsMapperCompilers as $propertyName => $propertyMapperCompiler) {
-            $propertySchemas[$propertyName] = $propertyMapperCompiler->getJsonSchema();
-
-            if (!$propertyMapperCompiler instanceof UndefinedAwareMapperCompiler) {
-                $required[] = $propertyName;
-            }
-        }
-
-        $schema = [
-            'type' => 'object',
-            'properties' => $propertySchemas,
-        ];
-
-        if (count($required) > 0) {
-            $schema['required'] = $required;
-        }
-
-        if (!$this->allowExtraProperties) {
-            $schema['additionalProperties'] = false;
-        }
-
-        return $schema;
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

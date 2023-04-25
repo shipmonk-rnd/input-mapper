@@ -71,14 +71,6 @@ class MapFloat implements MapperCompiler
         return new CompiledExpr($builder->funcCall($builder->importFunction('floatval'), [$value]), $statements);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return ['type' => 'number'];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

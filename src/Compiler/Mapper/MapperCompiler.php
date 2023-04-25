@@ -12,11 +12,6 @@ interface MapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr;
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array;
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode;
 
     public function getOutputType(PhpCodeBuilder $builder): TypeNode;

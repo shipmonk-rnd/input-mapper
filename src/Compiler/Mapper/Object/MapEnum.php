@@ -11,7 +11,6 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
-use function array_column;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class MapEnum implements MapperCompiler
@@ -58,17 +57,6 @@ class MapEnum implements MapperCompiler
         ]);
 
         return new CompiledExpr($builder->var($enumVariableName), $statements);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        $schema = $this->backingValueMapperCompiler->getJsonSchema();
-        $schema['enum'] = array_column($this->enumName::cases(), 'value');
-
-        return $schema;
     }
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode

@@ -54,14 +54,6 @@ class MapDateTimeImmutable implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return ['type' => 'string', 'format' => 'date-time'];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

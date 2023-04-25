@@ -31,14 +31,6 @@ class DelegateMapperCompiler implements MapperCompiler
         return new CompiledExpr($mapped);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        return ['$ref' => $this->className];
-    }
-
     public function getInputType(PhpCodeBuilder $builder): TypeNode
     {
         return new IdentifierTypeNode('mixed');

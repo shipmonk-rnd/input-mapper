@@ -17,7 +17,6 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_fill_keys;
 use function array_map;
 use function array_push;
-use function count;
 use function ucfirst;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
@@ -90,41 +89,6 @@ class MapArrayShape implements MapperCompiler
         }
 
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        $properties = [];
-        $required = [];
-
-        foreach ($this->items as $mapping) {
-            $properties[$mapping->key] = $mapping->mapper->getJsonSchema();
-
-            if (!$mapping->optional) {
-                $required[] = $mapping->key;
-            }
-        }
-
-        $schema = [
-            'type' => 'object',
-        ];
-
-        if (count($properties) > 0) {
-            $schema['properties'] = $properties;
-        }
-
-        if (count($required) > 0) {
-            $schema['required'] = $required;
-        }
-
-        if ($this->sealed) {
-            $schema['additionalProperties'] = false;
-        }
-
-        return $schema;
     }
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode

@@ -3,15 +3,12 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Wrapper;
 
 use Attribute;
-use LogicException;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
-use function is_array;
-use function is_string;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class MapNullable implements MapperCompiler
@@ -42,26 +39,6 @@ class MapNullable implements MapperCompiler
         ];
 
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getJsonSchema(): array
-    {
-        $schema = $this->innerMapperCompiler->getJsonSchema();
-
-        if (!isset($schema['type'])) {
-            $schema = ['anyOf' => [$schema, ['type' => 'null']]];
-        } elseif (is_string($schema['type'])) {
-            $schema['type'] = [$schema['type'], 'null'];
-        } elseif (is_array($schema['type'])) {
-            $schema['type'][] = 'null';
-        } else {
-            throw new LogicException('Unexpected type of type');
-        }
-
-        return $schema;
     }
 
     public function getInputType(PhpCodeBuilder $builder): TypeNode
