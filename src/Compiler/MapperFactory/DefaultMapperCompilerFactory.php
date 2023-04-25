@@ -62,7 +62,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
     /**
-     * @param  array<class-string, callable(class-string): MapperCompiler> $mapperCompilerFactories
+     * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
      */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
@@ -76,15 +76,18 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     /**
      * @template T of object
-     * @param  class-string<T>                           $className
-     * @param  callable(class-string<T>): MapperCompiler $factory
+     * @param  class-string<T>                                                 $className
+     * @param  callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
      */
     public function addMapperCompilerFactory(string $className, callable $factory): void
     {
         $this->mapperCompilerFactories[$className] = $factory; // @phpstan-ignore-line
     }
 
-    public function create(TypeNode $type, bool $delegateObjectMapping = true): MapperCompiler
+    /**
+     * @param  array<string, mixed> $options
+     */
+    public function create(TypeNode $type, array $options): MapperCompiler
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
@@ -92,7 +95,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     throw CannotInferMapperException::fromType($type);
                 }
 
-                return $delegateObjectMapping ? new DelegateMapperCompiler($type->name) : $this->createObjectMapperCompiler($type->name);
+                $delegateObjectMapping = $options[self::DELEGATE_OBJECT_MAPPING] ?? true;
+                return $delegateObjectMapping === true
+                    ? new DelegateMapperCompiler($type->name)
+                    : $this->createObjectMapperCompiler($type->name, [self::DELEGATE_OBJECT_MAPPING => false] + $options);
             }
 
             return match (strtolower($type->name)) {
@@ -113,14 +119,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof NullableTypeNode) {
-            return new MapNullable($this->create($type->type));
+            return new MapNullable($this->create($type->type, $options));
         }
 
         if ($type instanceof GenericTypeNode) {
             return match (strtolower($type->type->name)) {
                 'array' => match (count($type->genericTypes)) {
-                    1 => new MapArray(new MapMixed(), $this->create($type->genericTypes[0])),
-                    2 => new MapArray($this->create($type->genericTypes[0]), $this->create($type->genericTypes[1])),
+                    1 => new MapArray(new MapMixed(), $this->create($type->genericTypes[0], $options)),
+                    2 => new MapArray($this->create($type->genericTypes[0], $options), $this->create($type->genericTypes[1], $options)),
                     default => throw CannotInferMapperException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
@@ -134,11 +140,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 },
                 default => match ($type->type->name) {
                     'list' => match (count($type->genericTypes)) {
-                        1 => new MapList($this->create($type->genericTypes[0])),
+                        1 => new MapList($this->create($type->genericTypes[0], $options)),
                         default => throw CannotInferMapperException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
-                        1 => new MapOptional($this->create($type->genericTypes[0])),
+                        1 => new MapOptional($this->create($type->genericTypes[0], $options)),
                         default => throw CannotInferMapperException::fromType($type),
                     },
                     default => throw CannotInferMapperException::fromType($type),
@@ -147,7 +153,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof ArrayTypeNode) {
-            return new MapArray(new MapMixed(), $this->create($type->type));
+            return new MapArray(new MapMixed(), $this->create($type->type, $options));
         }
 
         if ($type instanceof ArrayShapeNode) {
@@ -160,7 +166,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotInferMapperException::fromType($type),
                 };
 
-                $items[] = new ArrayShapeItemMapping($key, $this->create($item->valueType), $item->optional);
+                $items[] = new ArrayShapeItemMapping($key, $this->create($item->valueType, $options), $item->optional);
             }
 
             return new MapArrayShape($items, $type->sealed);
@@ -170,37 +176,42 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  class-string $inputClassName
+     * @param  class-string         $inputClassName
+     * @param  array<string, mixed> $options
      */
-    protected function createObjectMapperCompiler(string $inputClassName): MapperCompiler
+    protected function createObjectMapperCompiler(string $inputClassName, array $options): MapperCompiler
     {
         $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
 
         foreach ($classLikeNames as $classLikeName => $_) {
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
                 $factory = $this->mapperCompilerFactories[$classLikeName];
-                return $factory($inputClassName);
+                return $factory($inputClassName, $options);
             }
         }
 
-        return $this->createObjectMappingByConstructorInvocation($inputClassName);
+        return $this->createObjectMappingByConstructorInvocation($inputClassName, $options);
     }
 
     /**
-     * @param  class-string $className
+     * @param  class-string         $inputClassName
+     * @param  array<string, mixed> $options
      */
-    protected function createObjectMappingByConstructorInvocation(string $className): MapperCompiler
+    protected function createObjectMappingByConstructorInvocation(
+        string $inputClassName,
+        array $options,
+    ): MapperCompiler
     {
-        $classReflection = new ReflectionClass($className);
+        $classReflection = new ReflectionClass($inputClassName);
 
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
-            throw new LogicException("Class {$className} has no constructor");
+            throw new LogicException("Class {$inputClassName} has no constructor");
         }
 
         if (!$constructor->isPublic()) {
-            throw new LogicException("Class {$className} has a non-public constructor");
+            throw new LogicException("Class {$inputClassName} has a non-public constructor");
         }
 
         $constructorParameterMapperCompilers = [];
@@ -209,7 +220,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         foreach ($constructor->getParameters() as $parameter) {
             $name = $parameter->getName();
             $type = $constructorParameterTypes[$name];
-            $constructorParameterMapperCompilers[$name] = $this->createParameterMapperCompiler($parameter, $type);
+            $constructorParameterMapperCompilers[$name] = $this->createParameterMapperCompiler($parameter, $type, $options);
         }
 
         return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers);
@@ -244,9 +255,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         return $parameterTypes;
     }
 
+    /**
+     * @param  array<string, mixed> $options
+     */
     protected function createParameterMapperCompiler(
         ReflectionParameter $parameterReflection,
-        TypeNode $type
+        TypeNode $type,
+        array $options,
     ): MapperCompiler
     {
         $mappers = [];
@@ -262,9 +277,9 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         if (count($mappers) === 0) {
             if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
-                $mappers[] = $this->create($type->genericTypes[0]);
+                $mappers[] = $this->create($type->genericTypes[0], $options);
             } else {
-                $mappers[] = $this->create($type);
+                $mappers[] = $this->create($type, $options);
             }
         }
 
@@ -280,18 +295,23 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     /**
      * @param  class-string<BackedEnum> $enumName
+     * @param  array<string, mixed>     $options
      */
-    protected function createEnumMapperCompiler(string $enumName): MapperCompiler
+    protected function createEnumMapperCompiler(string $enumName, array $options): MapperCompiler
     {
         $enumReflection = new ReflectionEnum($enumName);
         $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
         $backingType = PhpDocTypeUtils::fromReflectionType($backingReflectionType);
-        $backingTypeMapperCompiler = $this->create($backingType);
+        $backingTypeMapperCompiler = $this->create($backingType, $options);
 
         return new MapEnum($enumName, $backingTypeMapperCompiler);
     }
 
-    protected function createDateTimeMapperCompiler(string $className): MapperCompiler
+    /**
+     * @param  class-string         $className
+     * @param  array<string, mixed> $options
+     */
+    protected function createDateTimeMapperCompiler(string $className, array $options): MapperCompiler
     {
         if ($className === DateTimeInterface::class || $className === DateTimeImmutable::class) {
             return new MapDateTimeImmutable();

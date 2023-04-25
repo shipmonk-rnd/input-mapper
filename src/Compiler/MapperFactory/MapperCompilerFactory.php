@@ -8,6 +8,11 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 interface MapperCompilerFactory
 {
 
-    public function create(TypeNode $type, bool $delegateObjectMapping = true): MapperCompiler;
+    public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
+
+    /**
+     * @param  array<string, mixed> $options
+     */
+    public function create(TypeNode $type, array $options): MapperCompiler;
 
 }
