@@ -70,8 +70,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         protected array $mapperCompilerFactories = [],
     )
     {
-        $this->addMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompiler(...));
-        $this->addMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompiler(...));
+        $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompiler(...));
+        $this->setMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompiler(...));
     }
 
     /**
@@ -79,7 +79,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
      * @param  class-string<T>                                                 $className
      * @param  callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
      */
-    public function addMapperCompilerFactory(string $className, callable $factory): void
+    public function setMapperCompilerFactory(string $className, callable $factory): void
     {
         $this->mapperCompilerFactories[$className] = $factory; // @phpstan-ignore-line
     }
