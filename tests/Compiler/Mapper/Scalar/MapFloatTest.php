@@ -55,6 +55,30 @@ class MapFloatTest extends MapperCompilerTestCase
             'Failed to map data at path /: Expected finite float, got NAN',
             static fn() => $mapper->map(NAN),
         );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected finite float, got NAN',
+            static fn() => $mapper->map(NAN),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected float, got 9223372036854775807',
+            static fn() => $mapper->map(9_223_372_036_854_775_807),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected float, got 9007199254740992',
+            static fn() => $mapper->map(+9_007_199_254_740_992),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected float, got -9007199254740992',
+            static fn() => $mapper->map(-9_007_199_254_740_992),
+        );
     }
 
     public function testCompileWithAllowedInfinity(): void

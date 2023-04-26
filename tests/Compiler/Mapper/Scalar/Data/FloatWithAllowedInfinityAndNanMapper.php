@@ -26,10 +26,14 @@ class FloatWithAllowedInfinityAndNanMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): float
     {
-        if (!is_float($data) && !is_int($data)) {
+        if (is_float($data)) {
+            $mapped = $data;
+        } elseif (is_int($data) && $data >= -9007199254740991 && $data <= 9007199254740991) {
+            $mapped = floatval($data);
+        } else {
             throw MappingFailedException::incorrectType($data, $path, 'float');
         }
 
-        return floatval($data);
+        return $mapped;
     }
 }

@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Scalar;
 
 use Attribute;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
@@ -15,6 +16,16 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 class MapFloat implements MapperCompiler
 {
 
+    /**
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
+     */
+    public const MIN_SAFE_INTEGER = -9_007_199_254_740_991;
+
+    /**
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+     */
+    public const MAX_SAFE_INTEGER = +9_007_199_254_740_991;
+
     public function __construct(
         public readonly bool $allowInfinity = false,
         public readonly bool $allowNan = false,
@@ -24,21 +35,61 @@ class MapFloat implements MapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
+        $mappedVariableName = $builder->uniqVariableName('mapped');
+
         $isFloat = $builder->funcCall($builder->importFunction('is_float'), [$value]);
-        $isInt = $builder->funcCall($builder->importFunction('is_int'), [$value]);
+
+        $isSafeInt = $builder->and(
+            $builder->funcCall($builder->importFunction('is_int'), [$value]),
+            $builder->gte($value, $builder->val(self::MIN_SAFE_INTEGER)),
+            $builder->lte($value, $builder->val(self::MAX_SAFE_INTEGER)),
+        );
 
         $statements = [
-            $builder->if($builder->and($builder->not($isFloat), $builder->not($isInt)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectType',
-                        [$value, $path, 'float'],
+            $builder->if(
+                cond: $isFloat,
+                ifTrue: [
+                    ...$this->createFiniteCheckStatements($value, $path, $builder),
+                    $builder->assign($builder->var($mappedVariableName), $value),
+                ],
+                else: [
+                    $builder->if(
+                        cond: $isSafeInt,
+                        ifTrue: [
+                            $builder->assign($builder->var($mappedVariableName), $builder->funcCall($builder->importFunction('floatval'), [$value])),
+                        ],
+                        else: [
+                            $builder->throw(
+                                $builder->staticCall(
+                                    $builder->importClass(MappingFailedException::class),
+                                    'incorrectType',
+                                    [$value, $path, 'float'],
+                                ),
+                            ),
+                        ],
                     ),
-                ),
-            ]),
+                ],
+            ),
         ];
 
+        return new CompiledExpr($builder->var($mappedVariableName), $statements);
+    }
+
+    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    {
+        return new IdentifierTypeNode('mixed');
+    }
+
+    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    {
+        return new IdentifierTypeNode('float');
+    }
+
+    /**
+     * @return list<Stmt>
+     */
+    private function createFiniteCheckStatements(Expr $value, Expr $path, PhpCodeBuilder $builder,): array
+    {
         if (!$this->allowInfinity && !$this->allowNan) {
             $finiteCheck = $builder->not($builder->funcCall($builder->importFunction('is_finite'), [$value]));
             $finiteLabel = 'finite float';
@@ -52,12 +103,11 @@ class MapFloat implements MapperCompiler
             $finiteLabel = 'finite float or INF';
 
         } else {
-            $finiteCheck = null;
-            $finiteLabel = null;
+            return [];
         }
 
-        if ($finiteCheck !== null) {
-            $statements[] = $builder->if($finiteCheck, [
+        return [
+            $builder->if($finiteCheck, [
                 $builder->throw(
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
@@ -65,20 +115,8 @@ class MapFloat implements MapperCompiler
                         [$value, $path, $finiteLabel],
                     ),
                 ),
-            ]);
-        }
-
-        return new CompiledExpr($builder->funcCall($builder->importFunction('floatval'), [$value]), $statements);
-    }
-
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
-    {
-        return new IdentifierTypeNode('mixed');
-    }
-
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
-    {
-        return new IdentifierTypeNode('float');
+            ]),
+        ];
     }
 
 }
