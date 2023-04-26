@@ -11,6 +11,6 @@ interface MapperCompilerFactory
     /**
      * @param  array<string, mixed> $options
      */
-    public function create(TypeNode $type, array $options): MapperCompiler;
+    public function create(TypeNode $type, array $options = []): MapperCompiler;
 
 }
