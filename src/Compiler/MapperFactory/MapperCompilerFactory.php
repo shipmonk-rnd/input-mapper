@@ -8,8 +8,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 interface MapperCompilerFactory
 {
 
-    public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
-
     /**
      * @param  array<string, mixed> $options
      */
