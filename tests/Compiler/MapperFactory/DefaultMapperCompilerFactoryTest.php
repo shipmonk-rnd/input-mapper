@@ -32,6 +32,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
@@ -73,7 +74,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 'id' => new MapInt(),
                 'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
                 'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
-                'numbers' => new MapList(new MapInt()),
+                'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
             ]),
         ];
 
@@ -260,7 +261,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
     }
 
     /**
-     * @return iterable<array{string, array<string, mixed>, string?}>
+     * @return iterable<array{0: string, 1: array<string, mixed>, 2?: string}>
      */
     public static function provideCreateErrorData(): iterable
     {
