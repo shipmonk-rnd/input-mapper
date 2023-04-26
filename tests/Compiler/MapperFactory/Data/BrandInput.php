@@ -2,6 +2,9 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\MapperFactory\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Object\AllowExtraKeys;
+
+#[AllowExtraKeys]
 class BrandInput
 {
 

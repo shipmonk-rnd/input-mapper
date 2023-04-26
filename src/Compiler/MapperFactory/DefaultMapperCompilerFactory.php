@@ -33,6 +33,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\AllowExtraKeys;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
@@ -232,7 +233,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $constructorParameterMapperCompilers[$name] = $this->createParameterMapperCompiler($parameter, $type, $options);
         }
 
-        return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers);
+        $allowExtraKeys = count($classReflection->getAttributes(AllowExtraKeys::class)) > 0;
+        return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers, $allowExtraKeys);
     }
 
     /**
