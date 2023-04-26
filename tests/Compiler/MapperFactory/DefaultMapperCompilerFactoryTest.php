@@ -12,7 +12,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ShipMonk\InputMapper\Compiler\Exception\CannotInferMapperException;
+use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
@@ -241,7 +241,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
 
         self::assertException(
-            CannotInferMapperException::class,
+            CannotCreateMapperCompilerException::class,
             null,
             static fn() => $mapperCompilerFactory->create($phpDocType, $options),
         );

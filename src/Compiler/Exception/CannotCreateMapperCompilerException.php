@@ -6,13 +6,13 @@ use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use Throwable;
 
-class CannotInferMapperException extends LogicException
+class CannotCreateMapperCompilerException extends LogicException
 {
 
     public static function fromType(TypeNode $type, ?string $reason = null, ?Throwable $previous = null): self
     {
         $reason = $reason ? ", because {$reason}" : '';
-        return new self("Cannot infer mapper for type {$type}{$reason}", 0, $previous);
+        return new self("Cannot create mapper for type {$type}{$reason}", 0, $previous);
     }
 
 }
