@@ -23,7 +23,7 @@ class MappingFailedExceptionTest extends InputMapperTestCase
     /**
      * @return iterable<string, array{MappingFailedException, string}>
      */
-    public function provideMessagesData(): iterable
+    public static function provideMessagesData(): iterable
     {
         yield 'null' => [
             MappingFailedException::incorrectValue(null, ['foo'], 'int'),
