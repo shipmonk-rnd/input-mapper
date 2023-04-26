@@ -94,7 +94,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
                 if (!class_exists($type->name) && !interface_exists($type->name) && !enum_exists($type->name)) {
-                    throw CannotCreateMapperCompilerException::fromType($type);
+                    throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
                 }
 
                 return isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true
@@ -133,8 +133,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 'int' => match (count($type->genericTypes)) {
                     2 => new ValidatedMapperCompiler(new MapInt(), [
                         new AssertIntRange(
-                            gte: $this->resolveIntegerBoundary($type->genericTypes[0], 'min'),
-                            lte: $this->resolveIntegerBoundary($type->genericTypes[1], 'max'),
+                            gte: $this->resolveIntegerBoundary($type, $type->genericTypes[0], 'min'),
+                            lte: $this->resolveIntegerBoundary($type, $type->genericTypes[1], 'max'),
                         ),
                     ]),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
@@ -329,17 +329,17 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));
     }
 
-    protected function resolveIntegerBoundary(TypeNode $type, string $extremeName): ?int
+    protected function resolveIntegerBoundary(TypeNode $type, TypeNode $boundaryType, string $extremeName): ?int
     {
-        if ($type instanceof ConstTypeNode && $type->constExpr instanceof ConstExprIntegerNode) {
-            return (int) $type->constExpr->value;
+        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
+            return (int) $boundaryType->constExpr->value;
         }
 
-        if ($type instanceof IdentifierTypeNode && $type->name === $extremeName) {
+        if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {
             return null;
         }
 
-        throw new LogicException("Unsupported integer boundary {$type}");
+        throw CannotCreateMapperCompilerException::fromType($type, "integer boundary {$boundaryType} is not supported");
     }
 
     protected function parsePhpDoc(string $docComment): PhpDocNode
