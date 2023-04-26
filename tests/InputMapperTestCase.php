@@ -4,7 +4,6 @@ namespace ShipMonkTests\InputMapper;
 
 use Nette\Utils\FileSystem;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
-use PHPUnit\Framework\Constraint\ExceptionMessage as ExceptionMessageConstraint;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 use function getenv;
@@ -39,7 +38,7 @@ abstract class InputMapperTestCase extends TestCase
             self::assertThat($e, new ExceptionConstraint($type));
 
             if ($message !== null) {
-                self::assertThat($e, new ExceptionMessageConstraint($message));
+                self::assertSame($message, $e->getMessage());
             }
         }
     }

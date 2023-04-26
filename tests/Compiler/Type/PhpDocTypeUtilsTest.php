@@ -42,7 +42,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     /**
      * @return iterable<array{string, bool}>
      */
-    public function provideIsKeywordData(): iterable
+    public static function provideIsKeywordData(): iterable
     {
         yield ['array', true];
         yield ['Array', true];
@@ -152,7 +152,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     /**
      * @return iterable<string, array{TypeNode, ComplexType|Identifier|Name, bool}>
      */
-    public function provideToNativeTypeData(): iterable
+    public static function provideToNativeTypeData(): iterable
     {
         yield 'int' => [
             new IdentifierTypeNode('int'),
@@ -269,7 +269,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     /**
      * @return iterable<string, array{TypeNode, bool}>
      */
-    public function provideIsNullableData(): iterable
+    public static function provideIsNullableData(): iterable
     {
         yield 'int' => [
             new IdentifierTypeNode('int'),
@@ -356,7 +356,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     /**
      * @return iterable<string, array{TypeNode, TypeNode}>
      */
-    public function provideMakeNullableData(): iterable
+    public static function provideMakeNullableData(): iterable
     {
         yield 'int' => [
             new IdentifierTypeNode('int'),
