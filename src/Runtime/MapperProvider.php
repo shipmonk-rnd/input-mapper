@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use RuntimeException;
 use ShipMonk\InputMapper\Compiler\Generator;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
@@ -153,7 +154,7 @@ class MapperProvider
     {
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
         $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName), [
-            MapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false,
+            DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false,
         ]);
 
         $generator = new Generator();

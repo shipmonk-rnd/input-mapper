@@ -61,6 +61,8 @@ use function substr;
 class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
+    public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
+
     /**
      * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
      */
