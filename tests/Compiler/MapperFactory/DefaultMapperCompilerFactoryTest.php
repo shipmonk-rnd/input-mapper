@@ -32,6 +32,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
+use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
@@ -70,8 +71,9 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new MapObject(CarInput::class, [
                 'id' => new MapInt(),
-                'name' => new MapString(),
-                'brand' => new DelegateMapperCompiler(BrandInput::class),
+                'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
+                'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
+                'numbers' => new MapList(new MapInt()),
             ]),
         ];
 
@@ -230,7 +232,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
      * @param  array<string, mixed> $options
      */
     #[DataProvider('provideCreateErrorData')]
-    public function testCreateError(string $type, array $options): void
+    public function testCreateError(string $type, array $options, ?string $expectedMessage = null): void
     {
         $phpDocLexer = new Lexer();
         $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
@@ -242,29 +244,32 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 
         self::assertException(
             CannotCreateMapperCompilerException::class,
-            null,
+            $expectedMessage,
             static fn() => $mapperCompilerFactory->create($phpDocType, $options),
         );
     }
 
     /**
-     * @return iterable<array{string, array<string, mixed>}>
+     * @return iterable<array{string, array<string, mixed>, string?}>
      */
     public static function provideCreateErrorData(): iterable
     {
         yield 'NonExistingClass' => [
             'NonExistingClass',
             [],
+            'Cannot create mapper for type NonExistingClass, because there is no class, interface or enum with this name',
         ];
 
         yield 'InputWithoutConstructor' => [
             InputWithoutConstructor::class,
             [],
+            'Cannot create mapper for type ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor, because class has no constructor',
         ];
 
         yield 'InputWithPrivateConstructor' => [
             InputWithPrivateConstructor::class,
             [],
+            'Cannot create mapper for type ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor, because class has a non-public constructor',
         ];
 
         yield 'DateTime' => [
@@ -285,6 +290,13 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'callable(): void' => [
             'callable(): void',
             [],
+            'Cannot create mapper for type callable(): void',
+        ];
+
+        yield 'int<foo, bar>' => [
+            'int<foo, bar>',
+            [],
+            'Cannot create mapper for type int<foo, bar>, because integer boundary foo is not supported',
         ];
     }
 
