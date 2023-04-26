@@ -90,21 +90,4 @@ class AssertStringLength implements ValidatorCompiler
         return $statements;
     }
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array
-    {
-        if ($this->min !== null) {
-            $schema['minLength'] = $this->min;
-        }
-
-        if ($this->max !== null) {
-            $schema['maxLength'] = $this->max;
-        }
-
-        return $schema;
-    }
-
 }

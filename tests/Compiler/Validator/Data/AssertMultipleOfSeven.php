@@ -20,11 +20,4 @@ class AssertMultipleOfSeven extends AssertRuntime
         }
     }
 
-    public function toJsonSchema(array $schema): array
-    {
-        return [
-            'multipleOf' => 7,
-        ];
-    }
-
 }

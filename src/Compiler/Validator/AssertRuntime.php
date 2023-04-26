@@ -37,13 +37,4 @@ abstract class AssertRuntime implements ValidatorCompiler
         ];
     }
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array
-    {
-        return $schema;
-    }
-
 }
