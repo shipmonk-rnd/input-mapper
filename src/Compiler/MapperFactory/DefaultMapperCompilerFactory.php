@@ -26,7 +26,7 @@ use ReflectionClass;
 use ReflectionEnum;
 use ReflectionMethod;
 use ReflectionParameter;
-use ShipMonk\InputMapper\Compiler\Exception\CannotInferMapperException;
+use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
@@ -94,7 +94,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
                 if (!class_exists($type->name) && !interface_exists($type->name) && !enum_exists($type->name)) {
-                    throw CannotInferMapperException::fromType($type);
+                    throw CannotCreateMapperCompilerException::fromType($type);
                 }
 
                 return isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true
@@ -114,7 +114,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     'list' => new MapList(new MapMixed()),
                     'negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(lt: 0)]),
                     'positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertIntRange(gt: 0)]),
-                    default => throw CannotInferMapperException::fromType($type),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
             };
         }
@@ -128,7 +128,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 'array' => match (count($type->genericTypes)) {
                     1 => new MapArray(new MapMixed(), $this->createInner($type->genericTypes[0], $options)),
                     2 => new MapArray($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
-                    default => throw CannotInferMapperException::fromType($type),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
                     2 => new ValidatedMapperCompiler(new MapInt(), [
@@ -137,18 +137,18 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                             lte: $this->resolveIntegerBoundary($type->genericTypes[1], 'max'),
                         ),
                     ]),
-                    default => throw CannotInferMapperException::fromType($type),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
                 default => match ($type->type->name) {
                     'list' => match (count($type->genericTypes)) {
                         1 => new MapList($this->createInner($type->genericTypes[0], $options)),
-                        default => throw CannotInferMapperException::fromType($type),
+                        default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
                         1 => new MapOptional($this->createInner($type->genericTypes[0], $options)),
-                        default => throw CannotInferMapperException::fromType($type),
+                        default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
-                    default => throw CannotInferMapperException::fromType($type),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
             };
         }
@@ -164,7 +164,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 $key = match (true) {
                     $item->keyName instanceof ConstExprStringNode => $item->keyName->value,
                     $item->keyName instanceof IdentifierTypeNode => $item->keyName->name,
-                    default => throw CannotInferMapperException::fromType($type),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
                 };
 
                 $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
@@ -173,7 +173,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             return new MapArrayShape($items, $type->sealed);
         }
 
-        throw CannotInferMapperException::fromType($type);
+        throw CannotCreateMapperCompilerException::fromType($type);
     }
 
     /**
@@ -216,11 +216,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
-            throw CannotInferMapperException::fromType(new IdentifierTypeNode($inputClassName), 'class has no constructor');
+            throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($inputClassName), 'class has no constructor');
         }
 
         if (!$constructor->isPublic()) {
-            throw CannotInferMapperException::fromType(new IdentifierTypeNode($inputClassName), 'class has a non-public constructor');
+            throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($inputClassName), 'class has a non-public constructor');
         }
 
         $constructorParameterMapperCompilers = [];
@@ -326,7 +326,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             return new MapDateTimeImmutable();
         }
 
-        throw CannotInferMapperException::fromType(new IdentifierTypeNode($className));
+        throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));
     }
 
     protected function resolveIntegerBoundary(TypeNode $type, string $extremeName): ?int
