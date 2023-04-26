@@ -9,9 +9,10 @@ use Throwable;
 class CannotInferMapperException extends LogicException
 {
 
-    public static function fromType(TypeNode $type, ?Throwable $previous = null): self
+    public static function fromType(TypeNode $type, ?string $reason = null, ?Throwable $previous = null): self
     {
-        return new self("Cannot infer mapper from type {$type}", 0, $previous);
+        $reason = $reason ? ", because {$reason}" : '';
+        return new self("Cannot infer mapper for type {$type}{$reason}", 0, $previous);
     }
 
 }
