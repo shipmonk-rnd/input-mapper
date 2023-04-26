@@ -27,14 +27,18 @@ class FloatMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): float
     {
-        if (!is_float($data) && !is_int($data)) {
+        if (is_float($data)) {
+            if (!is_finite($data)) {
+                throw MappingFailedException::incorrectType($data, $path, 'finite float');
+            }
+
+            $mapped = $data;
+        } elseif (is_int($data) && $data >= -9007199254740991 && $data <= 9007199254740991) {
+            $mapped = floatval($data);
+        } else {
             throw MappingFailedException::incorrectType($data, $path, 'float');
         }
 
-        if (!is_finite($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'finite float');
-        }
-
-        return floatval($data);
+        return $mapped;
     }
 }

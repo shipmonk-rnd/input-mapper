@@ -26,6 +26,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Else_;
+use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
@@ -43,6 +44,7 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_pop;
+use function array_slice;
 use function array_values;
 use function assert;
 use function count;
@@ -81,7 +83,7 @@ class PhpCodeBuilder extends BuilderFactory
     {
         return count($rest) === 0
             ? $operand
-            : new BooleanAnd($operand, $this->and(...$rest));
+            : new BooleanAnd($this->and($operand, ...array_slice($rest, 0, -1)), array_slice($rest, -1)[0]);
     }
 
     public function or(Expr $operand, Expr ...$rest): Expr
@@ -97,7 +99,19 @@ class PhpCodeBuilder extends BuilderFactory
      */
     public function if(Expr $cond, array $ifTrue, ?array $else = null): If_
     {
-        return new If_($cond, ['stmts' => $ifTrue, 'else' => $else !== null ? new Else_($else) : null]);
+        $elseIfClauses = [];
+        $elseClause = null;
+
+        while ($else !== null && count($else) === 1 && $else[0] instanceof If_ && count($else[0]->elseifs) === 0) {
+            $elseIfClauses[] = new ElseIf_($else[0]->cond, $else[0]->stmts);
+            $else = $else[0]->else?->stmts;
+        }
+
+        if ($else !== null) {
+            $elseClause = new Else_($else);
+        }
+
+        return new If_($cond, ['stmts' => $ifTrue, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
     }
 
     public function not(Expr $expr): BooleanNot
