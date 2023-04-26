@@ -89,7 +89,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     /**
      * @param  array<string, mixed> $options
      */
-    public function create(TypeNode $type, array $options): MapperCompiler
+    public function create(TypeNode $type, array $options = []): MapperCompiler
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
@@ -97,10 +97,9 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     throw CannotInferMapperException::fromType($type);
                 }
 
-                $delegateObjectMapping = $options[self::DELEGATE_OBJECT_MAPPING] ?? true;
-                return $delegateObjectMapping === true
+                return isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true
                     ? new DelegateMapperCompiler($type->name)
-                    : $this->createObjectMapperCompiler($type->name, [self::DELEGATE_OBJECT_MAPPING => false] + $options);
+                    : $this->createObjectMapperCompiler($type->name, $options);
             }
 
             return match (strtolower($type->name)) {
@@ -121,14 +120,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof NullableTypeNode) {
-            return new MapNullable($this->create($type->type, $options));
+            return new MapNullable($this->createInner($type->type, $options));
         }
 
         if ($type instanceof GenericTypeNode) {
             return match (strtolower($type->type->name)) {
                 'array' => match (count($type->genericTypes)) {
-                    1 => new MapArray(new MapMixed(), $this->create($type->genericTypes[0], $options)),
-                    2 => new MapArray($this->create($type->genericTypes[0], $options), $this->create($type->genericTypes[1], $options)),
+                    1 => new MapArray(new MapMixed(), $this->createInner($type->genericTypes[0], $options)),
+                    2 => new MapArray($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
                     default => throw CannotInferMapperException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
@@ -142,11 +141,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 },
                 default => match ($type->type->name) {
                     'list' => match (count($type->genericTypes)) {
-                        1 => new MapList($this->create($type->genericTypes[0], $options)),
+                        1 => new MapList($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotInferMapperException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
-                        1 => new MapOptional($this->create($type->genericTypes[0], $options)),
+                        1 => new MapOptional($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotInferMapperException::fromType($type),
                     },
                     default => throw CannotInferMapperException::fromType($type),
@@ -155,7 +154,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof ArrayTypeNode) {
-            return new MapArray(new MapMixed(), $this->create($type->type, $options));
+            return new MapArray(new MapMixed(), $this->createInner($type->type, $options));
         }
 
         if ($type instanceof ArrayShapeNode) {
@@ -168,13 +167,21 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotInferMapperException::fromType($type),
                 };
 
-                $items[] = new ArrayShapeItemMapping($key, $this->create($item->valueType, $options), $item->optional);
+                $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
             }
 
             return new MapArrayShape($items, $type->sealed);
         }
 
         throw CannotInferMapperException::fromType($type);
+    }
+
+    /**
+     * @param  array<string, mixed> $options
+     */
+    protected function createInner(TypeNode $type, array $options): MapperCompiler
+    {
+        return $this->create($type, [self::DELEGATE_OBJECT_MAPPING => true] + $options);
     }
 
     /**
@@ -279,9 +286,9 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         if (count($mappers) === 0) {
             if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
-                $mappers[] = $this->create($type->genericTypes[0], $options);
+                $mappers[] = $this->createInner($type->genericTypes[0], $options);
             } else {
-                $mappers[] = $this->create($type, $options);
+                $mappers[] = $this->createInner($type, $options);
             }
         }
 
@@ -304,7 +311,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $enumReflection = new ReflectionEnum($enumName);
         $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
         $backingType = PhpDocTypeUtils::fromReflectionType($backingReflectionType);
-        $backingTypeMapperCompiler = $this->create($backingType, $options);
+        $backingTypeMapperCompiler = $this->createInner($backingType, $options);
 
         return new MapEnum($enumName, $backingTypeMapperCompiler);
     }
