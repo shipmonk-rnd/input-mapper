@@ -90,29 +90,4 @@ class AssertIntRange implements ValidatorCompiler
         return $statements;
     }
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array
-    {
-        if ($this->gte !== null) {
-            $schema['minimum'] = $this->gte;
-        }
-
-        if ($this->gt !== null) {
-            $schema['exclusiveMinimum'] = $this->gt;
-        }
-
-        if ($this->lt !== null) {
-            $schema['exclusiveMaximum'] = $this->lt;
-        }
-
-        if ($this->lte !== null) {
-            $schema['maximum'] = $this->lte;
-        }
-
-        return $schema;
-    }
-
 }

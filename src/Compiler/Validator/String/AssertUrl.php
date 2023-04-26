@@ -39,14 +39,4 @@ class AssertUrl implements ValidatorCompiler
         ];
     }
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array
-    {
-        $schema['format'] = 'uri';
-        return $schema;
-    }
-
 }

@@ -53,22 +53,4 @@ class AssertListItem implements ValidatorCompiler
         ];
     }
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array
-    {
-        /** @var array<string, mixed> $itemsSchema */
-        $itemsSchema = $schema['items'] ?? [];
-
-        foreach ($this->validators as $validator) {
-            $itemsSchema = $validator->toJsonSchema($itemsSchema);
-        }
-
-        $schema['items'] = $itemsSchema;
-
-        return $schema;
-    }
-
 }

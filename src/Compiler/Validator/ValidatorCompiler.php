@@ -18,10 +18,4 @@ interface ValidatorCompiler
         PhpCodeBuilder $builder,
     ): array;
 
-    /**
-     * @param  array<string, mixed> $schema
-     * @return array<string, mixed>
-     */
-    public function toJsonSchema(array $schema): array;
-
 }
