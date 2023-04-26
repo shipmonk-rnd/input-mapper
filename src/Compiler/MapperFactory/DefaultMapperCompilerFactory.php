@@ -216,11 +216,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
-            throw new LogicException("Class {$inputClassName} has no constructor");
+            throw CannotInferMapperException::fromType(new IdentifierTypeNode($inputClassName), 'class has no constructor');
         }
 
         if (!$constructor->isPublic()) {
-            throw new LogicException("Class {$inputClassName} has a non-public constructor");
+            throw CannotInferMapperException::fromType(new IdentifierTypeNode($inputClassName), 'class has a non-public constructor');
         }
 
         $constructorParameterMapperCompilers = [];
