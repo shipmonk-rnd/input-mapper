@@ -83,6 +83,16 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             new DelegateMapperCompiler(CarInput::class),
         ];
 
+        yield 'BrandInput (with allowed extra keys)' => [
+            BrandInput::class,
+            [],
+            new MapObject(
+                BrandInput::class,
+                ['name' => new MapString()],
+                allowExtraProperties: true,
+            ),
+        ];
+
         yield 'ColorEnum' => [
             ColorEnum::class,
             [],
