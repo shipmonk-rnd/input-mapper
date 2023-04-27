@@ -13,7 +13,7 @@ use function is_string;
  *
  * @implements Mapper<DateTimeImmutable>
  */
-class DateTimeImmutableMapper implements Mapper
+class DateMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -29,10 +29,10 @@ class DateTimeImmutableMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:sP', $data);
+        $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
 
         if ($mapped === false) {
-            throw MappingFailedException::incorrectValue($data, $path, 'date-time string in RFC 3339 format');
+            throw MappingFailedException::incorrectValue($data, $path, 'date string in Y-m-d format');
         }
 
         return $mapped;

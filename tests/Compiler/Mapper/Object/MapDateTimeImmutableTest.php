@@ -37,4 +37,30 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithCustomFormat(): void
+    {
+        $mapperCompiler = new MapDateTimeImmutable('!Y-m-d', 'date string in Y-m-d format');
+        $mapper = $this->compileMapper('Date', $mapperCompiler);
+
+        self::assertEquals(new DateTimeImmutable('1985-04-12T00:00:00Z'), $mapper->map('1985-04-12'));
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected string, got 123',
+            static fn() => $mapper->map(123),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected string, got null',
+            static fn() => $mapper->map(null),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected date string in Y-m-d format, got "1985-04-12T23:20:50Z"',
+            static fn() => $mapper->map('1985-04-12T23:20:50Z'),
+        );
+    }
+
 }
