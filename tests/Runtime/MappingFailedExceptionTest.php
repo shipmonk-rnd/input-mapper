@@ -3,6 +3,7 @@
 namespace ShipMonkTests\InputMapper\Runtime;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function str_repeat;
@@ -12,9 +13,7 @@ use const NAN;
 class MappingFailedExceptionTest extends InputMapperTestCase
 {
 
-    /**
-     * @dataProvider provideMessagesData
-     */
+    #[DataProvider('provideMessagesData')]
     public function testMessages(MappingFailedException $exception, string $expectedMessage): void
     {
         self::assertSame($expectedMessage, $exception->getMessage());
