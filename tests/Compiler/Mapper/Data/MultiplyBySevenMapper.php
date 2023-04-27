@@ -2,7 +2,6 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Data;
 
-use ShipMonkTests\InputMapper\Compiler\Mapper\Data\MapMultiplyBySeven;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
