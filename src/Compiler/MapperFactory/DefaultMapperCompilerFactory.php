@@ -182,7 +182,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
      */
     protected function createInner(TypeNode $type, array $options): MapperCompiler
     {
-        return $this->create($type, [self::DELEGATE_OBJECT_MAPPING => true] + $options);
+        $options[self::DELEGATE_OBJECT_MAPPING] ??= true;
+        return $this->create($type, $options);
     }
 
     /**
