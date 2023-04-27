@@ -41,16 +41,17 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\PhpDoc\PhpDocHelper;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use function array_filter;
 use function array_pop;
 use function array_slice;
 use function array_values;
 use function assert;
 use function count;
+use function implode;
 use function ksort;
 use function str_ends_with;
 use function strrpos;
@@ -321,6 +322,20 @@ class PhpCodeBuilder extends BuilderFactory
         return $uniqueName;
     }
 
+    /**
+     * @param list<?string> $lines
+     */
+    public function phpDoc(array $lines): string
+    {
+        $lines = array_filter($lines, static fn (?string $line): bool => $line !== null);
+
+        if (count($lines) === 0) {
+            return '';
+        }
+
+        return "/**\n * " . implode("\n * ", $lines) . "\n */";
+    }
+
     public function mapperMethod(string $methodName, MapperCompiler $mapperCompiler): Method
     {
         $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
@@ -335,7 +350,7 @@ class PhpCodeBuilder extends BuilderFactory
         $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $phpDocInputTypeUseful);
         $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $phpDocOutputTypeUseful);
 
-        $phpDoc = PhpDocHelper::fromLines([
+        $phpDoc = $this->phpDoc([
             $phpDocInputTypeUseful ? "@param  {$inputType} \${$dataVarName}" : null,
             "@param  list<string|int> \${$pathVarName}",
             $phpDocOutputTypeUseful ? "@return {$outputType}" : null,
@@ -372,7 +387,7 @@ class PhpCodeBuilder extends BuilderFactory
             [$outputType],
         );
 
-        $phpDoc = PhpDocHelper::fromLines([
+        $phpDoc = $this->phpDoc([
             'Generated mapper. Do not edit directly.',
             '',
             "@implements {$implementsType}",
