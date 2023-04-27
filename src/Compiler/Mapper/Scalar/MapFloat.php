@@ -19,12 +19,12 @@ class MapFloat implements MapperCompiler
     /**
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
      */
-    public const MIN_SAFE_INTEGER = -9_007_199_254_740_991;
+    final public const MIN_SAFE_INTEGER = -9_007_199_254_740_991;
 
     /**
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
      */
-    public const MAX_SAFE_INTEGER = +9_007_199_254_740_991;
+    final public const MAX_SAFE_INTEGER = +9_007_199_254_740_991;
 
     public function __construct(
         public readonly bool $allowInfinity = false,
