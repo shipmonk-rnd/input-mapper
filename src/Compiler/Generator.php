@@ -20,7 +20,7 @@ class Generator
         $namespaceName = $pos === false ? '' : substr($mapperClassName, 0, $pos);
         $shortClassName = $pos === false ? $mapperClassName : substr($mapperClassName, $pos + 1);
 
-        $builder = new PhpCodeBuilder();
+        $builder = new PhpCodeBuilder($namespaceName);
         $printer = new PhpCodePrinter();
 
         $mapperClass = $builder->mapperClass($shortClassName, $mapperCompiler)

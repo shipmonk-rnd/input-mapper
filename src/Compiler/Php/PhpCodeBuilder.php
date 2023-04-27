@@ -54,25 +54,32 @@ use function str_ends_with;
 class PhpCodeBuilder extends BuilderFactory
 {
 
+    private string $namespace;
+
+    /**
+     * @var array<string, string> alias => class like FQN
+     */
+    private array $classLikeImports = [];
+
+    /**
+     * @var array<string, string> alias => function FQN
+     */
+    private array $functionImports = [];
+
     /**
      * @var array<string, ClassMethod>
      */
     private array $methods = [];
 
     /**
-     * @var array<string, string>
-     */
-    private array $classLikeImports = [];
-
-    /**
-     * @var array<string, string>
-     */
-    private array $functionImports = [];
-
-    /**
      * @var array<int, array<string, bool>>
      */
     private array $variables = [];
+
+    public function __construct(string $namespace)
+    {
+        $this->namespace = $namespace;
+    }
 
     public function ternary(Expr $cond, Expr $ifTrue, Expr $else): Ternary
     {
@@ -402,6 +409,9 @@ class PhpCodeBuilder extends BuilderFactory
 
             if (!str_ends_with("\\{$fqn}", "\\{$alias}")) {
                 $use->as($alias);
+
+            } elseif ($fqn === "{$this->namespace}\\{$alias}") {
+                continue;
             }
 
             $classLikeImports[$fqn] = $use->getNode();
@@ -412,6 +422,9 @@ class PhpCodeBuilder extends BuilderFactory
 
             if (!str_ends_with("\\{$fqn}", "\\{$alias}")) {
                 $use->as($alias);
+
+            } elseif ($fqn === "{$this->namespace}\\{$alias}") {
+                continue;
             }
 
             $functionImports[$fqn] = $use->getNode();

@@ -2,7 +2,6 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\MappingFailedException;
