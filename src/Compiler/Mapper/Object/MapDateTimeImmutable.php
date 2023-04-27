@@ -17,6 +17,13 @@ use ShipMonk\InputMapper\Runtime\MappingFailedException;
 class MapDateTimeImmutable implements MapperCompiler
 {
 
+    public function __construct(
+        public readonly string $format = DateTimeInterface::RFC3339,
+        public readonly string $formatDescription = 'date-time string in RFC 3339 format',
+    )
+    {
+    }
+
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
         $mappedVariableName = $builder->uniqVariableName('mapped');
@@ -35,7 +42,7 @@ class MapDateTimeImmutable implements MapperCompiler
             $builder->assign(
                 $builder->var($mappedVariableName),
                 $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
-                    $builder->classConstFetch($builder->importClass(DateTimeInterface::class), 'RFC3339'),
+                    $this->format,
                     $value,
                 ]),
             ),
@@ -45,7 +52,7 @@ class MapDateTimeImmutable implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, 'date-time string in RFC 3339 format'],
+                        [$value, $path, $this->formatDescription],
                     ),
                 ),
             ]),

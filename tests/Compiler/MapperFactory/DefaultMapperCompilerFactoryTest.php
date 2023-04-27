@@ -37,6 +37,7 @@ use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
@@ -110,6 +111,15 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             DateTimeInterface::class,
             [],
             new MapDateTimeImmutable(),
+        ];
+
+        yield 'InputWithDate' => [
+            InputWithDate::class,
+            [],
+            new MapObject(InputWithDate::class, [
+                'date' => new MapDateTimeImmutable('Y-m-d', 'date string in Y-m-d format'),
+                'dateTime' => new DelegateMapperCompiler(DateTimeImmutable::class),
+            ]),
         ];
 
         yield 'array' => [
