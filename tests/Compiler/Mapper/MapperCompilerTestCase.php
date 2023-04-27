@@ -3,8 +3,9 @@
 namespace ShipMonkTests\InputMapper\Compiler\Mapper;
 
 use ReflectionClass;
-use ShipMonk\InputMapper\Compiler\Generator;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
@@ -37,8 +38,11 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
 
         if (!class_exists($mapperClassName, autoload: false)) {
-            $generator = new Generator();
-            self::assertSnapshot($mapperPath, $generator->generateMapperFile($mapperClassName, $mapperCompiler));
+            $builder = new PhpCodeBuilder();
+            $printer = new PhpCodePrinter();
+            $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
+
+            self::assertSnapshot($mapperPath, $mapperCode);
             require $mapperPath;
         }
 

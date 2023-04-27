@@ -5,9 +5,10 @@ namespace ShipMonk\InputMapper\Runtime;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use RuntimeException;
-use ShipMonk\InputMapper\Compiler\Generator;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -153,8 +154,10 @@ class MapperProvider
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
         $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName));
 
-        $generator = new Generator();
-        return $generator->generateMapperFile($mapperClassName, $mapperCompiler);
+        $codeBuilder = new PhpCodeBuilder();
+        $codePrinter = new PhpCodePrinter();
+
+        return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
     }
 
     /**

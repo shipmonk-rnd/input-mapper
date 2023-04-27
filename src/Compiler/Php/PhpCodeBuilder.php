@@ -25,11 +25,14 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Declare_;
+use PhpParser\Node\Stmt\DeclareDeclare;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\Use_;
@@ -50,11 +53,11 @@ use function assert;
 use function count;
 use function ksort;
 use function str_ends_with;
+use function strrpos;
+use function substr;
 
 class PhpCodeBuilder extends BuilderFactory
 {
-
-    private string $namespace;
 
     /**
      * @var array<string, string> alias => class like FQN
@@ -75,11 +78,6 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<int, array<string, bool>>
      */
     private array $variables = [];
-
-    public function __construct(string $namespace)
-    {
-        $this->namespace = $namespace;
-    }
 
     /**
      * @param array<?ArrayItem> $items
@@ -385,21 +383,37 @@ class PhpCodeBuilder extends BuilderFactory
             ->implement($this->importClass(Mapper::class))
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
-            ->addStmts($this->getMethods());
+            ->addStmts(array_values($this->methods));
     }
 
     /**
-     * @return list<ClassMethod>
+     * @return list<Stmt>
      */
-    public function getMethods(): array
+    public function mapperFile(string $mapperClassName, MapperCompiler $mapperCompiler): array
     {
-        return array_values($this->methods);
+        $pos = strrpos($mapperClassName, '\\');
+        $namespaceName = $pos === false ? '' : substr($mapperClassName, 0, $pos);
+        $shortClassName = $pos === false ? $mapperClassName : substr($mapperClassName, $pos + 1);
+
+        $mapperClass = $this->mapperClass($shortClassName, $mapperCompiler)
+            ->getNode();
+
+        $namespace = $this->namespace($namespaceName)
+            ->addStmts($this->getImports($namespaceName))
+            ->addStmt($mapperClass)
+            ->getNode();
+
+        return [
+            new Declare_([new DeclareDeclare('strict_types', $this->val(1))]),
+            new Nop(),
+            $namespace,
+        ];
     }
 
     /**
      * @return list<Use_>
      */
-    public function getImports(): array
+    private function getImports(string $namespace): array
     {
         $classLikeImports = [];
         $functionImports = [];
@@ -410,7 +424,7 @@ class PhpCodeBuilder extends BuilderFactory
             if (!str_ends_with("\\{$fqn}", "\\{$alias}")) {
                 $use->as($alias);
 
-            } elseif ($fqn === "{$this->namespace}\\{$alias}") {
+            } elseif ($fqn === "{$namespace}\\{$alias}") {
                 continue;
             }
 
@@ -423,7 +437,7 @@ class PhpCodeBuilder extends BuilderFactory
             if (!str_ends_with("\\{$fqn}", "\\{$alias}")) {
                 $use->as($alias);
 
-            } elseif ($fqn === "{$this->namespace}\\{$alias}") {
+            } elseif ($fqn === "{$namespace}\\{$alias}") {
                 continue;
             }
 
