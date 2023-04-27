@@ -19,6 +19,7 @@ use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -31,9 +32,7 @@ use function array_map;
 class PhpDocTypeUtilsTest extends InputMapperTestCase
 {
 
-    /**
-     * @dataProvider provideIsKeywordData
-     */
+    #[DataProvider('provideIsKeywordData')]
     public function testIsKeyword(string $name, bool $expected): void
     {
         self::assertSame($expected, PhpDocTypeUtils::isKeyword(new IdentifierTypeNode($name)));
@@ -134,9 +133,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         );
     }
 
-    /**
-     * @dataProvider provideToNativeTypeData
-     */
+    #[DataProvider('provideToNativeTypeData')]
     public function testToNativeType(
         TypeNode $type,
         ComplexType|Identifier|Name $expectedNative,
@@ -258,9 +255,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
     }
 
-    /**
-     * @dataProvider provideIsNullableData
-     */
+    #[DataProvider('provideIsNullableData')]
     public function testIsNullable(TypeNode $type, bool $expectedIsNullable): void
     {
         self::assertSame($expectedIsNullable, PhpDocTypeUtils::isNullable($type));
@@ -345,9 +340,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
     }
 
-    /**
-     * @dataProvider provideMakeNullableData
-     */
+    #[DataProvider('provideMakeNullableData')]
     public function testMakeNullable(TypeNode $type, TypeNode $expectedType): void
     {
         self::assertEquals($expectedType, PhpDocTypeUtils::makeNullable($type));
