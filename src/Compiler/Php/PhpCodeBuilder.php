@@ -81,9 +81,36 @@ class PhpCodeBuilder extends BuilderFactory
         $this->namespace = $namespace;
     }
 
-    public function ternary(Expr $cond, Expr $ifTrue, Expr $else): Ternary
+    /**
+     * @param array<?ArrayItem> $items
+     */
+    public function array(array $items): Array_
     {
-        return new Ternary($cond, $ifTrue, $else);
+        return new Array_($items, ['kind' => Array_::KIND_SHORT]);
+    }
+
+    public function arrayItem(Expr $value, ?Expr $key): ArrayItem
+    {
+        return new ArrayItem($value, $key);
+    }
+
+    public function arrayImmutableAppend(Expr $path, Expr $item): Expr
+    {
+        if ($path instanceof Array_) {
+            return $this->array([...$path->items, new ArrayItem($this->val($item))]);
+        }
+
+        return $this->array([new ArrayItem($path, unpack: true), new ArrayItem($this->val($item))]);
+    }
+
+    public function arrayDimFetch(Expr $var, ?Expr $dim = null): ArrayDimFetch
+    {
+        return new ArrayDimFetch($var, $dim);
+    }
+
+    public function not(Expr $expr): BooleanNot
+    {
+        return new BooleanNot($expr);
     }
 
     public function and(Expr $operand, Expr ...$rest): Expr
@@ -97,33 +124,7 @@ class PhpCodeBuilder extends BuilderFactory
     {
         return count($rest) === 0
             ? $operand
-            : new BooleanOr($operand, $this->or(...$rest));
-    }
-
-    /**
-     * @param list<Stmt>      $ifTrue
-     * @param list<Stmt>|null $else
-     */
-    public function if(Expr $cond, array $ifTrue, ?array $else = null): If_
-    {
-        $elseIfClauses = [];
-        $elseClause = null;
-
-        while ($else !== null && count($else) === 1 && $else[0] instanceof If_ && count($else[0]->elseifs) === 0) {
-            $elseIfClauses[] = new ElseIf_($else[0]->cond, $else[0]->stmts);
-            $else = $else[0]->else?->stmts;
-        }
-
-        if ($else !== null) {
-            $elseClause = new Else_($else);
-        }
-
-        return new If_($cond, ['stmts' => $ifTrue, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
-    }
-
-    public function not(Expr $expr): BooleanNot
-    {
-        return new BooleanNot($expr);
+            : new BooleanOr($this->or($operand, ...array_slice($rest, 0, -1)), array_slice($rest, -1)[0]);
     }
 
     public function same(Expr $left, Expr $right): Identical
@@ -156,6 +157,40 @@ class PhpCodeBuilder extends BuilderFactory
         return new GreaterOrEqual($left, $right);
     }
 
+    public function ternary(Expr $cond, Expr $ifTrue, Expr $else): Ternary
+    {
+        return new Ternary($cond, $ifTrue, $else);
+    }
+
+    /**
+     * @param list<Stmt>      $ifTrue
+     * @param list<Stmt>|null $else
+     */
+    public function if(Expr $cond, array $ifTrue, ?array $else = null): If_
+    {
+        $elseIfClauses = [];
+        $elseClause = null;
+
+        while ($else !== null && count($else) === 1 && $else[0] instanceof If_ && count($else[0]->elseifs) === 0) {
+            $elseIfClauses[] = new ElseIf_($else[0]->cond, $else[0]->stmts);
+            $else = $else[0]->else?->stmts;
+        }
+
+        if ($else !== null) {
+            $elseClause = new Else_($else);
+        }
+
+        return new If_($cond, ['stmts' => $ifTrue, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
+    }
+
+    /**
+     * @param list<Stmt> $statements
+     */
+    public function foreach(Expr $expr, Expr $value, Expr $key, array $statements): Foreach_
+    {
+        return new Foreach_($expr, $value, ['stmts' => $statements, 'keyVar' => $key]);
+    }
+
     /**
      * @param array<int|string, scalar|array<mixed>|Expr|Arg|null> $args
      */
@@ -169,11 +204,6 @@ class PhpCodeBuilder extends BuilderFactory
         return new Throw_($expr);
     }
 
-    public function arrayDimFetch(Expr $var, ?Expr $dim = null): ArrayDimFetch
-    {
-        return new ArrayDimFetch($var, $dim);
-    }
-
     public function assign(Expr $var, Expr $expr): Expression
     {
         return new Expression(new Assign($var, $expr));
@@ -182,36 +212,6 @@ class PhpCodeBuilder extends BuilderFactory
     public function return(Expr $expr): Return_
     {
         return new Return_($expr);
-    }
-
-    /**
-     * @param array<?ArrayItem> $items
-     */
-    public function array(array $items): Array_
-    {
-        return new Array_($items, ['kind' => Array_::KIND_SHORT]);
-    }
-
-    public function arrayItem(Expr $value, ?Expr $key): ArrayItem
-    {
-        return new ArrayItem($value, $key);
-    }
-
-    public function arrayImmutableAppend(Expr $path, Expr $item): Expr
-    {
-        if ($path instanceof Array_) {
-            return $this->array([...$path->items, new ArrayItem($this->val($item))]);
-        }
-
-        return $this->array([new ArrayItem($path, unpack: true), new ArrayItem($this->val($item))]);
-    }
-
-    /**
-     * @param list<Stmt> $statements
-     */
-    public function foreach(Expr $expr, Expr $value, Expr $key, array $statements): Foreach_
-    {
-        return new Foreach_($expr, $value, ['stmts' => $statements, 'keyVar' => $key]);
     }
 
     public function uniqMethodName(string $name): string
