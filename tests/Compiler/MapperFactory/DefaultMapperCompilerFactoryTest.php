@@ -91,7 +91,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             new MapObject(
                 BrandInput::class,
                 ['name' => new MapString()],
-                allowExtraProperties: true,
+                allowExtraKeys: true,
             ),
         ];
 
