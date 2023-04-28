@@ -95,7 +95,7 @@ class MapObjectTest extends MapperCompilerTestCase
                 'name' => new MapString(),
                 'age' => new MapOptional(new MapInt()),
             ],
-            allowExtraProperties: true,
+            allowExtraKeys: true,
         );
 
         $mapper = $this->compileMapper('PersonWithAllowedExtraProperties', $mapperCompiler);
