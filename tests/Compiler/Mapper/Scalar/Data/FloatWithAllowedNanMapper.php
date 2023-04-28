@@ -33,7 +33,11 @@ class FloatWithAllowedNanMapper implements Mapper
             }
 
             $mapped = $data;
-        } elseif (is_int($data) && $data >= -9007199254740991 && $data <= 9007199254740991) {
+        } elseif (is_int($data)) {
+            if ($data < -9007199254740991 || $data > 9007199254740991) {
+                throw MappingFailedException::incorrectValue($data, $path, 'float or int with value that can be losslessly converted to float');
+            }
+
             $mapped = floatval($data);
         } else {
             throw MappingFailedException::incorrectType($data, $path, 'float');
