@@ -64,19 +64,19 @@ class MapFloatTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected float, got 9223372036854775807',
+            'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got 9223372036854775807',
             static fn() => $mapper->map(9_223_372_036_854_775_807),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected float, got 9007199254740992',
+            'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got 9007199254740992',
             static fn() => $mapper->map(+9_007_199_254_740_992),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected float, got -9007199254740992',
+            'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got -9007199254740992',
             static fn() => $mapper->map(-9_007_199_254_740_992),
         );
     }

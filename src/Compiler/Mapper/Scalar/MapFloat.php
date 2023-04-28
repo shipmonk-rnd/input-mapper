@@ -38,12 +38,7 @@ class MapFloat implements MapperCompiler
         $mappedVariableName = $builder->uniqVariableName('mapped');
 
         $isFloat = $builder->funcCall($builder->importFunction('is_float'), [$value]);
-
-        $isSafeInt = $builder->and(
-            $builder->funcCall($builder->importFunction('is_int'), [$value]),
-            $builder->gte($value, $builder->val(self::MIN_SAFE_INTEGER)),
-            $builder->lte($value, $builder->val(self::MAX_SAFE_INTEGER)),
-        );
+        $isInt = $builder->funcCall($builder->importFunction('is_int'), [$value]);
 
         $statements = [
             $builder->if(
@@ -54,8 +49,9 @@ class MapFloat implements MapperCompiler
                 ],
                 else: [
                     $builder->if(
-                        if: $isSafeInt,
+                        if: $isInt,
                         then: [
+                            ...$this->createSafeIntCheckStatements($value, $path, $builder),
                             $builder->assign($builder->var($mappedVariableName), $builder->funcCall($builder->importFunction('floatval'), [$value])),
                         ],
                         else: [
@@ -113,6 +109,29 @@ class MapFloat implements MapperCompiler
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
                         [$value, $path, $finiteLabel],
+                    ),
+                ),
+            ]),
+        ];
+    }
+
+    /**
+     * @return list<Stmt>
+     */
+    private function createSafeIntCheckStatements(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    {
+        $isUnsafeInt = $builder->or(
+            $builder->lt($value, $builder->val(self::MIN_SAFE_INTEGER)),
+            $builder->gt($value, $builder->val(self::MAX_SAFE_INTEGER)),
+        );
+
+        return [
+            $builder->if($isUnsafeInt, [
+                $builder->throw(
+                    $builder->staticCall(
+                        $builder->importClass(MappingFailedException::class),
+                        'incorrectValue',
+                        [$value, $path, 'float or int with value that can be losslessly converted to float'],
                     ),
                 ),
             ]),
