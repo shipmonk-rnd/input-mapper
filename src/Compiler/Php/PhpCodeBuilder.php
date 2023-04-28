@@ -162,10 +162,10 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
-     * @param list<Stmt>      $ifTrue
+     * @param list<Stmt>      $then
      * @param list<Stmt>|null $else
      */
-    public function if(Expr $cond, array $ifTrue, ?array $else = null): If_
+    public function if(Expr $if, array $then, ?array $else = null): If_
     {
         $elseIfClauses = [];
         $elseClause = null;
@@ -179,7 +179,7 @@ class PhpCodeBuilder extends BuilderFactory
             $elseClause = new Else_($else);
         }
 
-        return new If_($cond, ['stmts' => $ifTrue, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
+        return new If_($if, ['stmts' => $then, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
     }
 
     /**
