@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Php;
 
 use LogicException;
+use Nette\Utils\Arrays;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
@@ -24,6 +25,7 @@ use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\DeclareDeclare;
@@ -69,6 +71,11 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<string, string> alias => function FQN
      */
     private array $functionImports = [];
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $constants = [];
 
     /**
      * @var array<string, ClassMethod>
@@ -213,6 +220,18 @@ class PhpCodeBuilder extends BuilderFactory
         return new Return_($expr);
     }
 
+    public function uniqConstantName(string $name, mixed $value): string
+    {
+        $i = 1;
+        $uniqueName = $name;
+
+        while (isset($this->constants[$uniqueName]) && $this->constants[$uniqueName] !== $value) {
+            $uniqueName = $name . ++$i;
+        }
+
+        return $uniqueName;
+    }
+
     public function uniqMethodName(string $name): string
     {
         $i = 1;
@@ -271,6 +290,15 @@ class PhpCodeBuilder extends BuilderFactory
         } finally {
             array_pop($this->variables);
         }
+    }
+
+    public function addConstant(string $name, mixed $value): void
+    {
+        if (isset($this->constants[$name]) && $this->constants[$name] !== $value) {
+            throw new LogicException('Constant already exists with different value');
+        }
+
+        $this->constants[$name] = $value;
     }
 
     public function addMethod(ClassMethod $method): void
@@ -393,9 +421,19 @@ class PhpCodeBuilder extends BuilderFactory
             "@implements {$implementsType}",
         ]);
 
+        $constants = Arrays::map(
+            $this->constants,
+            function (mixed $value, string $name): ClassConst {
+                return $this->classConst($name, $value)
+                    ->makePrivate()
+                    ->getNode();
+            },
+        );
+
         return $this->class($shortClassName)
             ->setDocComment($phpDoc)
             ->implement($this->importClass(Mapper::class))
+            ->addStmts($constants)
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
             ->addStmts(array_values($this->methods));

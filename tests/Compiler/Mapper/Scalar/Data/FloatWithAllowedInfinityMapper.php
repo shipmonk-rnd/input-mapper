@@ -17,6 +17,10 @@ use function is_nan;
  */
 class FloatWithAllowedInfinityMapper implements Mapper
 {
+    private const MIN_SAFE_INTEGER = -9007199254740991;
+
+    private const MAX_SAFE_INTEGER = 9007199254740991;
+
     public function __construct(private readonly MapperProvider $provider)
     {
     }
@@ -34,7 +38,7 @@ class FloatWithAllowedInfinityMapper implements Mapper
 
             $mapped = $data;
         } elseif (is_int($data)) {
-            if ($data < -9007199254740991 || $data > 9007199254740991) {
+            if ($data < self::MIN_SAFE_INTEGER || $data > self::MAX_SAFE_INTEGER) {
                 throw MappingFailedException::incorrectValue($data, $path, 'float or int with value that can be losslessly converted to float');
             }
 

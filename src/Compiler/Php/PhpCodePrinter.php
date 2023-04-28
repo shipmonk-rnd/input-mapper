@@ -6,6 +6,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
@@ -39,6 +40,11 @@ class PhpCodePrinter extends Standard
         $code = Strings::replace($code, '#\n{3,}#', "\n\n");
         $code = Strings::replace($code, '#\}\n{2,}(\h++\})#', "}\n$1");
         return $code . "\n";
+    }
+
+    protected function pStmt_ClassConst(ClassConst $node): string
+    {
+        return parent::pStmt_ClassConst($node) . "\n";
     }
 
     protected function pStmt_ClassMethod(ClassMethod $node): string

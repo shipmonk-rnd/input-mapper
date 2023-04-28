@@ -120,9 +120,15 @@ class MapFloat implements MapperCompiler
      */
     private function createSafeIntCheckStatements(Expr $value, Expr $path, PhpCodeBuilder $builder): array
     {
+        $minSafeIntConstName = $builder->uniqConstantName('MIN_SAFE_INTEGER', self::MIN_SAFE_INTEGER);
+        $maxSafeIntConstName = $builder->uniqConstantName('MAX_SAFE_INTEGER', self::MAX_SAFE_INTEGER);
+
+        $builder->addConstant($minSafeIntConstName, self::MIN_SAFE_INTEGER);
+        $builder->addConstant($maxSafeIntConstName, self::MAX_SAFE_INTEGER);
+
         $isUnsafeInt = $builder->or(
-            $builder->lt($value, $builder->val(self::MIN_SAFE_INTEGER)),
-            $builder->gt($value, $builder->val(self::MAX_SAFE_INTEGER)),
+            $builder->lt($value, $builder->classConstFetch('self', $minSafeIntConstName)),
+            $builder->gt($value, $builder->classConstFetch('self', $maxSafeIntConstName)),
         );
 
         return [
