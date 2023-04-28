@@ -47,15 +47,15 @@ class MapFloat implements MapperCompiler
 
         $statements = [
             $builder->if(
-                cond: $isFloat,
-                ifTrue: [
+                if: $isFloat,
+                then: [
                     ...$this->createFiniteCheckStatements($value, $path, $builder),
                     $builder->assign($builder->var($mappedVariableName), $value),
                 ],
                 else: [
                     $builder->if(
-                        cond: $isSafeInt,
-                        ifTrue: [
+                        if: $isSafeInt,
+                        then: [
                             $builder->assign($builder->var($mappedVariableName), $builder->funcCall($builder->importFunction('floatval'), [$value])),
                         ],
                         else: [
