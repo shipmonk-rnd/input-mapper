@@ -10,6 +10,9 @@
     failOnRisky="true"
     failOnWarning="true"
     failOnNotice="true"
+    displayDetailsOnTestsThatTriggerErrors="true"
+    displayDetailsOnTestsThatTriggerWarnings="true"
+    displayDetailsOnTestsThatTriggerNotices="true"
     cacheDirectory="cache/phpunit"
 >
     <testsuites>
