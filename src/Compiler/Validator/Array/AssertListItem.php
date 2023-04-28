@@ -24,7 +24,7 @@ class AssertListItem implements ValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder,): array
+    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): array
     {
         [$itemVariableName, $indexVariableName] = $builder->uniqVariableNames('item', 'index');
         $foreachBody = [];
