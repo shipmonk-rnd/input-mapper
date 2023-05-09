@@ -36,6 +36,7 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
@@ -72,6 +73,17 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             CarInput::class,
             [],
             new MapObject(CarInput::class, [
+                'id' => new MapInt(),
+                'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
+                'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
+                'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
+            ]),
+        ];
+
+        yield 'CarInputWithVarTags' => [
+            CarInputWithVarTags::class,
+            [],
+            new MapObject(CarInputWithVarTags::class, [
                 'id' => new MapInt(),
                 'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
                 'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),

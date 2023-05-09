@@ -11,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
@@ -243,6 +244,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
      */
     protected function getConstructorParameterTypes(ReflectionMethod $constructor): array
     {
+        $class = $constructor->getDeclaringClass();
         $parameterTypes = [];
 
         foreach ($constructor->getParameters() as $parameter) {
@@ -252,14 +254,36 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $parameterTypes[$parameterName] = $parameterType;
         }
 
-        $docComment = $constructor->getDocComment();
+        $constructorDocComment = $constructor->getDocComment();
 
-        if ($docComment !== false) {
-            foreach ($this->parsePhpDoc($docComment)->children as $node) {
+        if ($constructorDocComment !== false) {
+            foreach ($this->parsePhpDoc($constructorDocComment)->children as $node) {
                 if ($node instanceof PhpDocTagNode && $node->value instanceof ParamTagValueNode) {
-                    PhpDocTypeUtils::resolve($node->value->type, $constructor->getDeclaringClass());
+                    PhpDocTypeUtils::resolve($node->value->type, $class);
                     $parameterName = substr($node->value->parameterName, 1);
                     $parameterTypes[$parameterName] = $node->value->type;
+                }
+            }
+        }
+
+        foreach ($constructor->getParameters() as $parameter) {
+            if (!$parameter->isPromoted()) {
+                continue;
+            }
+
+            $parameterName = $parameter->getName();
+            $propertyDocComment = $class->getProperty($parameterName)->getDocComment();
+
+            if ($propertyDocComment !== false) {
+                foreach ($this->parsePhpDoc($propertyDocComment)->children as $node) {
+                    if (
+                        $node instanceof PhpDocTagNode
+                        && $node->value instanceof VarTagValueNode
+                        && ($node->value->variableName === '' || substr($node->value->variableName, 1) === $parameterName)
+                    ) {
+                        PhpDocTypeUtils::resolve($node->value->type, $class);
+                        $parameterTypes[$parameterName] = $node->value->type;
+                    }
                 }
             }
         }
