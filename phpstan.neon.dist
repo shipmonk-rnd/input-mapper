@@ -16,6 +16,10 @@ parameters:
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
     checkBenevolentUnionTypes: true
 
+    exceptions:
+        checkedExceptionClasses:
+            - ShipMonk\InputMapper\Runtime\Exception\RuntimeException
+
     shipmonkRules:
         allowNamedArgumentOnlyInAttributes:
             enabled: false

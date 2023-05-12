@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapper\Runtime;
 
-use RuntimeException;
+use ShipMonk\InputMapper\Runtime\Exception\RuntimeException;
 use Throwable;
 use function array_map;
 use function array_slice;
