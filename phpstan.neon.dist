@@ -17,6 +17,9 @@ parameters:
     checkBenevolentUnionTypes: true
 
     exceptions:
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
         checkedExceptionClasses:
             - ShipMonk\InputMapper\Runtime\Exception\RuntimeException
 
@@ -28,3 +31,9 @@ parameters:
         -
             message: '#Property [\w\\]++::\$provider is never read, only written\.#'
             paths: [tests/**/Data/*.php]
+        -
+            message: '#has ShipMonk\\InputMapper\\Runtime\\MappingFailedException in PHPDoc @throws tag but it''s not thrown.#'
+            paths: [tests/**/Data/*.php]
+        -
+            message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
+            paths: [tests/**/*Test.php]
