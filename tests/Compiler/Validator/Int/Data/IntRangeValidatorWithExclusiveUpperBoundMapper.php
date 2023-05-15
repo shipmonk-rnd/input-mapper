@@ -2,9 +2,9 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Int\Data;
 
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function is_int;
 
 /**

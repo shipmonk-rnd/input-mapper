@@ -2,7 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator;
 
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\Data\AssertMultipleOfSeven;
 
 class AssertRuntimeTest extends ValidatorCompilerTestCase

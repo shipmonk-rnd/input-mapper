@@ -6,7 +6,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapArrayShapeTest extends MapperCompilerTestCase

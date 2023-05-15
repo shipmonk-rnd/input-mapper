@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function array_fill_keys;
 use function array_keys;
 use function array_push;

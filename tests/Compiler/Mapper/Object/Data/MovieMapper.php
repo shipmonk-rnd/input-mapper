@@ -2,9 +2,9 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_diff_key;
 use function array_is_list;

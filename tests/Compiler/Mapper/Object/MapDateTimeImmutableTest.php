@@ -4,7 +4,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
 
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapDateTimeImmutableTest extends MapperCompilerTestCase

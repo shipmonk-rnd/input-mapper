@@ -5,7 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapArrayTest extends MapperCompilerTestCase

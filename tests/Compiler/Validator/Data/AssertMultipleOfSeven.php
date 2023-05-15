@@ -3,7 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Data;
 
 use ShipMonk\InputMapper\Compiler\Validator\AssertRuntime;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function is_int;
 
 class AssertMultipleOfSeven extends AssertRuntime

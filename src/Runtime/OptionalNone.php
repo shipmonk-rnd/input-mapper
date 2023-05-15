@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Runtime;
 
 use LogicException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
  * @extends Optional<never>

@@ -3,9 +3,9 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Float\Data;
 
 use Nette\Utils\Floats;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function is_float;
 
 /**

@@ -5,7 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\Array;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListItem;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertListItemTest extends ValidatorCompilerTestCase

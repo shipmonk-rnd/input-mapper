@@ -3,7 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String;
 
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertUrlTest extends ValidatorCompilerTestCase

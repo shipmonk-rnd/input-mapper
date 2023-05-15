@@ -3,7 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Int;
 
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertIntRangeTest extends ValidatorCompilerTestCase

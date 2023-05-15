@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
