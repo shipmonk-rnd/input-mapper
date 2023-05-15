@@ -2,9 +2,9 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Array\Data;
 
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_is_list;
 use function is_array;
 use function is_int;

@@ -3,7 +3,7 @@
 namespace ShipMonkTests\InputMapper\Runtime;
 
 use LogicException;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 

@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime;
+namespace ShipMonkTests\InputMapper\Runtime\Exception;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function str_repeat;
 use const INF;

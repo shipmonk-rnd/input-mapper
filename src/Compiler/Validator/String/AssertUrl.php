@@ -8,7 +8,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class AssertUrl implements ValidatorCompiler

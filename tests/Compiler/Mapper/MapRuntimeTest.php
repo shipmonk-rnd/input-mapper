@@ -2,7 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper;
 
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Data\MapMultiplyBySeven;
 
 class MapRuntimeTest extends MapperCompilerTestCase

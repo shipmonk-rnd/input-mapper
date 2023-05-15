@@ -2,9 +2,9 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function array_column;
 use function implode;
 use function is_string;

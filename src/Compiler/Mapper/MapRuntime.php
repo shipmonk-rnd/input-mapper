@@ -5,7 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Mapper;
 use PhpParser\Node\Expr;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 abstract class MapRuntime implements MapperCompiler
 {

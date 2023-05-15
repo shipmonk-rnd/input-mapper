@@ -33,8 +33,8 @@ parameters:
             message: '#Property [\w\\]++::\$provider is never read, only written\.#'
             paths: [tests/**/Data/*.php]
         -
-            message: '#has ShipMonk\\InputMapper\\Runtime\\MappingFailedException in PHPDoc @throws tag but it''s not thrown.#'
+            message: '#has ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException in PHPDoc @throws tag but it''s not thrown.#'
             paths: [tests/**/Data/*.php]
         -
-            message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
+            message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
             paths: [tests/**/*Test.php]

@@ -3,9 +3,9 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String\Data;
 
 use Nette\Utils\Validators;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
 use function is_string;
 
 /**

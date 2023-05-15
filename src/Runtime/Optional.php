@@ -2,6 +2,8 @@
 
 namespace ShipMonk\InputMapper\Runtime;
 
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+
 /**
  * @template-covariant T
  */

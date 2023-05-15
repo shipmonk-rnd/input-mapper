@@ -1,8 +1,7 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonk\InputMapper\Runtime;
+namespace ShipMonk\InputMapper\Runtime\Exception;
 
-use ShipMonk\InputMapper\Runtime\Exception\RuntimeException;
 use Throwable;
 use function array_map;
 use function array_slice;
@@ -36,7 +35,7 @@ class MappingFailedException extends RuntimeException
     private function __construct(array $path, string $reason, ?Throwable $previous = null)
     {
         $jsonPointer = self::toJsonPointer($path);
-        parent::__construct("Failed to map data at path {$jsonPointer}: {$reason}", 0, $previous);
+        parent::__construct("Failed to map data at path {$jsonPointer}: {$reason}", $previous);
     }
 
     /**

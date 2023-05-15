@@ -3,7 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
-use ShipMonk\InputMapper\Runtime\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapBoolTest extends MapperCompilerTestCase
