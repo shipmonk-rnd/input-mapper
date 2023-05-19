@@ -43,10 +43,22 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(timezone: 'Europe/Prague');
+        $mapperCompiler = new MapDateTimeImmutable(defaultTimezone: 'Europe/Prague', targetTimezone: 'Europe/Prague');
 
         /** @var Mapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateTimeImmutableWithTimeZone', $mapperCompiler);
+
+        self::assertSame('1985-04-13T01:20:50.000+02:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
+        self::assertSame('1985-04-13T01:20:50.123+02:00', $mapper->map('1985-04-12T23:20:50.123Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
+        self::assertSame('1937-01-01T12:40:27.000+01:00', $mapper->map('1937-01-01T12:00:27+00:20')->format(DateTimeImmutable::RFC3339_EXTENDED));
+    }
+
+    public function testCompileWithTargetTimeZone(): void
+    {
+        $mapperCompiler = new MapDateTimeImmutable(targetTimezone: 'Europe/Prague');
+
+        /** @var Mapper<DateTimeImmutable> $mapper */
+        $mapper = $this->compileMapper('DateTimeImmutableWithTargetTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-13T01:20:50.000+02:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
         self::assertSame('1985-04-13T01:20:50.123+02:00', $mapper->map('1985-04-12T23:20:50.123Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -83,12 +95,60 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(['!Y-m-d'], 'date string in Y-m-d format', 'Europe/Prague');
+        $mapperCompiler = new MapDateTimeImmutable(
+            format: ['!Y-m-d'],
+            formatDescription: 'date string in Y-m-d format',
+            defaultTimezone: 'Europe/Prague',
+            targetTimezone: 'Europe/Prague',
+        );
 
         /** @var Mapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateWithTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000+02:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
+    }
+
+    public function testCompileWithCustomFormatAndDefaultTimeZone(): void
+    {
+        $mapperCompiler = new MapDateTimeImmutable(
+            format: ['!Y-m-d'],
+            formatDescription: 'date string in Y-m-d format',
+            defaultTimezone: 'America/New_York',
+        );
+
+        /** @var Mapper<DateTimeImmutable> $mapper */
+        $mapper = $this->compileMapper('DateWithDefaultTimeZone', $mapperCompiler);
+
+        self::assertSame('1985-04-12T00:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
+    }
+
+    public function testCompileWithCustomFormatAndTargetTimeZone(): void
+    {
+        $mapperCompiler = new MapDateTimeImmutable(
+            format: ['!Y-m-d'],
+            formatDescription: 'date string in Y-m-d format',
+            targetTimezone: 'America/New_York',
+        );
+
+        /** @var Mapper<DateTimeImmutable> $mapper */
+        $mapper = $this->compileMapper('DateWithTargetTimeZone', $mapperCompiler);
+
+        self::assertSame('1985-04-11T19:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
+    }
+
+    public function testCompileWithCustomFormatAndDistinctDefaultAndTargetTimeZone(): void
+    {
+        $mapperCompiler = new MapDateTimeImmutable(
+            format: ['!Y-m-d'],
+            formatDescription: 'date string in Y-m-d format',
+            defaultTimezone: 'Europe/Prague',
+            targetTimezone: 'America/New_York',
+        );
+
+        /** @var Mapper<DateTimeImmutable> $mapper */
+        $mapper = $this->compileMapper('DateWithDistinctDefaultAndTargetTimeZone', $mapperCompiler);
+
+        self::assertSame('1985-04-11T17:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
     }
 
 }
