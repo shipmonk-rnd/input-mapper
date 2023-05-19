@@ -108,13 +108,17 @@ class PhpCodePrinter extends Standard
 
     protected function pExpr_New(New_ $node): string
     {
+        $argsFormatted = match (count($node->args)) {
+            0 => '()',
+            1 => '(' . $this->p($node->args[0]) . ')',
+            default => '(' . $this->pCommaSeparatedMultiline($node->args, true) . "{$this->nl})",
+        };
+
         if ($node->class instanceof Class_) {
-            $args = count($node->args) > 0 ? '(' . $this->pCommaSeparatedMultiline($node->args, true) . "{$this->nl})" : '';
-            return 'new ' . $this->pClassCommon($node->class, $args);
+            return 'new ' . $this->pClassCommon($node->class, $argsFormatted);
         }
 
-        return 'new ' . $this->pNewVariable($node->class)
-            . '(' . $this->pCommaSeparatedMultiline($node->args, true) . "{$this->nl})";
+        return 'new ' . $this->pNewVariable($node->class) . $argsFormatted;
     }
 
 }
