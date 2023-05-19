@@ -30,9 +30,7 @@ class DateWithTimeZoneMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $timezone = new DateTimeZone(
-            'Europe/Prague',
-        );
+        $timezone = new DateTimeZone('Europe/Prague');
         $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data, $timezone);
 
         if ($mapped === false) {
