@@ -27,7 +27,8 @@ class MapDateTimeImmutable implements MapperCompiler
     public function __construct(
         public readonly string|array $format = [DateTimeInterface::RFC3339, DateTimeInterface::RFC3339_EXTENDED],
         public readonly string $formatDescription = 'date-time string in RFC 3339 format',
-        public readonly ?string $timezone = null,
+        public readonly ?string $defaultTimezone = null,
+        public readonly ?string $targetTimezone = null,
     )
     {
     }
@@ -37,7 +38,7 @@ class MapDateTimeImmutable implements MapperCompiler
         $mappedVariableName = $builder->uniqVariableName('mapped');
         $timezoneVariableName = $builder->uniqVariableName('timezone');
 
-        if ($this->timezone === null) {
+        if ($this->defaultTimezone === null) {
             $timezoneArgs = [];
             $timezoneInitStatements = [];
 
@@ -46,7 +47,7 @@ class MapDateTimeImmutable implements MapperCompiler
             $timezoneInitStatements = [
                 $builder->assign(
                     $builder->var($timezoneVariableName),
-                    $builder->new($builder->importClass(DateTimeZone::class), [$this->timezone]),
+                    $builder->new($builder->importClass(DateTimeZone::class), [$this->defaultTimezone]),
                 ),
             ];
         }
@@ -99,10 +100,14 @@ class MapDateTimeImmutable implements MapperCompiler
             ),
         ]);
 
-        if ($this->timezone !== null) {
+        if ($this->targetTimezone !== null) {
+            $targetTimezone = $this->targetTimezone === $this->defaultTimezone
+                ? $builder->var($timezoneVariableName)
+                : $builder->new($builder->importClass(DateTimeZone::class), [$this->targetTimezone]);
+
             $statements[] = $builder->assign(
                 $builder->var($mappedVariableName),
-                $builder->methodCall($builder->var($mappedVariableName), 'setTimezone', [$builder->var($timezoneVariableName)]),
+                $builder->methodCall($builder->var($mappedVariableName), 'setTimezone', [$targetTimezone]),
             );
         }
 

@@ -14,7 +14,7 @@ use function is_string;
  *
  * @implements Mapper<DateTimeImmutable>
  */
-class DateStandaloneWithTimeZoneMapper implements Mapper
+class DateWithDefaultTimeZoneMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -30,7 +30,7 @@ class DateStandaloneWithTimeZoneMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $timezone = new DateTimeZone('Europe/Prague');
+        $timezone = new DateTimeZone('America/New_York');
         $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data, $timezone);
 
         if ($mapped === false) {
