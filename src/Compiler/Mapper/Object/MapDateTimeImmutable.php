@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
 use Attribute;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -34,6 +35,21 @@ class MapDateTimeImmutable implements MapperCompiler
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
         $mappedVariableName = $builder->uniqVariableName('mapped');
+        $timezoneVariableName = $builder->uniqVariableName('timezone');
+
+        if ($this->timezone === null) {
+            $timezoneArgs = [];
+            $timezoneInitStatements = [];
+
+        } else {
+            $timezoneArgs = [$builder->var($timezoneVariableName)];
+            $timezoneInitStatements = [
+                $builder->assign(
+                    $builder->var($timezoneVariableName),
+                    $builder->new($builder->importClass(DateTimeZone::class), [$this->timezone]),
+                ),
+            ];
+        }
 
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_string'), [$value])), [
@@ -46,11 +62,14 @@ class MapDateTimeImmutable implements MapperCompiler
                 ),
             ]),
 
+            ...$timezoneInitStatements,
+
             $builder->assign(
                 $builder->var($mappedVariableName),
                 $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
                     is_string($this->format) ? $this->format : $this->format[0],
                     $value,
+                    ...$timezoneArgs,
                 ]),
             ),
         ];
@@ -63,6 +82,7 @@ class MapDateTimeImmutable implements MapperCompiler
                         $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
                             $this->format[$i],
                             $value,
+                            ...$timezoneArgs,
                         ]),
                     ),
                 ]);
@@ -78,6 +98,13 @@ class MapDateTimeImmutable implements MapperCompiler
                 ),
             ),
         ]);
+
+        if ($this->timezone !== null) {
+            $statements[] = $builder->assign(
+                $builder->var($mappedVariableName),
+                $builder->methodCall($builder->var($mappedVariableName), 'setTimezone', [$builder->var($timezoneVariableName)]),
+            );
+        }
 
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
