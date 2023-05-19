@@ -15,8 +15,8 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
         $mapperCompiler = new MapDateTimeImmutable();
         $mapper = $this->compileMapper('DateTimeImmutable', $mapperCompiler);
 
-        self::assertEquals(new DateTimeImmutable('1985-04-12T23:20:50Z'), $mapper->map('1985-04-12T23:20:50Z'));
-        self::assertEquals(new DateTimeImmutable('1937-01-01T12:00:27+00:20'), $mapper->map('1937-01-01T12:00:27+00:20'));
+        self::assertSame('1985-04-12T23:20:50.000+00:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
+        self::assertSame('1937-01-01T12:00:27.000+00:20', $mapper->map('1937-01-01T12:00:27+00:20')->format(DateTimeImmutable::RFC3339_EXTENDED));
 
         self::assertException(
             MappingFailedException::class,
@@ -42,7 +42,7 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
         $mapperCompiler = new MapDateTimeImmutable('!Y-m-d', 'date string in Y-m-d format');
         $mapper = $this->compileMapper('Date', $mapperCompiler);
 
-        self::assertEquals(new DateTimeImmutable('1985-04-12T00:00:00Z'), $mapper->map('1985-04-12'));
+        self::assertSame('1985-04-12T00:00:00.000+00:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
 
         self::assertException(
             MappingFailedException::class,
