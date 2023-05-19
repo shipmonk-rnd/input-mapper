@@ -32,6 +32,10 @@ class DateTimeImmutableMapper implements Mapper
         $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:sP', $data);
 
         if ($mapped === false) {
+            $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:s.vP', $data);
+        }
+
+        if ($mapped === false) {
             throw MappingFailedException::incorrectValue($data, $path, 'date-time string in RFC 3339 format');
         }
 

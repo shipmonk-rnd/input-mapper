@@ -12,14 +12,21 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use function count;
+use function is_array;
+use function is_string;
 
 #[Attribute(Attribute::TARGET_PARAMETER)]
 class MapDateTimeImmutable implements MapperCompiler
 {
 
+    /**
+     * @param string|non-empty-list<string> $format
+     */
     public function __construct(
-        public readonly string $format = DateTimeInterface::RFC3339,
+        public readonly string|array $format = [DateTimeInterface::RFC3339, DateTimeInterface::RFC3339_EXTENDED],
         public readonly string $formatDescription = 'date-time string in RFC 3339 format',
+        public readonly ?string $timezone = null,
     )
     {
     }
@@ -42,21 +49,35 @@ class MapDateTimeImmutable implements MapperCompiler
             $builder->assign(
                 $builder->var($mappedVariableName),
                 $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
-                    $this->format,
+                    is_string($this->format) ? $this->format : $this->format[0],
                     $value,
                 ]),
             ),
-
-            $builder->if($builder->same($builder->var($mappedVariableName), $builder->val(false)), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectValue',
-                        [$value, $path, $this->formatDescription],
-                    ),
-                ),
-            ]),
         ];
+
+        if (is_array($this->format)) {
+            for ($i = 1; $i < count($this->format); $i++) {
+                $statements[] = $builder->if($builder->same($builder->var($mappedVariableName), $builder->val(false)), [
+                    $builder->assign(
+                        $builder->var($mappedVariableName),
+                        $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
+                            $this->format[$i],
+                            $value,
+                        ]),
+                    ),
+                ]);
+            }
+        }
+
+        $statements[] = $builder->if($builder->same($builder->var($mappedVariableName), $builder->val(false)), [
+            $builder->throw(
+                $builder->staticCall(
+                    $builder->importClass(MappingFailedException::class),
+                    'incorrectValue',
+                    [$value, $path, $this->formatDescription],
+                ),
+            ),
+        ]);
 
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
