@@ -22,7 +22,9 @@ class MapDateTimeImmutable implements MapperCompiler
 {
 
     /**
-     * @param string|non-empty-list<string> $format
+     * @param string|non-empty-list<string> $format if multiple formats are provided, they will be tried in sequence as provided
+     * @param ?string $defaultTimezone timezone used when timezone in not explicitly specified in input value
+     * @param ?string $targetTimezone timezone to which the result is converted (regardless of the whether timezone was specified in input)
      */
     public function __construct(
         public readonly string|array $format = [DateTimeInterface::RFC3339, DateTimeInterface::RFC3339_EXTENDED],
