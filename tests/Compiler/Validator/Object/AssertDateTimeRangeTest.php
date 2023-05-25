@@ -33,7 +33,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04T00:00:00+00:00',
+            'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-04')),
         );
     }
@@ -49,7 +49,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value greater than 2000-01-05, got 2000-01-05T00:00:00+00:00',
+            'Failed to map data at path /: Expected value greater than 2000-01-05, got 2000-01-05 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-05')),
         );
     }
@@ -66,7 +66,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value less than or equal to 2000-01-05, got 2000-01-06T00:00:00+00:00',
+            'Failed to map data at path /: Expected value less than or equal to 2000-01-05, got 2000-01-06 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-06')),
         );
     }
@@ -82,7 +82,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value less than 2000-01-05, got 2000-01-05T00:00:00+00:00',
+            'Failed to map data at path /: Expected value less than 2000-01-05, got 2000-01-05 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-05')),
         );
     }
@@ -100,13 +100,13 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04T00:00:00+00:00',
+            'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-04')),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected value less than or equal to 2000-01-10, got 2000-01-11T00:00:00+00:00',
+            'Failed to map data at path /: Expected value less than or equal to 2000-01-10, got 2000-01-11 (UTC)',
             static fn() => $validator->map(new DateTimeImmutable('2000-01-11')),
         );
     }

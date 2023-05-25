@@ -152,6 +152,10 @@ class MappingFailedException extends RuntimeException
         }
 
         if ($value instanceof DateTimeInterface) {
+            if ($value->format('H:i:s') === '00:00:00') {
+                return $value->format('Y-m-d (e)');
+            }
+
             return $value->format(DateTimeInterface::RFC3339);
         }
 
