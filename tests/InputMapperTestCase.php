@@ -38,7 +38,7 @@ abstract class InputMapperTestCase extends TestCase
             self::assertThat($e, new ExceptionConstraint($type));
 
             if ($message !== null) {
-                self::assertSame($message, $e->getMessage());
+                self::assertStringMatchesFormat($message, $e->getMessage());
             }
         }
     }

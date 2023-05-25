@@ -111,4 +111,46 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         );
     }
 
+    public function testDateTimeRangeValidatorWithBothDateAndTime(): void
+    {
+        $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-01T00:00:05Z');
+        $validator = $this->compileValidator('DateTimeRangeValidatorWithBothDateAndTime', $validatorCompiler);
+
+        $validator->map(new DateTimeImmutable('2000-01-01T00:00:05Z'));
+        $validator->map(new DateTimeImmutable('2000-01-01T02:00:05+02:00'));
+        $validator->map(new DateTimeImmutable('1999-12-31T19:00:05-05:00'));
+        $validator->map(new DateTimeImmutable('2000-01-01T00:00:06Z'));
+        $validator->map(null);
+        $validator->map([]);
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected value greater than or equal to 2000-01-01T00:00:05Z, got 2000-01-01T00:00:04+00:00',
+            static fn() => $validator->map(new DateTimeImmutable('2000-01-01T00:00:04Z')),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected value greater than or equal to 2000-01-01T00:00:05Z, got 2000-01-01T02:00:04+02:00',
+            static fn() => $validator->map(new DateTimeImmutable('2000-01-01T02:00:04+02:00')),
+        );
+    }
+
+    public function testDateTimeRangeValidatorWithRelativeBound(): void
+    {
+        $validatorCompiler = new AssertDateTimeRange(gte: 'now');
+        $validator = $this->compileValidator('DateTimeRangeValidatorWithRelativeBound', $validatorCompiler);
+
+        $validator->map(new DateTimeImmutable('+1 day'));
+        $validator->map(new DateTimeImmutable('+1 hour'));
+        $validator->map(null);
+        $validator->map([]);
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected value greater than or equal to now, got %s',
+            static fn() => $validator->map(new DateTimeImmutable('-1 minute')),
+        );
+    }
+
 }
