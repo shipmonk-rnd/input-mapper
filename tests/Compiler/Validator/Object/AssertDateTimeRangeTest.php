@@ -3,6 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Object;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use ShipMonk\InputMapper\Compiler\Validator\Object\AssertDateTimeRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -150,6 +151,23 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to now, got %s',
             static fn() => $validator->map(new DateTimeImmutable('-1 minute')),
+        );
+    }
+
+    public function testDateTimeRangeValidatorWithTimezone(): void
+    {
+        $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05', timezone: 'America/New_York');
+        $validator = $this->compileValidator('DateTimeRangeValidatorWithTimezone', $validatorCompiler);
+
+        $validator->map(new DateTimeImmutable('2000-01-05', new DateTimeZone('America/New_York')));
+        $validator->map(new DateTimeImmutable('2000-01-06', new DateTimeZone('America/New_York')));
+        $validator->map(null);
+        $validator->map([]);
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected value greater than or equal to 2000-01-05 (in America/New_York timezone), got 2000-01-04 (America/New_York)',
+            static fn() => $validator->map(new DateTimeImmutable('2000-01-04', new DateTimeZone('America/New_York'))),
         );
     }
 
