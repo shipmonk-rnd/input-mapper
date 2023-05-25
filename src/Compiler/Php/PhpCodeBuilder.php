@@ -40,7 +40,6 @@ use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
@@ -315,8 +314,8 @@ class PhpCodeBuilder extends BuilderFactory
      */
     public function importClass(string $className): string
     {
-        $classReflection = new ReflectionClass($className);
-        $shortName = $classReflection->getShortName();
+        $lastBackslashOffset = strrpos($className, '\\');
+        $shortName = $lastBackslashOffset === false ? $className : substr($className, $lastBackslashOffset + 1);
 
         $i = 0;
         $uniqueName = $shortName;
