@@ -450,15 +450,32 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperClass = $this->mapperClass($shortClassName, $mapperCompiler)
             ->getNode();
 
-        $namespace = $this->namespace($namespaceName)
-            ->addStmts($this->getImports($namespaceName))
-            ->addStmt($mapperClass)
-            ->getNode();
+        return $this->file($namespaceName, [$mapperClass]);
+    }
+
+    /**
+     * @param list<Stmt> $statements
+     * @return list<Stmt>
+     */
+    public function file(string $namespaceName, array $statements): array
+    {
+        $statements = [
+            ...$this->getImports($namespaceName),
+            ...$statements,
+        ];
+
+        if ($namespaceName !== '') {
+            $statements = [
+                $this->namespace($namespaceName)
+                    ->addStmts($statements)
+                    ->getNode(),
+            ];
+        }
 
         return [
             new Declare_([new DeclareDeclare('strict_types', $this->val(1))]),
             new Nop(),
-            $namespace,
+            ...$statements,
         ];
     }
 
