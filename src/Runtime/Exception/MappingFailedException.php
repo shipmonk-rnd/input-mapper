@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Runtime\Exception;
 
+use DateTimeInterface;
 use Throwable;
 use function array_map;
 use function array_slice;
@@ -148,6 +149,14 @@ class MappingFailedException extends RuntimeException
             if ($printable) {
                 return json_encode($value, self::JSON_ENCODE_OPTIONS) . ($truncated ? ' (truncated)' : '');
             }
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            if ($value->format('H:i:s') === '00:00:00') {
+                return $value->format('Y-m-d (e)');
+            }
+
+            return $value->format(DateTimeInterface::RFC3339);
         }
 
         return get_debug_type($value);

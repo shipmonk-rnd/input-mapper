@@ -22,7 +22,9 @@ use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\BooleanNot;
+use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassConst;
@@ -160,6 +162,11 @@ class PhpCodeBuilder extends BuilderFactory
     public function gte(Expr $left, Expr $right): GreaterOrEqual
     {
         return new GreaterOrEqual($left, $right);
+    }
+
+    public function instanceOf(Expr $left, string $right): Instanceof_
+    {
+        return new Instanceof_($left, new Name($right));
     }
 
     public function ternary(Expr $cond, Expr $ifTrue, Expr $else): Ternary
