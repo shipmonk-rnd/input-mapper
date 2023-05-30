@@ -66,16 +66,18 @@ use ShipMonk\InputMapper\Runtime\Optional;
 
 class Person
 {
-    /**
-     * @param Optional<string>     $email
-     * @param list<string>         $hobbies
-     * @param Optional<list<self>> $friends
-     */
     public function __construct(
         public readonly string $name,
+        
         public readonly int $age,
+        
+        /** @param Optional<string> $email */
         public readonly Optional $email,
+        
+        /** @param list<string> $hobbies */
         public readonly array $hobbies,
+        
+        /** @param Optional<list<self>> $friends */
         public readonly Optional $friends,
     ) {}
 }
@@ -129,6 +131,7 @@ class Person
 {
     public function __construct(
         public readonly string $name,
+        
         #[AssertIntRange(gte: 18, lte: 99)]
         public readonly int $age,
     ) {}
