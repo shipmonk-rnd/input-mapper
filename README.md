@@ -71,13 +71,13 @@ class Person
         
         public readonly int $age,
         
-        /** @param Optional<string> $email */
+        /** @var Optional<string> */
         public readonly Optional $email,
         
-        /** @param list<string> $hobbies */
+        /** @var list<string> */
         public readonly array $hobbies,
         
-        /** @param Optional<list<self>> $friends */
+        /** @var Optional<list<self>> */
         public readonly Optional $friends,
     ) {}
 }
