@@ -39,17 +39,22 @@ Input Mapper comes with some built-in validators:
   * `AssertNegativeInt`
   * `AssertNonNegativeInt`
   * `AssertNonPositiveInt`
+  * `AssertIntMultipleOf`
 * float validators:
   * `AssertFloatRange`
   * `AssertPositiveFloat`
   * `AssertNegativeFloat`
   * `AssertNonNegativeFloat`
   * `AssertNonPositiveFloat`
+  * `AssertFloatMultipleOf`
 * string validators:
   * `AssertStringLength`
+  * `AssertStringMatches`
   * `AssertUrl`
 * list validators:
   * `AssertListItem`
+* date time validators:
+  * `AssertDateTimeRange`
 
 You can write your own validators if you need more.
 
