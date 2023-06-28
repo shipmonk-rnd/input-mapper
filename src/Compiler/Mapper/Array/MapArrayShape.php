@@ -19,7 +19,7 @@ use function array_map;
 use function array_push;
 use function ucfirst;
 
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapArrayShape implements MapperCompiler
 {
 

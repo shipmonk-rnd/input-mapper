@@ -4,7 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Validator\Int;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertNegativeInt extends AssertIntRange
 {
 
