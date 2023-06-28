@@ -17,7 +17,7 @@ use function count;
 use function is_array;
 use function is_string;
 
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapDateTimeImmutable implements MapperCompiler
 {
 

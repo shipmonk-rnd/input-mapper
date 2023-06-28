@@ -4,7 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_PARAMETER)]
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapDate extends MapDateTimeImmutable
 {
 
