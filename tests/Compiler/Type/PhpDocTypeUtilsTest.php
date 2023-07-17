@@ -19,6 +19,10 @@ use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\PhpDocParser\Lexer\Lexer;
+use PHPStan\PhpDocParser\Parser\ConstExprParser;
+use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -98,7 +102,8 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         };
 
         $parameters = (new ReflectionFunction($function))->getParameters();
-        $parameterTypes = array_map(static fn(ReflectionParameter $parameter) => $parameter->getType() ?? throw new LogicException(), $parameters);
+        $parameterTypes = array_map(static fn(ReflectionParameter $parameter
+        ) => $parameter->getType() ?? throw new LogicException(), $parameters);
 
         self::assertEquals(
             new IdentifierTypeNode('int'),
@@ -415,6 +420,539 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 
         PhpDocTypeUtils::resolve($typeC, $context);
         self::assertSame(self::class, $identifier->name);
+    }
+
+    /**
+     * @param list<string> $true
+     * @param list<string> $false
+     */
+    #[DataProvider('provideIsSubTypeOfData')]
+    public function testIsSubTypeOf(string $type, array $true, array $false): void
+    {
+        $typeNode = $this->parseType($type);
+
+        foreach ($true as $trueType) {
+            $trueTypeNode = $this->parseType($trueType);
+            self::assertTrue(PhpDocTypeUtils::isSubTypeOf($trueTypeNode, $typeNode), "$trueType is not subtype of $type");
+        }
+
+        foreach ($false as $falseType) {
+            $falseTypeNode = $this->parseType($falseType);
+            self::assertFalse(PhpDocTypeUtils::isSubTypeOf($falseTypeNode, $typeNode), "$falseType is subtype of $type");
+        }
+    }
+
+    private function parseType(string $type): TypeNode
+    {
+        $lexer = new Lexer();
+        $constExprParser = new ConstExprParser(unescapeStrings: true);
+        $typeParser = new TypeParser($constExprParser);
+
+        $tokens = new TokenIterator($lexer->tokenize($type));
+        $typeNode = $typeParser->parse($tokens);
+        $tokens->consumeTokenType(Lexer::TOKEN_END);
+
+        return $typeNode;
+    }
+
+    /**
+     * @return iterable<string, array{type: string, true: list<string>, false: list<string>}>
+     */
+    public static function provideIsSubTypeOfData(): iterable
+    {
+        yield 'array' => [
+            'type' => 'array',
+
+            'true' => [
+                'array',
+                'int[]',
+                'array{int}',
+                'list<int>',
+                'array<int>',
+                'array<int, int>',
+            ],
+
+            'false' => [
+                'int',
+                'iterable',
+            ],
+        ];
+
+        yield 'array<int>' => [
+            'type' => 'array<int>',
+
+            'true' => [
+                'array<int>',
+                'array<int, int>',
+                'list<int>',
+                'array{int}',
+                'int[]',
+            ],
+
+            'false' => [
+                'array',
+                'array{int, string}',
+                'int',
+                'iterable',
+                'iterable<int>',
+            ],
+        ];
+
+        yield 'array<string, int>' => [
+            'type' => 'array<string, int>',
+
+            'true' => [
+                'array<string, int>',
+                'array{foo: int}',
+                'array{"foo": int}',
+            ],
+
+            'false' => [
+                'array',
+                'array<int, string>',
+                'array{string}',
+                'array{123: string}',
+                'array{123: int}',
+                'array{"123": string}',
+                'array{"123": int}',
+                'list<int>',
+                'int',
+            ],
+        ];
+
+        yield 'array<int, string>' => [
+            'type' => 'array<int, string>',
+
+            'true' => [
+                'list<string>',
+                'array{1: string, 4: string}',
+                'array{"1": string, "4": string}',
+                'array{string, string}',
+            ],
+
+            'false' => [
+                'array{"foo": string}',
+            ],
+        ];
+
+        yield 'array{bool}' => [
+            'type' => 'array{bool}',
+
+            'true' => [
+                'array{bool}',
+                'array{true}',
+                'array{false}',
+                'array{0: true}',
+                'array{"0": true}',
+            ],
+
+            'false' => [
+                'array',
+                'array<bool>',
+                'list<bool>',
+                'array{bool, bool}',
+                'array{string}',
+                'array{foo: string}',
+                'array{0?: true}',
+                'array{1: true}',
+                'array{bool, bool}',
+                'array{bool, ...}',
+            ],
+        ];
+
+        yield 'array{bool, int}' => [
+            'type' => 'array{bool, int}',
+
+            'true' => [
+                'array{bool, int}',
+                'array{true, 123}',
+                'array{0: true, 1: 123}',
+            ],
+
+            'false' => [
+                'array',
+                'array{bool}',
+                'array{int}',
+                'array{bool, int, ...}',
+                'array{0: true, 1: string}',
+                'array{0: true, 1?: 123}',
+            ],
+        ];
+
+        yield 'array{foo: bool, bar?: int}' => [
+            'type' => 'array{foo: bool, bar?: int}',
+
+            'true' => [
+                'array{foo: bool, bar?: int}',
+                'array{foo: true, bar?: 123}',
+                'array{foo: true}',
+            ],
+
+            'false' => [
+                'array{foo: true, bar: 123}',
+                'array{foo: bool, bar: int, baz: string}',
+                'array{foo: bool, baz: string}',
+                'array{bar?: 123}',
+            ],
+        ];
+
+        yield 'array{foo: bool, bar?: int, ...}' => [
+            'type' => 'array{foo: bool, bar?: int, ...}',
+
+            'true' => [
+                'array{foo: bool, bar?: int, ...}',
+                'array{foo: bool, bar?: int}',
+                'array{foo: true, bar?: 123}',
+                'array{foo: true}',
+                'array{foo: bool, bar?: int, baz: string}',
+                'array{foo: bool, baz: string}',
+            ],
+
+            'false' => [
+                'array{foo: true, bar: 123}',
+                'array{bar?: 123}',
+            ],
+        ];
+
+        yield 'bool' => [
+            'type' => 'bool',
+
+            'true' => [
+                'bool',
+                'boolean',
+                'true',
+                'false',
+            ],
+
+            'false' => [
+                'int',
+            ],
+        ];
+
+        yield 'callable' => [
+            'type' => 'callable',
+
+            'true' => [
+                'callable',
+                'callable(): int',
+                'Closure',
+                'Closure(): int',
+                '"strval"',
+            ],
+
+            'false' => [
+                'int',
+                '"abc"',
+                '123',
+            ],
+        ];
+
+        yield 'double' => [
+            'type' => 'double',
+
+            'true' => [
+                'float',
+                'double',
+                '1.23',
+            ],
+
+            'false' => [
+                'string',
+                'int',
+            ],
+        ];
+
+        yield 'false' => [
+            'type' => 'false',
+
+            'true' => [
+                'false',
+            ],
+
+            'false' => [
+                'true',
+            ],
+        ];
+
+        yield 'float' => [
+            'type' => 'float',
+
+            'true' => [
+                'float',
+                'double',
+                '1.23',
+            ],
+
+            'false' => [
+                'string',
+                'int',
+            ],
+        ];
+
+        yield 'int' => [
+            'type' => 'int',
+
+            'true' => [
+                'int',
+                'integer',
+                '1',
+            ],
+
+            'false' => [
+                'string',
+                'float',
+            ],
+        ];
+
+        yield 'iterable' => [
+            'type' => 'iterable',
+
+            'true' => [
+                'iterable',
+                'array',
+                'array<int>',
+                'array<int, int>',
+                'list<int>',
+                'Traversable',
+                'Iterator',
+                'IteratorAggregate',
+                'ArrayIterator',
+                'ArrayObject',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+            ],
+        ];
+
+        yield 'list' => [
+            'type' => 'list',
+
+            'true' => [
+                'list',
+                'list<int>',
+                'array{int, string}',
+                'array{0: int, 1: string}',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'array{0: int, 2: string}',
+            ],
+        ];
+
+        yield 'list<int>' => [
+            'type' => 'list<int>',
+
+            'true' => [
+                'list<int>',
+                'array{int, int}',
+                'array{0: int, 1: int}',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'array{int, string}',
+                'array{0: int, 2: int}',
+            ],
+        ];
+
+        yield 'mixed' => [
+            'type' => 'mixed',
+
+            'true' => [
+                'mixed',
+                'int',
+                'string',
+                'array',
+                'array<int>',
+            ],
+
+            'false' => [],
+        ];
+
+        yield 'never' => [
+            'type' => 'never',
+
+            'true' => [
+                'never',
+            ],
+
+            'false' => [
+                'mixed',
+                'int',
+                'string',
+                'void',
+                'array',
+                'array<int>',
+            ],
+        ];
+
+        yield 'number' => [
+            'type' => 'number',
+
+            'true' => [
+                'int',
+                'float',
+                '1',
+                '1.23',
+            ],
+
+            'false' => [
+                'string',
+            ],
+        ];
+
+        yield 'null' => [
+            'type' => 'null',
+
+            'true' => [
+                'null',
+            ],
+
+            'false' => [
+                'int',
+            ],
+        ];
+
+        yield 'object' => [
+            'type' => 'object',
+
+            'true' => [
+                'object',
+                'stdClass',
+                'Iterator<string>',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+            ],
+        ];
+
+        yield 'resource' => [
+            'type' => 'resource',
+
+            'true' => [
+                'resource',
+            ],
+
+            'false' => [
+                'int',
+            ],
+        ];
+
+        yield 'string' => [
+            'type' => 'string',
+
+            'true' => [
+                'string',
+                '"abc"',
+                'DateTimeImmutable::RFC3339',
+            ],
+
+            'false' => [
+                'int',
+            ],
+        ];
+
+        yield 'true' => [
+            'type' => 'true',
+
+            'true' => [
+                'true',
+            ],
+
+            'false' => [
+                'false',
+            ],
+        ];
+
+        yield 'scalar' => [
+            'type' => 'scalar',
+
+            'true' => [
+                'int',
+                'string',
+                'float',
+                'bool',
+            ],
+
+            'false' => [
+                'array',
+                'object',
+            ],
+        ];
+
+        yield 'void' => [
+            'type' => 'void',
+
+            'true' => [
+                'void',
+            ],
+
+            'false' => [
+                'int',
+            ],
+        ];
+
+        yield 'nullable' => [
+            'type' => '?int',
+
+            'true' => [
+                'null',
+                'int',
+            ],
+
+            'false' => [
+                'string',
+            ],
+        ];
+
+        yield 'union' => [
+            'type' => 'int|string',
+
+            'true' => [
+                'int',
+                'string',
+            ],
+
+            'false' => [
+                'float',
+            ],
+        ];
+
+        yield 'intersection' => [
+            'type' => 'Countable & Traversable',
+
+            'true' => [
+                'Countable & Traversable',
+                'Countable',
+                'Traversable',
+                'Iterator',
+                'IteratorAggregate',
+                'ArrayIterator',
+                'ArrayObject',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'stdClass',
+                'DateTimeImmutable',
+            ],
+        ];
     }
 
 }
