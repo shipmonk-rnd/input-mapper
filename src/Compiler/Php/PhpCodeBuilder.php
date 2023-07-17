@@ -40,8 +40,11 @@ use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\Use_;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
@@ -53,8 +56,12 @@ use function array_pop;
 use function array_slice;
 use function array_values;
 use function assert;
+use function class_exists;
 use function count;
+use function get_object_vars;
 use function implode;
+use function is_array;
+use function is_object;
 use function ksort;
 use function str_ends_with;
 use function strrpos;
@@ -356,6 +363,32 @@ class PhpCodeBuilder extends BuilderFactory
         return $uniqueName;
     }
 
+    public function importType(TypeNode $type): void
+    {
+        $stack = [$type];
+        $index = 1;
+
+        while ($index > 0) {
+            $value = $stack[--$index];
+
+            if ($value instanceof IdentifierTypeNode) {
+                if (!PhpDocTypeUtils::isKeyword($value)) {
+                    assert(class_exists($value->name));
+                    $value->name = $this->importClass($value->name);
+                }
+            } elseif ($value instanceof ArrayShapeItemNode || $value instanceof ObjectShapeItemNode) {
+                $stack[$index++] = $value->valueType; // intentionally not pushing $value->keyName
+
+            } else {
+                foreach (is_array($value) ? $value : get_object_vars($value) as $item) {
+                    if (is_array($item) || is_object($item)) {
+                        $stack[$index++] = $item;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @param list<?string> $lines
      */
@@ -378,8 +411,11 @@ class PhpCodeBuilder extends BuilderFactory
         });
 
         assert($dataVarName !== null && $pathVarName !== null);
-        $inputType = $mapperCompiler->getInputType($this);
-        $outputType = $mapperCompiler->getOutputType($this);
+        $inputType = $mapperCompiler->getInputType();
+        $outputType = $mapperCompiler->getOutputType();
+
+        $this->importType($inputType);
+        $this->importType($outputType);
 
         $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $phpDocInputTypeUseful);
         $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $phpDocOutputTypeUseful);
@@ -415,7 +451,9 @@ class PhpCodeBuilder extends BuilderFactory
             ->makePublic()
             ->getNode();
 
-        $outputType = $mapperCompiler->getOutputType($this);
+        $outputType = $mapperCompiler->getOutputType();
+        $this->importType($outputType);
+
         $implementsType = new GenericTypeNode(
             new IdentifierTypeNode($this->importClass(Mapper::class)),
             [$outputType],

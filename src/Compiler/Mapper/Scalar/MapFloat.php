@@ -71,12 +71,12 @@ class MapFloat implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
         return new IdentifierTypeNode('float');
     }

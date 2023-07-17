@@ -36,16 +36,16 @@ class MapOptional implements UndefinedAwareMapperCompiler
         return new CompiledExpr($mapped);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
-        return $this->mapperCompiler->getInputType($builder);
+        return $this->mapperCompiler->getInputType();
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
         return new GenericTypeNode(
-            new IdentifierTypeNode($builder->importClass(Optional::class)),
-            [$this->mapperCompiler->getOutputType($builder)],
+            new IdentifierTypeNode(Optional::class),
+            [$this->mapperCompiler->getOutputType()],
         );
     }
 

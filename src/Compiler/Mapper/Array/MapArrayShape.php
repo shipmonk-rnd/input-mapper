@@ -91,12 +91,12 @@ class MapArrayShape implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
         $items = [];
 
@@ -104,7 +104,7 @@ class MapArrayShape implements MapperCompiler
             $items[] = new ArrayShapeItemNode(
                 new ConstExprStringNode($mapping->key),
                 $mapping->optional,
-                $mapping->mapper->getOutputType($builder),
+                $mapping->mapper->getOutputType(),
             );
         }
 
