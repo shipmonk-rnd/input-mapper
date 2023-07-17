@@ -31,14 +31,14 @@ class DelegateMapperCompiler implements MapperCompiler
         return new CompiledExpr($mapped);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode($builder->importClass($this->className));
+        return new IdentifierTypeNode($this->className);
     }
 
 }

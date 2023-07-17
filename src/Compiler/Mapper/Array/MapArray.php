@@ -55,15 +55,15 @@ class MapArray implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        $keyType = $this->keyMapperCompiler->getOutputType($builder);
-        $valueType = $this->valueMapperCompiler->getOutputType($builder);
+        $keyType = $this->keyMapperCompiler->getOutputType();
+        $valueType = $this->valueMapperCompiler->getOutputType();
         $args = PhpDocTypeUtils::isMixed($keyType) ? [$valueType] : [$keyType, $valueType];
         return new GenericTypeNode(new IdentifierTypeNode('array'), $args);
     }

@@ -12,8 +12,8 @@ interface MapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr;
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode;
+    public function getInputType(): TypeNode;
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode;
+    public function getOutputType(): TypeNode;
 
 }

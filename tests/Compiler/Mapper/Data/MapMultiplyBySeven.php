@@ -5,7 +5,6 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Data;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapRuntime;
-use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function is_int;
 
@@ -21,12 +20,12 @@ class MapMultiplyBySeven extends MapRuntime
         return $value * 7;
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
         return new IdentifierTypeNode('int');
     }

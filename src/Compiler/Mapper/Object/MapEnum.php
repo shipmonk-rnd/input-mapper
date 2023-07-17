@@ -59,14 +59,14 @@ class MapEnum implements MapperCompiler
         return new CompiledExpr($builder->var($enumVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
-        return $this->backingValueMapperCompiler->getInputType($builder);
+        return $this->backingValueMapperCompiler->getInputType();
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode($builder->importClass($this->enumName));
+        return new IdentifierTypeNode($this->enumName);
     }
 
 }

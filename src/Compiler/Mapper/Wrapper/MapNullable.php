@@ -41,14 +41,14 @@ class MapNullable implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
-        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getInputType($builder));
+        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getInputType());
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getOutputType($builder));
+        return PhpDocTypeUtils::makeNullable($this->innerMapperCompiler->getOutputType());
     }
 
 }

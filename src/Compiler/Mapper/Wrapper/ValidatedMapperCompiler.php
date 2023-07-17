@@ -46,14 +46,14 @@ class ValidatedMapperCompiler implements MapperCompiler
         return new CompiledExpr($mapperVariable, $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
-        return $this->mapperCompiler->getInputType($builder);
+        return $this->mapperCompiler->getInputType();
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        return $this->mapperCompiler->getOutputType($builder);
+        return $this->mapperCompiler->getOutputType();
     }
 
 }

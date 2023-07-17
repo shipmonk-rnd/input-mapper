@@ -47,16 +47,16 @@ class ChainMapperCompiler implements MapperCompiler
         return new CompiledExpr($value, $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         $first = 0;
-        return $this->mapperCompilers[$first]->getInputType($builder);
+        return $this->mapperCompilers[$first]->getInputType();
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
         $last = count($this->mapperCompilers) - 1;
-        return $this->mapperCompilers[$last]->getOutputType($builder);
+        return $this->mapperCompilers[$last]->getOutputType();
     }
 
 }

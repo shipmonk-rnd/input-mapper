@@ -55,14 +55,14 @@ class MapList implements MapperCompiler
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
     }
 
-    public function getInputType(PhpCodeBuilder $builder): TypeNode
+    public function getInputType(): TypeNode
     {
         return new IdentifierTypeNode('mixed');
     }
 
-    public function getOutputType(PhpCodeBuilder $builder): TypeNode
+    public function getOutputType(): TypeNode
     {
-        $itemType = $this->itemMapperCompiler->getOutputType($builder);
+        $itemType = $this->itemMapperCompiler->getOutputType();
         return new GenericTypeNode(new IdentifierTypeNode('list'), [$itemType]);
     }
 
