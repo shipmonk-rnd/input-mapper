@@ -5,10 +5,11 @@ namespace ShipMonk\InputMapper\Compiler\Validator\Int;
 use Attribute;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use function count;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertIntRange implements ValidatorCompiler
@@ -82,12 +83,12 @@ class AssertIntRange implements ValidatorCompiler
             ]);
         }
 
-        if (count($statements) > 0) {
-            $isInt = $builder->funcCall($builder->importFunction('is_int'), [$value]);
-            $statements = [$builder->if($isInt, $statements)];
-        }
-
         return $statements;
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return new IdentifierTypeNode('int');
     }
 
 }

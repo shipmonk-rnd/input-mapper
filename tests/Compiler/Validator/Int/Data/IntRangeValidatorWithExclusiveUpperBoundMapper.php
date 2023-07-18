@@ -28,10 +28,8 @@ class IntRangeValidatorWithExclusiveUpperBoundMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        if (is_int($data)) {
-            if ($data >= 5) {
-                throw MappingFailedException::incorrectValue($data, $path, 'value less than 5');
-            }
+        if ($data >= 5) {
+            throw MappingFailedException::incorrectValue($data, $path, 'value less than 5');
         }
 
         return $data;

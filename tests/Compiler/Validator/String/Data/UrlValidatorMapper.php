@@ -29,7 +29,7 @@ class UrlValidatorMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        if (is_string($data) && !Validators::isUrl($data)) {
+        if (!Validators::isUrl($data)) {
             throw MappingFailedException::incorrectValue($data, $path, 'valid URL');
         }
 

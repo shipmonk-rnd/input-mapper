@@ -6,10 +6,11 @@ use Attribute;
 use LogicException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use function count;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertStringLength implements ValidatorCompiler
@@ -82,12 +83,12 @@ class AssertStringLength implements ValidatorCompiler
             }
         }
 
-        if (count($statements) > 0) {
-            $isString = $builder->funcCall($builder->importFunction('is_string'), [$value]);
-            $statements = [$builder->if($isString, $statements)];
-        }
-
         return $statements;
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return new IdentifierTypeNode('string');
     }
 
 }

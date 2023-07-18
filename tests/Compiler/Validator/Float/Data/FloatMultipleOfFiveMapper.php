@@ -48,7 +48,7 @@ class FloatMultipleOfFiveMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'float');
         }
 
-        if (is_float($mapped) && !Floats::isInteger($mapped / 5.0)) {
+        if (!Floats::isInteger($mapped / 5.0)) {
             throw MappingFailedException::incorrectValue($mapped, $path, 'multiple of 5');
         }
 

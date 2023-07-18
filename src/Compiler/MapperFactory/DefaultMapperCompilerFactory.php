@@ -311,22 +311,40 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $validators[] = $attribute->newInstance();
         }
 
-        if (count($mappers) === 0) {
-            if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
-                $mappers[] = $this->createInner($type->genericTypes[0], $options);
-            } else {
-                $mappers[] = $this->createInner($type, $options);
-            }
-        }
+        $mapper = match (count($mappers)) {
+            0 => $this->createInner($type, $options),
+            1 => $mappers[0],
+            default => new ChainMapperCompiler($mappers),
+        };
 
-        $mapper = count($mappers) > 1 ? new ChainMapperCompiler($mappers) : $mappers[0];
-        $mapper = count($validators) > 0 ? new ValidatedMapperCompiler($mapper, $validators) : $mapper;
-
-        if ($type instanceof GenericTypeNode && $type->type->name === Optional::class) {
-            $mapper = new MapOptional($mapper);
+        foreach ($validators as $validator) {
+            $mapper = $this->addValidator($mapper, $validator);
         }
 
         return $mapper;
+    }
+
+    protected function addValidator(
+        MapperCompiler $mapperCompiler,
+        ValidatorCompiler $validatorCompiler
+    ): MapperCompiler
+    {
+        $validatorInputType = $validatorCompiler->getInputType();
+        $mapperOutputType = $mapperCompiler->getOutputType();
+
+        if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
+            return new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);
+        }
+
+        if ($mapperCompiler instanceof MapNullable) {
+            return new MapNullable($this->addValidator($mapperCompiler->innerMapperCompiler, $validatorCompiler));
+        }
+
+        if ($mapperCompiler instanceof MapOptional) {
+            return new MapOptional($this->addValidator($mapperCompiler->mapperCompiler, $validatorCompiler));
+        }
+
+        throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $mapperCompiler);
     }
 
     /**

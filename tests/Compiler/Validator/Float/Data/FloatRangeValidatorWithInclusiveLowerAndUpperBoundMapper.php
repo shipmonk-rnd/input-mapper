@@ -48,14 +48,12 @@ class FloatRangeValidatorWithInclusiveLowerAndUpperBoundMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'float');
         }
 
-        if (is_float($mapped)) {
-            if (Floats::isLessThan($mapped, 5.0)) {
-                throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to 5');
-            }
+        if (Floats::isLessThan($mapped, 5.0)) {
+            throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to 5');
+        }
 
-            if (Floats::isGreaterThan($mapped, 10.0)) {
-                throw MappingFailedException::incorrectValue($mapped, $path, 'value less than or equal to 10');
-            }
+        if (Floats::isGreaterThan($mapped, 10.0)) {
+            throw MappingFailedException::incorrectValue($mapped, $path, 'value less than or equal to 10');
         }
 
         return $mapped;

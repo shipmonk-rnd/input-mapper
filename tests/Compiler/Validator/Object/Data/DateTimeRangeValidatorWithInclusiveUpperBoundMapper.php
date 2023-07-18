@@ -3,7 +3,6 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Object\Data;
 
 use DateTimeImmutable;
-use DateTimeInterface;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -36,10 +35,8 @@ class DateTimeRangeValidatorWithInclusiveUpperBoundMapper implements Mapper
             throw MappingFailedException::incorrectValue($data, $path, 'date string in Y-m-d format');
         }
 
-        if ($mapped instanceof DateTimeInterface) {
-            if ($mapped > new DateTimeImmutable('2000-01-05')) {
-                throw MappingFailedException::incorrectValue($mapped, $path, 'value less than or equal to 2000-01-05');
-            }
+        if ($mapped > new DateTimeImmutable('2000-01-05')) {
+            throw MappingFailedException::incorrectValue($mapped, $path, 'value less than or equal to 2000-01-05');
         }
 
         return $mapped;
