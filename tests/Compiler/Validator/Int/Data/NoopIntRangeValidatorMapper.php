@@ -5,11 +5,12 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\Int\Data;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use function is_int;
 
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<int>
  */
 class NoopIntRangeValidatorMapper implements Mapper
 {
@@ -21,8 +22,12 @@ class NoopIntRangeValidatorMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): int
     {
+        if (!is_int($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'int');
+        }
+
         return $data;
     }
 }

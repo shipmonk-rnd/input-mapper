@@ -11,7 +11,7 @@ use function preg_match;
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<string>
  */
 class PatternValidatorWithCustomPatternDescriptionMapper implements Mapper
 {
@@ -23,8 +23,12 @@ class PatternValidatorWithCustomPatternDescriptionMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): string
     {
+        if (!is_string($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'string');
+        }
+
         if (is_string($data) && preg_match('#^\\d+\\z#', $data) !== 1) {
             throw MappingFailedException::incorrectValue($data, $path, 'numeric string');
         }

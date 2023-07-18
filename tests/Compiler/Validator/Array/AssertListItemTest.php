@@ -2,9 +2,11 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Array;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListItem;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
-use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
 
@@ -13,13 +15,12 @@ class AssertListItemTest extends ValidatorCompilerTestCase
 
     public function testListItemValidator(): void
     {
+        $mapperCompiler = new MapList(new MapInt());
         $validatorCompiler = new AssertListItem([new AssertPositiveInt()]);
-        $validator = $this->compileValidator('ListItemValidator', $validatorCompiler);
+        $validator = $this->compileValidator('ListItemValidator', $mapperCompiler, $validatorCompiler);
 
         $validator->map([]);
-        $validator->map([1, 'abc', null]);
-        $validator->map('abc');
-        $validator->map(null);
+        $validator->map([1, 2, 3]);
 
         self::assertException(
             MappingFailedException::class,
@@ -30,24 +31,23 @@ class AssertListItemTest extends ValidatorCompilerTestCase
 
     public function testListItemValidatorWithMultipleValidators(): void
     {
-        $validatorCompiler = new AssertListItem([new AssertPositiveInt(), new AssertStringLength(exact: 5)]);
-        $validator = $this->compileValidator('ListItemValidatorWithMultipleValidators', $validatorCompiler);
+        $mapperCompiler = new MapList(new MapInt());
+        $validatorCompiler = new AssertListItem([new AssertPositiveInt(), new AssertIntMultipleOf(5)]);
+        $validator = $this->compileValidator('ListItemValidatorWithMultipleValidators', $mapperCompiler, $validatorCompiler);
 
         $validator->map([]);
-        $validator->map([1, 'hello', null]);
-        $validator->map('abc');
-        $validator->map(null);
+        $validator->map([5, 10, 15]);
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /2: Expected value greater than 0, got 0',
-            static fn() => $validator->map([1, 2, 0]),
+            static fn() => $validator->map([5, 10, 0]),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /2: Expected string with exactly 5 characters, got "abc"',
-            static fn() => $validator->map([1, 2, 'abc']),
+            'Failed to map data at path /2: Expected multiple of 5, got 3',
+            static fn() => $validator->map([5, 10, 3]),
         );
     }
 

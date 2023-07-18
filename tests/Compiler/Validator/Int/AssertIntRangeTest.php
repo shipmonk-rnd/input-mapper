@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Int;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -11,24 +12,22 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopIntRangeValidator(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange();
-        $validator = $this->compileValidator('NoopIntRangeValidator', $validatorCompiler);
+        $validator = $this->compileValidator('NoopIntRangeValidator', $mapperCompiler, $validatorCompiler);
 
         $validator->map(123);
-        $validator->map(null);
-        $validator->map([]);
         self::assertTrue(true); // @phpstan-ignore-line always true
     }
 
     public function testIntRangeValidatorWithInclusiveLowerBound(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange(gte: 5);
-        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerBound', $validatorCompiler);
+        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5);
         $validator->map(6);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -39,12 +38,11 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithExclusiveLowerBound(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange(gt: 5);
-        $validator = $this->compileValidator('IntRangeValidatorWithExclusiveLowerBound', $validatorCompiler);
+        $validator = $this->compileValidator('IntRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(6);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -55,13 +53,12 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithInclusiveUpperBound(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange(lte: 5);
-        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5);
         $validator->map(4);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -72,12 +69,11 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithExclusiveUpperBound(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange(lt: 5);
-        $validator = $this->compileValidator('IntRangeValidatorWithExclusiveUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('IntRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(4);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -88,14 +84,13 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
+        $mapperCompiler = new MapInt();
         $validatorCompiler = new AssertIntRange(gte: 5, lte: 10);
-        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerAndUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5);
         $validator->map(6);
         $validator->map(10);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,

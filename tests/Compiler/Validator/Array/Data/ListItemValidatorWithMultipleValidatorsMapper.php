@@ -8,13 +8,11 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_is_list;
 use function is_array;
 use function is_int;
-use function is_string;
-use function strlen;
 
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<list<int>>
  */
 class ListItemValidatorWithMultipleValidatorsMapper implements Mapper
 {
@@ -24,27 +22,40 @@ class ListItemValidatorWithMultipleValidatorsMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @return list<int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
-        if (is_array($data) && array_is_list($data)) {
-            foreach ($data as $index => $item) {
-                if (is_int($item)) {
-                    if ($item <= 0) {
-                        throw MappingFailedException::incorrectValue($item, [...$path, $index], 'value greater than 0');
-                    }
-                }
-
-                if (is_string($item)) {
-                    if (strlen($item) !== 5) {
-                        throw MappingFailedException::incorrectValue($item, [...$path, $index], 'string with exactly 5 characters');
-                    }
-                }
-
-            }
+        if (!is_array($data) || !array_is_list($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'list');
         }
 
-        return $data;
+        $mapped = [];
+
+        foreach ($data as $index => $item) {
+            if (!is_int($item)) {
+                throw MappingFailedException::incorrectType($item, [...$path, $index], 'int');
+            }
+
+            $mapped[] = $item;
+        }
+
+        if (is_array($mapped) && array_is_list($mapped)) {
+            foreach ($mapped as $index2 => $item2) {
+                if (is_int($item2)) {
+                    if ($item2 <= 0) {
+                        throw MappingFailedException::incorrectValue($item2, [...$path, $index2], 'value greater than 0');
+                    }
+                }
+
+                if (is_int($item2) && $item2 % 5 !== 0) {
+                    throw MappingFailedException::incorrectValue($item2, [...$path, $index2], 'multiple of 5');
+                }
+            }
+
+        }
+
+        return $mapped;
     }
 }

@@ -10,7 +10,7 @@ use function is_int;
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<int>
  */
 class IntMultipleOfFiveMapper implements Mapper
 {
@@ -22,8 +22,12 @@ class IntMultipleOfFiveMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): int
     {
+        if (!is_int($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'int');
+        }
+
         if (is_int($data) && $data % 5 !== 0) {
             throw MappingFailedException::incorrectValue($data, $path, 'multiple of 5');
         }

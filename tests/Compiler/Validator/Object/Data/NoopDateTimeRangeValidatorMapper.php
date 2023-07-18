@@ -2,14 +2,16 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Object\Data;
 
+use DateTimeImmutable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use function is_string;
 
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<DateTimeImmutable>
  */
 class NoopDateTimeRangeValidatorMapper implements Mapper
 {
@@ -21,8 +23,18 @@ class NoopDateTimeRangeValidatorMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): DateTimeImmutable
     {
-        return $data;
+        if (!is_string($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'string');
+        }
+
+        $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
+
+        if ($mapped === false) {
+            throw MappingFailedException::incorrectValue($data, $path, 'date string in Y-m-d format');
+        }
+
+        return $mapped;
     }
 }

@@ -12,7 +12,7 @@ use function is_int;
 /**
  * Generated mapper. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<list<int>>
  */
 class ListItemValidatorMapper implements Mapper
 {
@@ -22,21 +22,36 @@ class ListItemValidatorMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @return list<int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
-        if (is_array($data) && array_is_list($data)) {
-            foreach ($data as $index => $item) {
-                if (is_int($item)) {
-                    if ($item <= 0) {
-                        throw MappingFailedException::incorrectValue($item, [...$path, $index], 'value greater than 0');
+        if (!is_array($data) || !array_is_list($data)) {
+            throw MappingFailedException::incorrectType($data, $path, 'list');
+        }
+
+        $mapped = [];
+
+        foreach ($data as $index => $item) {
+            if (!is_int($item)) {
+                throw MappingFailedException::incorrectType($item, [...$path, $index], 'int');
+            }
+
+            $mapped[] = $item;
+        }
+
+        if (is_array($mapped) && array_is_list($mapped)) {
+            foreach ($mapped as $index2 => $item2) {
+                if (is_int($item2)) {
+                    if ($item2 <= 0) {
+                        throw MappingFailedException::incorrectValue($item2, [...$path, $index2], 'value greater than 0');
                     }
                 }
 
             }
         }
 
-        return $data;
+        return $mapped;
     }
 }
