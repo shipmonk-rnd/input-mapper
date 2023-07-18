@@ -48,7 +48,7 @@ class FloatWithAtMostTwoDecimalPlacesMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'float');
         }
 
-        if (is_float($mapped) && !Floats::isInteger($mapped / 0.01)) {
+        if (!Floats::isInteger($mapped / 0.01)) {
             throw MappingFailedException::incorrectValue($mapped, $path, 'multiple of 0.01');
         }
 

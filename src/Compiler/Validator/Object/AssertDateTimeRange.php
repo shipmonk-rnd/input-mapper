@@ -9,6 +9,8 @@ use DateTimeZone;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Throw_;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -83,12 +85,9 @@ class AssertDateTimeRange implements ValidatorCompiler
         }
 
         if (count($statements) > 0) {
-            $isDateTime = $builder->instanceOf($value, $builder->importClass(DateTimeInterface::class));
             $statements = [
-                $builder->if($isDateTime, [
-                    ...$timezoneInitStatements,
-                    ...$statements,
-                ]),
+                ...$timezoneInitStatements,
+                ...$statements,
             ];
         }
 
@@ -114,6 +113,11 @@ class AssertDateTimeRange implements ValidatorCompiler
                 [$value, $path, $builder->val("value {$boundaryDescription} {$boundaryValue}")],
             ),
         );
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return new IdentifierTypeNode(DateTimeInterface::class);
     }
 
 }

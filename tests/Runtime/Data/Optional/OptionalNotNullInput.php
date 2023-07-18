@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Runtime\Data\Optional;
 
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Runtime\Optional;
 
 class OptionalNotNullInput
@@ -11,6 +12,7 @@ class OptionalNotNullInput
      * @param Optional<int> $number
      */
     public function __construct(
+        #[AssertPositiveInt]
         public readonly Optional $number,
     )
     {

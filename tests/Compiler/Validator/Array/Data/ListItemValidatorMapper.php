@@ -41,14 +41,9 @@ class ListItemValidatorMapper implements Mapper
             $mapped[] = $item;
         }
 
-        if (is_array($mapped) && array_is_list($mapped)) {
-            foreach ($mapped as $index2 => $item2) {
-                if (is_int($item2)) {
-                    if ($item2 <= 0) {
-                        throw MappingFailedException::incorrectValue($item2, [...$path, $index2], 'value greater than 0');
-                    }
-                }
-
+        foreach ($mapped as $index2 => $item2) {
+            if ($item2 <= 0) {
+                throw MappingFailedException::incorrectValue($item2, [...$path, $index2], 'value greater than 0');
             }
         }
 

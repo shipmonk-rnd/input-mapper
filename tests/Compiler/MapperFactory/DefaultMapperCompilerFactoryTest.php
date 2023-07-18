@@ -34,6 +34,7 @@ use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
+use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
@@ -77,6 +78,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
                 'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
                 'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
+                'url' => new MapNullable(new ValidatedMapperCompiler(new MapString(), [new AssertUrl()])),
             ]),
         ];
 
@@ -88,6 +90,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
                 'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
                 'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
+                'url' => new MapNullable(new ValidatedMapperCompiler(new MapString(), [new AssertUrl()])),
             ]),
         ];
 

@@ -29,10 +29,8 @@ class StringLengthValidatorWithMinMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        if (is_string($data)) {
-            if (strlen($data) < 5) {
-                throw MappingFailedException::incorrectValue($data, $path, 'string with at least 5 characters');
-            }
+        if (strlen($data) < 5) {
+            throw MappingFailedException::incorrectValue($data, $path, 'string with at least 5 characters');
         }
 
         return $data;

@@ -6,10 +6,11 @@ use Attribute;
 use Nette\Utils\Floats;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use function count;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertFloatRange implements ValidatorCompiler
@@ -83,12 +84,12 @@ class AssertFloatRange implements ValidatorCompiler
             ]);
         }
 
-        if (count($statements) > 0) {
-            $isFloat = $builder->funcCall($builder->importFunction('is_float'), [$value]);
-            $statements = [$builder->if($isFloat, $statements)];
-        }
-
         return $statements;
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return new IdentifierTypeNode('float');
     }
 
 }

@@ -77,6 +77,14 @@ class MapperProviderTest extends InputMapperTestCase
                 $mapper->map(['number' => null]);
             },
         );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /number: Expected value greater than 0, got -1',
+            static function () use ($mapper): void {
+                $mapper->map(['number' => -1]);
+            },
+        );
     }
 
     public function testMapperForOptionalNullableInput(): void
@@ -86,6 +94,14 @@ class MapperProviderTest extends InputMapperTestCase
         self::assertEquals(new OptionalNullableInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNullableInput(Optional::of(null)), $mapper->map(['number' => null]));
         self::assertEquals(new OptionalNullableInput(Optional::none([], 'number')), $mapper->map([]));
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /number: Expected value greater than 0, got -1',
+            static function () use ($mapper): void {
+                $mapper->map(['number' => -1]);
+            },
+        );
     }
 
     private function createMapperProvider(): MapperProvider

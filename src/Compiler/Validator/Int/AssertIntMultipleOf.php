@@ -6,6 +6,8 @@ use Attribute;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Mod;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -29,11 +31,10 @@ class AssertIntMultipleOf implements ValidatorCompiler
         PhpCodeBuilder $builder,
     ): array
     {
-        $isInt = $builder->funcCall($builder->importFunction('is_int'), [$value]);
         $modulo = new Mod($value, $builder->val($this->value));
 
         return [
-            $builder->if($builder->and($isInt, $builder->notSame($modulo, $builder->val(0))), [
+            $builder->if($builder->notSame($modulo, $builder->val(0)), [
                 $builder->throw(
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
@@ -43,6 +44,11 @@ class AssertIntMultipleOf implements ValidatorCompiler
                 ),
             ]),
         ];
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return new IdentifierTypeNode('int');
     }
 
 }

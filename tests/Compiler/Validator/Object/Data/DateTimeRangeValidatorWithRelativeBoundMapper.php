@@ -3,7 +3,6 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Object\Data;
 
 use DateTimeImmutable;
-use DateTimeInterface;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -36,10 +35,8 @@ class DateTimeRangeValidatorWithRelativeBoundMapper implements Mapper
             throw MappingFailedException::incorrectValue($data, $path, 'date-time string in RFC 3339 format');
         }
 
-        if ($mapped instanceof DateTimeInterface) {
-            if ($mapped < new DateTimeImmutable('now')) {
-                throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to now');
-            }
+        if ($mapped < new DateTimeImmutable('now')) {
+            throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to now');
         }
 
         return $mapped;

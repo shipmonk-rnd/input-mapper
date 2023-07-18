@@ -5,8 +5,13 @@ namespace ShipMonk\InputMapper\Compiler\Validator\Array;
 use Attribute;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
+use function array_map;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertListItem implements ValidatorCompiler
@@ -38,19 +43,27 @@ class AssertListItem implements ValidatorCompiler
             }
         }
 
-        $isArray = $builder->funcCall($builder->importFunction('is_array'), [$value]);
-        $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
-
         return [
-            $builder->if($builder->and($isArray, $isList), [
-                $builder->foreach(
-                    $value,
-                    $builder->var($itemVariableName),
-                    $builder->var($indexVariableName),
-                    $foreachBody,
-                ),
-            ]),
+            $builder->foreach(
+                $value,
+                $builder->var($itemVariableName),
+                $builder->var($indexVariableName),
+                $foreachBody,
+            ),
         ];
+    }
+
+    public function getInputType(): TypeNode
+    {
+        $validatorInputTypes = array_map(
+            static fn(ValidatorCompiler $validator) => $validator->getInputType(),
+            $this->validators,
+        );
+
+        return new GenericTypeNode(
+            new IdentifierTypeNode('list'),
+            [PhpDocTypeUtils::intersect(...$validatorInputTypes)],
+        );
     }
 
 }

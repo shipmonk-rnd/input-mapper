@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Validator;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 
 interface ValidatorCompiler
@@ -17,5 +18,7 @@ interface ValidatorCompiler
         Expr $path,
         PhpCodeBuilder $builder,
     ): array;
+
+    public function getInputType(): TypeNode;
 
 }

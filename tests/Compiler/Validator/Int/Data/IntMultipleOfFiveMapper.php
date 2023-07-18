@@ -28,7 +28,7 @@ class IntMultipleOfFiveMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        if (is_int($data) && $data % 5 !== 0) {
+        if ($data % 5 !== 0) {
             throw MappingFailedException::incorrectValue($data, $path, 'multiple of 5');
         }
 
