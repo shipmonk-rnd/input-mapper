@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\Data\AssertMultipleOfSeven;
 
@@ -10,9 +11,9 @@ class AssertRuntimeTest extends ValidatorCompilerTestCase
 
     public function testRuntimeValidator(): void
     {
+        $mapperCompiler = new MapMixed();
         $validatorCompiler = new AssertMultipleOfSeven();
-
-        $validator = $this->compileValidator('MultipleOfSevenValidator', $validatorCompiler);
+        $validator = $this->compileValidator('MultipleOfSevenValidator', $mapperCompiler, $validatorCompiler);
 
         $validator->map(0);
         $validator->map(7);

@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringMatches;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -11,13 +12,11 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
 
     public function testUrlValidator(): void
     {
+        $mapperCompiler = new MapString();
         $validatorCompiler = new AssertStringMatches('#^\d+\z#');
-        $validator = $this->compileValidator('PatternValidator', $validatorCompiler);
+        $validator = $this->compileValidator('PatternValidator', $mapperCompiler, $validatorCompiler);
 
         self::assertSame('123', $validator->map('123'));
-        self::assertSame(123, $validator->map(123));
-        self::assertNull($validator->map(null));
-        self::assertSame([], $validator->map([]));
 
         self::assertException(
             MappingFailedException::class,
@@ -28,8 +27,9 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
 
     public function testUrlValidatorWithCustomPatternDescription(): void
     {
+        $mapperCompiler = new MapString();
         $validatorCompiler = new AssertStringMatches('#^\d+\z#', 'numeric string');
-        $validator = $this->compileValidator('PatternValidatorWithCustomPatternDescription', $validatorCompiler);
+        $validator = $this->compileValidator('PatternValidatorWithCustomPatternDescription', $mapperCompiler, $validatorCompiler);
 
         self::assertException(
             MappingFailedException::class,

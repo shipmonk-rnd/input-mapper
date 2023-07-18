@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -11,13 +12,11 @@ class AssertUrlTest extends ValidatorCompilerTestCase
 
     public function testUrlValidator(): void
     {
+        $mapperCompiler = new MapString();
         $validatorCompiler = new AssertUrl();
-        $validator = $this->compileValidator('UrlValidator', $validatorCompiler);
+        $validator = $this->compileValidator('UrlValidator', $mapperCompiler, $validatorCompiler);
 
         $validator->map('https://example.com');
-        $validator->map(123);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,

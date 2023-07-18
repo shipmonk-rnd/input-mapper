@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Float;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
@@ -11,25 +12,23 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopFloatRangeValidator(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange();
-        $validator = $this->compileValidator('NoopFloatRangeValidator', $validatorCompiler);
+        $validator = $this->compileValidator('NoopFloatRangeValidator', $mapperCompiler, $validatorCompiler);
 
         $validator->map(123);
         $validator->map(1.2);
-        $validator->map(null);
-        $validator->map([]);
         self::assertTrue(true); // @phpstan-ignore-line always true
     }
 
     public function testFloatRangeValidatorWithInclusiveLowerBound(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange(gte: 5.0);
-        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerBound', $validatorCompiler);
+        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5.0);
         $validator->map(6.0);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -40,12 +39,11 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithExclusiveLowerBound(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange(gt: 5.0);
-        $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveLowerBound', $validatorCompiler);
+        $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(6.0);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -56,13 +54,12 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithInclusiveUpperBound(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange(lte: 5.0);
-        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5.0);
         $validator->map(4.0);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -73,12 +70,11 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithExclusiveUpperBound(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange(lt: 5.0);
-        $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(4.0);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
@@ -89,14 +85,13 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
+        $mapperCompiler = new MapFloat();
         $validatorCompiler = new AssertFloatRange(gte: 5.0, lte: 10.0);
-        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerAndUpperBound', $validatorCompiler);
+        $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 
         $validator->map(5.0);
         $validator->map(6.0);
         $validator->map(10.0);
-        $validator->map(null);
-        $validator->map([]);
 
         self::assertException(
             MappingFailedException::class,
