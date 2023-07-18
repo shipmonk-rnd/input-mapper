@@ -50,7 +50,7 @@ class ValidatedMapperCompiler implements MapperCompiler
                 throw CannotCompileMapperException::withIncompatibleValidator($validatorCompiler, $this->mapperCompiler);
             }
 
-            foreach ($validatorCompiler->compile($mapperVariable, $path, $builder) as $statement) {
+            foreach ($validatorCompiler->compile($mapperVariable, $mapperOutputType, $path, $builder) as $statement) {
                 $statements[] = $statement;
             }
         }

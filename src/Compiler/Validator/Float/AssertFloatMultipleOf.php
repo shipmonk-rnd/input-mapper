@@ -28,6 +28,7 @@ class AssertFloatMultipleOf implements ValidatorCompiler
      */
     public function compile(
         Expr $value,
+        TypeNode $type,
         Expr $path,
         PhpCodeBuilder $builder,
     ): array
