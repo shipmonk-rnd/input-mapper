@@ -48,7 +48,7 @@
         "check:composer": "composer normalize --dry-run --no-check-lock --no-update-lock",
         "check:cs": "phpcs",
         "check:ec": "ec src tests",
-        "check:tests": "phpunit -vvv tests",
+        "check:tests": "phpunit tests",
         "check:types": "phpstan analyse -vvv",
         "fix:cs": "phpcbf"
     }
