@@ -6,8 +6,10 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use function count;
 
 class ChainMapperCompiler implements MapperCompiler
@@ -27,9 +29,17 @@ class ChainMapperCompiler implements MapperCompiler
         $statements = [];
         $mappedVariableName = $builder->uniqVariableName('mapped');
         $lastIndex = count($this->mapperCompilers) - 1;
+        $mapperOutputType = null;
 
         foreach ($this->mapperCompilers as $index => $mapperCompiler) {
+            $mapperInputType = $mapperCompiler->getInputType();
+
+            if ($mapperOutputType !== null && !PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $mapperInputType)) {
+                throw CannotCompileMapperException::withIncompatibleMapper($mapperCompiler, $mapperOutputType);
+            }
+
             $mapper = $mapperCompiler->compile($value, $path, $builder);
+            $mapperOutputType = $mapperCompiler->getOutputType();
 
             foreach ($mapper->statements as $statement) {
                 $statements[] = $statement;

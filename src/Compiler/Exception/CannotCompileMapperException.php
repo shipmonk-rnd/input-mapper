@@ -3,12 +3,26 @@
 namespace ShipMonk\InputMapper\Compiler\Exception;
 
 use LogicException;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
 
 class CannotCompileMapperException extends LogicException
 {
+
+    public static function withIncompatibleMapper(
+        MapperCompiler $mapperCompiler,
+        TypeNode $inputType,
+        ?Throwable $previous = null
+    ): self
+    {
+        $mapperCompilerClass = $mapperCompiler::class;
+        $mapperInputType = $mapperCompiler->getInputType();
+
+        $reason = "its input type '{$mapperInputType}' is not super type of '{$inputType}'";
+        return new self("Cannot compile mapper {$mapperCompilerClass}, because {$reason}", 0, $previous);
+    }
 
     public static function withIncompatibleValidator(
         ValidatorCompiler $validatorCompiler,
