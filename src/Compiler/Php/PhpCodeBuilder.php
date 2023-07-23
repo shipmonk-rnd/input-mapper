@@ -56,7 +56,6 @@ use function array_pop;
 use function array_slice;
 use function array_values;
 use function assert;
-use function class_exists;
 use function count;
 use function get_object_vars;
 use function implode;
@@ -373,8 +372,9 @@ class PhpCodeBuilder extends BuilderFactory
 
             if ($value instanceof IdentifierTypeNode) {
                 if (!PhpDocTypeUtils::isKeyword($value)) {
-                    assert(class_exists($value->name));
-                    $value->name = $this->importClass($value->name);
+                    /** @var class-string $className allow-narrowing */
+                    $className = $value->name;
+                    $value->name = $this->importClass($className);
                 }
             } elseif ($value instanceof ArrayShapeItemNode || $value instanceof ObjectShapeItemNode) {
                 $stack[$index++] = $value->valueType; // intentionally not pushing $value->keyName
@@ -527,7 +527,7 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @return list<Use_>
      */
-    private function getImports(string $namespace): array
+    public function getImports(string $namespace): array
     {
         $classLikeImports = [];
         $functionImports = [];
