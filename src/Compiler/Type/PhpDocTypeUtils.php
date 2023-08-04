@@ -33,6 +33,9 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
+use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Runtime\OptionalNone;
+use ShipMonk\InputMapper\Runtime\OptionalSome;
 use Traversable;
 use function array_map;
 use function constant;
@@ -49,6 +52,7 @@ use function is_string;
 use function max;
 use function method_exists;
 use function str_contains;
+use function strcasecmp;
 use function strtolower;
 
 class PhpDocTypeUtils
@@ -290,7 +294,11 @@ class PhpDocTypeUtils
 
         if ($b instanceof IdentifierTypeNode) {
             if (!self::isKeyword($b)) {
-                return $a instanceof IdentifierTypeNode && is_a($a->name, $b->name, true);
+                return match (true) {
+                    $a instanceof IdentifierTypeNode => is_a($a->name, $b->name, true),
+                    $a instanceof GenericTypeNode => is_a($a->type->name, $b->name, true),
+                    default => false,
+                };
             }
 
             return match (strtolower($b->name)) {
@@ -400,34 +408,10 @@ class PhpDocTypeUtils
         }
 
         if ($b instanceof GenericTypeNode) {
-            return match (strtolower($b->type->name)) {
-                'array' => match (true) {
-                    $a instanceof ArrayTypeNode => self::isSubTypeOf($a->type, $b->genericTypes[1]),
-                    $a instanceof ArrayShapeNode => Arrays::every(
-                        $a->items,
-                        static fn(ArrayShapeItemNode $item) => (
-                            self::isSubTypeOf(self::getArrayShapeKeyType($item), $b->genericTypes[0]) && self::isSubTypeOf($item->valueType, $b->genericTypes[1])
-                        ),
-                    ),
-                    $a instanceof GenericTypeNode => match ($a->type->name) {
-                        'array' => self::isSubTypeOf($a->genericTypes[0], $b->genericTypes[0]) && self::isSubTypeOf($a->genericTypes[1], $b->genericTypes[1]),
-                        'list' => self::isSubTypeOf(new IdentifierTypeNode('int'), $b->genericTypes[0]) && self::isSubTypeOf($a->genericTypes[0], $b->genericTypes[1]),
-                        default => false,
-                    },
-                    default => false,
-                },
-
-                'list' => match (true) {
-                    $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn(ArrayShapeItemNode $item, int $idx) => (
-                        self::getArrayShapeKey($item) === (string) $idx && self::isSubTypeOf($item->valueType, $b->genericTypes[0])
-                    )),
-                    $a instanceof GenericTypeNode => match ($a->type->name) {
-                        'list' => self::isSubTypeOf($a->genericTypes[0], $b->genericTypes[0]),
-                        default => false,
-                    },
-                    default => false,
-                },
-
+            return match (true) {
+                $a instanceof GenericTypeNode => self::isSubTypeOfGeneric($a, $b),
+                $a instanceof IdentifierTypeNode => self::isSubTypeOfGeneric(new GenericTypeNode($a, []), $b),
+                $a instanceof ArrayShapeNode => self::isSubTypeOfGeneric(self::convertArrayShapeToGenericType($a), $b),
                 default => false,
             };
         }
@@ -462,6 +446,104 @@ class PhpDocTypeUtils
         }
 
         return false;
+    }
+
+    private static function isSubTypeOfGeneric(GenericTypeNode $a, GenericTypeNode $b): bool
+    {
+        $def = self::getGenericTypeDefinition($a);
+
+        if (strcasecmp($a->type->name, $b->type->name) === 0) {
+            return Arrays::every($b->genericTypes, static function (TypeNode $genericTypeB, int $idx) use ($a, $def): bool {
+                $genericTypeA = $a->genericTypes[$idx] ?? null;
+                $variance = $def['parameters'][$idx]['variance'] ?? null;
+
+                if ($genericTypeA === null || $variance === null) {
+                    return false;
+                }
+
+                return match ($variance) {
+                    'in' => self::isSubTypeOf($genericTypeB, $genericTypeA),
+                    'out' => self::isSubTypeOf($genericTypeA, $genericTypeB),
+                    'inout' => self::isSubTypeOf($genericTypeA, $genericTypeB) && self::isSubTypeOf($genericTypeB, $genericTypeA),
+                };
+            });
+        }
+
+        return Arrays::some($def['superTypes'] ?? [], static function (array $parameters, string $identifier) use ($a, $b): bool {
+            $resolvedParameters = Arrays::map($parameters, static function (int|TypeNode $typeOrPosition) use ($a): TypeNode {
+                return $typeOrPosition instanceof TypeNode
+                    ? $typeOrPosition
+                    : $a->genericTypes[$typeOrPosition] ?? new IdentifierTypeNode('mixed');
+            });
+
+            $superType = new GenericTypeNode(new IdentifierTypeNode($identifier), $resolvedParameters);
+            return self::isSubTypeOfGeneric($superType, $b);
+        });
+    }
+
+    /**
+     * @return array{
+     *     superTypes?: array<string, list<int | TypeNode>>,
+     *     parameters?: list<array{variance: 'in' | 'out' | 'inout', bound?: TypeNode}>,
+     * }
+     */
+    private static function getGenericTypeDefinition(GenericTypeNode $type): array
+    {
+        return match ($type->type->name) {
+            'array' => [
+                'superTypes' => [
+                    'iterable' => [0, 1],
+                ],
+                'parameters' => [
+                    ['variance' => 'out'],
+                    ['variance' => 'out'],
+                ],
+            ],
+
+            'list' => [
+                'superTypes' => [
+                    'array' => [new IdentifierTypeNode('int'), 0],
+                ],
+                'parameters' => [
+                    ['variance' => 'out'],
+                ],
+            ],
+
+            Optional::class => [
+                'parameters' => [
+                    ['variance' => 'out'],
+                ],
+            ],
+
+            OptionalSome::class => [
+                'superTypes' => [
+                    Optional::class => [0],
+                ],
+                'parameters' => [
+                    ['variance' => 'out'],
+                ],
+            ],
+
+            OptionalNone::class => [
+                'superTypes' => [
+                    Optional::class => [new IdentifierTypeNode('never')],
+                ],
+            ],
+
+            default => [],
+        };
+    }
+
+    private static function convertArrayShapeToGenericType(ArrayShapeNode $type): GenericTypeNode
+    {
+        $valueType = new UnionTypeNode(Arrays::map($type->items, static fn(ArrayShapeItemNode $item) => $item->valueType));
+
+        if (Arrays::every($type->items, static fn(ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)) {
+            return new GenericTypeNode(new IdentifierTypeNode('list'), [$valueType]);
+        }
+
+        $keyType = new UnionTypeNode(Arrays::map($type->items, self::getArrayShapeKeyType(...)));
+        return new GenericTypeNode(new IdentifierTypeNode('array'), [$keyType, $valueType]);
     }
 
     private static function getArrayShapeKey(ArrayShapeItemNode $item): string
