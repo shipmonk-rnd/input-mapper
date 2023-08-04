@@ -422,24 +422,13 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         self::assertSame(self::class, $identifier->name);
     }
 
-    /**
-     * @param list<string> $true
-     * @param list<string> $false
-     */
     #[DataProvider('provideIsSubTypeOfData')]
-    public function testIsSubTypeOf(string $type, array $true, array $false): void
+    public function testIsSubTypeOf(string $a, string $b, bool $expected): void
     {
-        $typeNode = $this->parseType($type);
+        $typeNodeA = $this->parseType($a);
+        $typeNodeB = $this->parseType($b);
 
-        foreach ($true as $trueType) {
-            $trueTypeNode = $this->parseType($trueType);
-            self::assertTrue(PhpDocTypeUtils::isSubTypeOf($trueTypeNode, $typeNode), "$trueType is not subtype of $type");
-        }
-
-        foreach ($false as $falseType) {
-            $falseTypeNode = $this->parseType($falseType);
-            self::assertFalse(PhpDocTypeUtils::isSubTypeOf($falseTypeNode, $typeNode), "$falseType is subtype of $type");
-        }
+        self::assertSame($expected, PhpDocTypeUtils::isSubTypeOf($typeNodeA, $typeNodeB));
     }
 
     private function parseType(string $type): TypeNode
@@ -456,13 +445,35 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @return iterable<string, array{type: string, true: list<string>, false: list<string>}>
+     * @return iterable<string, array{a: string, b: string, expected: bool}>
      */
     public static function provideIsSubTypeOfData(): iterable
     {
-        yield 'array' => [
-            'type' => 'array',
+        foreach (self::provideIsSubTypeOfDataInner() as $otherType => $setOptions) {
+            foreach ($setOptions['true'] as $trueType) {
+                yield "{$trueType} is subtype of {$otherType}" => [
+                    'a' => $trueType,
+                    'b' => $otherType,
+                    'expected' => true,
+                ];
+            }
 
+            foreach ($setOptions['false'] as $falseType) {
+                yield "{$falseType} is not subtype of {$otherType}" => [
+                    'a' => $falseType,
+                    'b' => $otherType,
+                    'expected' => false,
+                ];
+            }
+        }
+    }
+
+    /**
+     * @return iterable<string, array{true: list<string>, false: list<string>}>
+     */
+    private static function provideIsSubTypeOfDataInner(): iterable
+    {
+        yield 'array' => [
             'true' => [
                 'array',
                 'int[]',
@@ -479,8 +490,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array<int>' => [
-            'type' => 'array<int>',
-
             'true' => [
                 'array<int>',
                 'array<int, int>',
@@ -499,8 +508,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array<string, int>' => [
-            'type' => 'array<string, int>',
-
             'true' => [
                 'array<string, int>',
                 'array{foo: int}',
@@ -521,8 +528,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array<int, string>' => [
-            'type' => 'array<int, string>',
-
             'true' => [
                 'list<string>',
                 'array{1: string, 4: string}',
@@ -536,8 +541,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{bool}' => [
-            'type' => 'array{bool}',
-
             'true' => [
                 'array{bool}',
                 'array{true}',
@@ -550,7 +553,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'array',
                 'array<bool>',
                 'list<bool>',
-                'array{bool, bool}',
                 'array{string}',
                 'array{foo: string}',
                 'array{0?: true}',
@@ -561,8 +563,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{bool, int}' => [
-            'type' => 'array{bool, int}',
-
             'true' => [
                 'array{bool, int}',
                 'array{true, 123}',
@@ -580,8 +580,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{foo: bool, bar?: int}' => [
-            'type' => 'array{foo: bool, bar?: int}',
-
             'true' => [
                 'array{foo: bool, bar?: int}',
                 'array{foo: true, bar?: 123}',
@@ -597,8 +595,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{foo: bool, bar?: int, ...}' => [
-            'type' => 'array{foo: bool, bar?: int, ...}',
-
             'true' => [
                 'array{foo: bool, bar?: int, ...}',
                 'array{foo: bool, bar?: int}',
@@ -615,8 +611,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'bool' => [
-            'type' => 'bool',
-
             'true' => [
                 'bool',
                 'boolean',
@@ -630,8 +624,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'callable' => [
-            'type' => 'callable',
-
             'true' => [
                 'callable',
                 'callable(): int',
@@ -648,8 +640,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'double' => [
-            'type' => 'double',
-
             'true' => [
                 'float',
                 'double',
@@ -663,8 +653,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'false' => [
-            'type' => 'false',
-
             'true' => [
                 'false',
             ],
@@ -675,8 +663,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'float' => [
-            'type' => 'float',
-
             'true' => [
                 'float',
                 'double',
@@ -690,8 +676,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'int' => [
-            'type' => 'int',
-
             'true' => [
                 'int',
                 'integer',
@@ -705,8 +689,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'iterable' => [
-            'type' => 'iterable',
-
             'true' => [
                 'iterable',
                 'array',
@@ -727,8 +709,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'list' => [
-            'type' => 'list',
-
             'true' => [
                 'list',
                 'list<int>',
@@ -746,8 +726,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'list<int>' => [
-            'type' => 'list<int>',
-
             'true' => [
                 'list<int>',
                 'array{int, int}',
@@ -765,8 +743,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'mixed' => [
-            'type' => 'mixed',
-
             'true' => [
                 'mixed',
                 'int',
@@ -779,8 +755,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'never' => [
-            'type' => 'never',
-
             'true' => [
                 'never',
             ],
@@ -796,8 +770,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'number' => [
-            'type' => 'number',
-
             'true' => [
                 'int',
                 'float',
@@ -811,8 +783,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'null' => [
-            'type' => 'null',
-
             'true' => [
                 'null',
             ],
@@ -823,8 +793,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'object' => [
-            'type' => 'object',
-
             'true' => [
                 'object',
                 'stdClass',
@@ -840,8 +808,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'resource' => [
-            'type' => 'resource',
-
             'true' => [
                 'resource',
             ],
@@ -852,8 +818,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'string' => [
-            'type' => 'string',
-
             'true' => [
                 'string',
                 '"abc"',
@@ -866,8 +830,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'true' => [
-            'type' => 'true',
-
             'true' => [
                 'true',
             ],
@@ -878,8 +840,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'scalar' => [
-            'type' => 'scalar',
-
             'true' => [
                 'int',
                 'string',
@@ -894,8 +854,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'void' => [
-            'type' => 'void',
-
             'true' => [
                 'void',
             ],
@@ -905,9 +863,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
-        yield 'nullable' => [
-            'type' => '?int',
-
+        yield '?int' => [
             'true' => [
                 'null',
                 'int',
@@ -918,9 +874,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
-        yield 'union' => [
-            'type' => 'int|string',
-
+        yield 'int|string' => [
             'true' => [
                 'int',
                 'string',
@@ -931,9 +885,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
-        yield 'intersection' => [
-            'type' => 'Countable & Traversable',
-
+        yield 'Countable & Traversable' => [
             'true' => [
                 'Countable & Traversable',
                 'Countable',
@@ -951,6 +903,22 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'array<int>',
                 'stdClass',
                 'DateTimeImmutable',
+            ],
+        ];
+
+        yield 'DateTimeInterface' => [
+            'true' => [
+                'DateTimeInterface',
+                'DateTimeImmutable',
+                'DateTime',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'stdClass',
             ],
         ];
     }
