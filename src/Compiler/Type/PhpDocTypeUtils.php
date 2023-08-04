@@ -301,18 +301,18 @@ class PhpDocTypeUtils
                 };
             }
 
-            return match (strtolower($b->name)) {
+            return match ($b->name) {
                 'array' => match (true) {
                     $a instanceof ArrayTypeNode => true,
                     $a instanceof ArrayShapeNode => true,
-                    $a instanceof IdentifierTypeNode => in_array(strtolower($a->name), ['array', 'list'], true),
-                    $a instanceof GenericTypeNode => in_array(strtolower($a->type->name), ['array', 'list'], true),
+                    $a instanceof IdentifierTypeNode => in_array($a->name, ['array', 'list'], true),
+                    $a instanceof GenericTypeNode => in_array($a->type->name, ['array', 'list'], true),
                     default => false,
                 },
 
                 'callable' => match (true) {
                     $a instanceof CallableTypeNode => true,
-                    $a instanceof IdentifierTypeNode => self::isKeyword($a) ? strtolower($a->name) === 'callable' : method_exists($a->name, '__invoke'),
+                    $a instanceof IdentifierTypeNode => self::isKeyword($a) ? $a->name === 'callable' : method_exists($a->name, '__invoke'),
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprStringNode => is_callable($a->constExpr->value),
                         $a->constExpr instanceof ConstFetchNode => is_callable(constant((string) $a->constExpr)),
@@ -322,7 +322,7 @@ class PhpDocTypeUtils
                 },
 
                 'false' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'false',
+                    $a instanceof IdentifierTypeNode => $a->name === 'false',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprFalseNode => true,
                         $a->constExpr instanceof ConstFetchNode => constant((string) $a->constExpr) === false,
@@ -332,7 +332,7 @@ class PhpDocTypeUtils
                 },
 
                 'float' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'float',
+                    $a instanceof IdentifierTypeNode => $a->name === 'float',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprFloatNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_float(constant((string) $a->constExpr)),
@@ -342,7 +342,7 @@ class PhpDocTypeUtils
                 },
 
                 'int' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'int',
+                    $a instanceof IdentifierTypeNode => $a->name === 'int',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprIntegerNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_int(constant((string) $a->constExpr)),
@@ -353,17 +353,17 @@ class PhpDocTypeUtils
 
                 'list' => match (true) {
                     $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn(ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx),
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'list',
-                    $a instanceof GenericTypeNode => strtolower($a->type->name) === 'list',
+                    $a instanceof IdentifierTypeNode => $a->name === 'list',
+                    $a instanceof GenericTypeNode => $a->type->name === 'list',
                     default => false,
                 },
 
                 'mixed' => true,
 
-                'never' => $a instanceof IdentifierTypeNode && strtolower($a->name) === 'never',
+                'never' => $a instanceof IdentifierTypeNode && $a->name === 'never',
 
                 'null' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'null',
+                    $a instanceof IdentifierTypeNode => $a->name === 'null',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprNullNode => true,
                         $a->constExpr instanceof ConstFetchNode => constant((string) $a->constExpr) === null,
@@ -374,15 +374,15 @@ class PhpDocTypeUtils
 
                 'object' => match (true) {
                     $a instanceof ObjectShapeNode => true,
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'object' || !self::isKeyword($a),
+                    $a instanceof IdentifierTypeNode => $a->name === 'object' || !self::isKeyword($a),
                     $a instanceof GenericTypeNode => !self::isKeyword($a->type),
                     default => false,
                 },
 
-                'resource' => $a instanceof IdentifierTypeNode && strtolower($a->name) === 'resource',
+                'resource' => $a instanceof IdentifierTypeNode && $a->name === 'resource',
 
                 'string' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'string',
+                    $a instanceof IdentifierTypeNode => $a->name === 'string',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprStringNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_string(constant((string) $a->constExpr)),
@@ -392,7 +392,7 @@ class PhpDocTypeUtils
                 },
 
                 'true' => match (true) {
-                    $a instanceof IdentifierTypeNode => strtolower($a->name) === 'true',
+                    $a instanceof IdentifierTypeNode => $a->name === 'true',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprTrueNode => true,
                         $a->constExpr instanceof ConstFetchNode => constant((string) $a->constExpr) === true,
@@ -401,7 +401,7 @@ class PhpDocTypeUtils
                     default => false,
                 },
 
-                'void' => $a instanceof IdentifierTypeNode && strtolower($a->name) === 'void',
+                'void' => $a instanceof IdentifierTypeNode && $a->name === 'void',
 
                 default => false,
             };
@@ -586,7 +586,7 @@ class PhpDocTypeUtils
                     new IdentifierTypeNode('string'),
                     new IdentifierTypeNode('bool'),
                 ]),
-                default => $type,
+                default => self::isKeyword($type) ? new IdentifierTypeNode(strtolower($type->name)) : $type,
             };
         }
 
@@ -637,8 +637,18 @@ class PhpDocTypeUtils
             return new ArrayShapeNode($newItems, $type->sealed, $type->kind);
         }
 
-        if ($type instanceof GenericTypeNode && $type->type->name === 'array' && count($type->genericTypes) === 1) {
-            return new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->genericTypes[0])]);
+        if ($type instanceof GenericTypeNode) {
+            if (strtolower($type->type->name) === 'array' && count($type->genericTypes) === 1) {
+                return new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->genericTypes[0])]);
+            }
+
+            if (strtolower($type->type->name) === 'iterable' && count($type->genericTypes) === 1) {
+                return new GenericTypeNode(new IdentifierTypeNode('iterable'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->genericTypes[0])]);
+            }
+
+            if (self::isKeyword($type->type)) {
+                return new GenericTypeNode(new IdentifierTypeNode(strtolower($type->type->name)), $type->genericTypes);
+            }
         }
 
         return $type;
