@@ -266,6 +266,11 @@ class PhpDocTypeUtils
         $a = self::normalizeType($a);
         $b = self::normalizeType($b);
 
+        // universal subtype
+        if ($a instanceof IdentifierTypeNode && $a->name === 'never') {
+            return true;
+        }
+
         // expand complex types
         if ($a instanceof UnionTypeNode) {
             return Arrays::every($a->types, static fn(TypeNode $inner) => self::isSubTypeOf($inner, $b));

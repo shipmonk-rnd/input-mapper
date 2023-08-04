@@ -616,6 +616,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'boolean',
                 'true',
                 'false',
+                'never',
             ],
 
             'false' => [
