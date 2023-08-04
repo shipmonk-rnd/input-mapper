@@ -317,6 +317,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             default => new ChainMapperCompiler($mappers),
         };
 
+        if (!PhpDocTypeUtils::isSubTypeOf($mapper->getOutputType(), $type)) {
+            throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mapper, $parameterReflection, $type);
+        }
+
         foreach ($validators as $validator) {
             $mapper = $this->addValidator($mapper, $validator);
         }

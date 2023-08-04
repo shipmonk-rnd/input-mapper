@@ -40,6 +40,7 @@ use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
@@ -306,6 +307,12 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             InputWithPrivateConstructor::class,
             [],
             'Cannot create mapper for type ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor, because class has a non-public constructor',
+        ];
+
+        yield 'InputWithIncompatibleMapperCompiler' => [
+            InputWithIncompatibleMapperCompiler::class,
+            [],
+            'Cannot use mapper ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString for parameter $id of method ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
         ];
 
         yield 'DateTime' => [

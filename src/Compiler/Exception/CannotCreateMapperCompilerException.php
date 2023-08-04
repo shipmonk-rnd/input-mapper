@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Exception;
 
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
@@ -15,6 +16,25 @@ class CannotCreateMapperCompilerException extends LogicException
     {
         $reason = $reason !== null ? ", because {$reason}" : '';
         return new self("Cannot create mapper for type {$type}{$reason}", 0, $previous);
+    }
+
+    public static function withIncompatibleMapperForMethodParameter(
+        MapperCompiler $mapperCompiler,
+        ReflectionParameter $parameter,
+        TypeNode $parameterType,
+        ?Throwable $previous = null
+    ): self
+    {
+        $mapperCompilerClass = $mapperCompiler::class;
+        $mapperOutputType = $mapperCompiler->getOutputType();
+
+        $parameterName = $parameter->getName();
+        $className = $parameter->getDeclaringClass()?->getName();
+        $methodName = $parameter->getDeclaringFunction()->getName();
+        $methodFullName = $className !== null ? "{$className}::{$methodName}" : $methodName;
+
+        $reason = "mapper output type '{$mapperOutputType}' is not compatible with parameter type '{$parameterType}'";
+        return new self("Cannot use mapper {$mapperCompilerClass} for parameter \${$parameterName} of method {$methodFullName}, because {$reason}", 0, $previous);
     }
 
     public static function withIncompatibleValidator(
