@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -9,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\Optional;
 use function is_int;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapOptional}. Do not edit directly.
  *
  * @implements Mapper<Optional<int>>
  */

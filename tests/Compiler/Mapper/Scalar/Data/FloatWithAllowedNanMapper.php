@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -11,7 +12,7 @@ use function is_infinite;
 use function is_int;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapFloat}. Do not edit directly.
  *
  * @implements Mapper<float>
  */

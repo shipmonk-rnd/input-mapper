@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -10,7 +11,7 @@ use function is_int;
 use function is_string;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapArray}. Do not edit directly.
  *
  * @implements Mapper<array<string, int>>
  */

@@ -2,13 +2,14 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapInt}. Do not edit directly.
  *
  * @implements Mapper<int>
  */

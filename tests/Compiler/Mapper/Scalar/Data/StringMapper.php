@@ -2,13 +2,14 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapString}. Do not edit directly.
  *
  * @implements Mapper<string>
  */
