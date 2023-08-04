@@ -743,6 +743,31 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
+        yield 'list<bool>' => [
+            'true' => [
+                'list<bool>',
+                'list<true>',
+                'list<never>',
+            ],
+
+            'false' => [
+                'list<bool|null>',
+            ],
+        ];
+
+        yield 'list<true>' => [
+            'true' => [
+                'list<true>',
+                'list<never>',
+            ],
+
+            'false' => [
+                'list<false>',
+                'list<bool>',
+                'list<bool|null>',
+            ],
+        ];
+
         yield 'mixed' => [
             'true' => [
                 'mixed',
@@ -919,6 +944,79 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'string',
                 'array',
                 'array<int>',
+                'stdClass',
+            ],
+        ];
+
+        yield 'ShipMonk\InputMapper\Runtime\Optional' => [
+            'true' => [
+                'ShipMonk\InputMapper\Runtime\Optional',
+                'ShipMonk\InputMapper\Runtime\Optional<string>',
+                'ShipMonk\InputMapper\Runtime\OptionalNone',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<string>',
+                'never',
+            ],
+
+            'false' => [
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'stdClass',
+            ],
+        ];
+
+        yield 'ShipMonk\InputMapper\Runtime\Optional<bool>' => [
+            'true' => [
+                'ShipMonk\InputMapper\Runtime\Optional<bool>',
+                'ShipMonk\InputMapper\Runtime\Optional<true>',
+                'ShipMonk\InputMapper\Runtime\Optional<false>',
+                'ShipMonk\InputMapper\Runtime\OptionalNone',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<bool>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<true>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<false>',
+                'never',
+            ],
+
+            'false' => [
+                'ShipMonk\InputMapper\Runtime\Optional',
+                'ShipMonk\InputMapper\Runtime\Optional<string>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<string>',
+                'int',
+                'string',
+                'array',
+                'array<int>',
+                'stdClass',
+            ],
+        ];
+
+        yield 'ShipMonk\InputMapper\Runtime\OptionalSome<bool>' => [
+            'true' => [
+                'ShipMonk\InputMapper\Runtime\OptionalSome<bool>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<true>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<false>',
+            ],
+
+            'false' => [
+                'ShipMonk\InputMapper\Runtime\Optional',
+                'ShipMonk\InputMapper\Runtime\Optional<bool>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<string>',
+                'ShipMonk\InputMapper\Runtime\OptionalNone',
+                'int',
+                'stdClass',
+            ],
+        ];
+
+        yield 'ShipMonk\InputMapper\Runtime\OptionalNone' => [
+            'true' => [
+                'ShipMonk\InputMapper\Runtime\OptionalNone',
+            ],
+
+            'false' => [
+                'ShipMonk\InputMapper\Runtime\Optional',
+                'ShipMonk\InputMapper\Runtime\Optional<bool>',
+                'ShipMonk\InputMapper\Runtime\OptionalSome<bool>',
+                'int',
                 'stdClass',
             ],
         ];
