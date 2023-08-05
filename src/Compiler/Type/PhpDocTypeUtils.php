@@ -450,40 +450,31 @@ class PhpDocTypeUtils
 
     private static function isSubTypeOfGeneric(GenericTypeNode $a, GenericTypeNode $b): bool
     {
-        $def = self::getGenericTypeDefinition($a);
+        $typeDef = self::getGenericTypeDefinition($a);
 
         if (strcasecmp($a->type->name, $b->type->name) === 0) {
-            return Arrays::every($b->genericTypes, static function (TypeNode $genericTypeB, int $idx) use ($a, $def): bool {
-                $genericTypeA = $a->genericTypes[$idx] ?? null;
-                $variance = $def['parameters'][$idx]['variance'] ?? null;
+            return Arrays::every($typeDef['parameters'] ?? [], static function (array $parameter, int $idx) use ($a, $b): bool {
+                $genericTypeA = $a->genericTypes[$idx] ?? $parameter['bound'] ?? new IdentifierTypeNode('mixed');
+                $genericTypeB = $b->genericTypes[$idx] ?? $parameter['bound'] ?? new IdentifierTypeNode('mixed');
 
-                if ($genericTypeA === null || $variance === null) {
-                    return false;
-                }
-
-                return match ($variance) {
+                return match ($parameter['variance']) {
                     'in' => self::isSubTypeOf($genericTypeB, $genericTypeA),
                     'out' => self::isSubTypeOf($genericTypeA, $genericTypeB),
                     'inout' => self::isSubTypeOf($genericTypeA, $genericTypeB) && self::isSubTypeOf($genericTypeB, $genericTypeA),
+                    default => throw new LogicException("Invalid variance {$parameter['variance']}"),
                 };
             });
         }
 
-        return Arrays::some($def['superTypes'] ?? [], static function (array $parameters, string $identifier) use ($a, $b): bool {
-            $resolvedParameters = Arrays::map($parameters, static function (int|TypeNode $typeOrPosition) use ($a): TypeNode {
-                return $typeOrPosition instanceof TypeNode
-                    ? $typeOrPosition
-                    : $a->genericTypes[$typeOrPosition] ?? new IdentifierTypeNode('mixed');
-            });
-
-            $superType = new GenericTypeNode(new IdentifierTypeNode($identifier), $resolvedParameters);
-            return self::isSubTypeOfGeneric($superType, $b);
+        $superTypes = isset($typeDef['superTypes']) ? $typeDef['superTypes']($a->genericTypes) : [];
+        return Arrays::some($superTypes, static function (TypeNode $superType) use ($b): bool {
+            return self::isSubTypeOf($superType, $b);
         });
     }
 
     /**
      * @return array{
-     *     superTypes?: array<string, list<int | TypeNode>>,
+     *     superTypes?: callable(array<TypeNode>): list<TypeNode>,
      *     parameters?: list<array{variance: 'in' | 'out' | 'inout', bound?: TypeNode}>,
      * }
      */
@@ -491,8 +482,11 @@ class PhpDocTypeUtils
     {
         return match ($type->type->name) {
             'array' => [
-                'superTypes' => [
-                    'iterable' => [0, 1],
+                'superTypes' => static fn (array $types): array => [
+                    new GenericTypeNode(new IdentifierTypeNode('iterable'), [
+                        $types[0] ?? new IdentifierTypeNode('mixed'),
+                        $types[1] ?? new IdentifierTypeNode('mixed'),
+                    ]),
                 ],
                 'parameters' => [
                     ['variance' => 'out'],
@@ -501,8 +495,11 @@ class PhpDocTypeUtils
             ],
 
             'list' => [
-                'superTypes' => [
-                    'array' => [new IdentifierTypeNode('int'), 0],
+                'superTypes' => static fn (array $types): array => [
+                    new GenericTypeNode(new IdentifierTypeNode('array'), [
+                        new IdentifierTypeNode('int'),
+                        $types[0] ?? new IdentifierTypeNode('mixed'),
+                    ]),
                 ],
                 'parameters' => [
                     ['variance' => 'out'],
@@ -516,8 +513,10 @@ class PhpDocTypeUtils
             ],
 
             OptionalSome::class => [
-                'superTypes' => [
-                    Optional::class => [0],
+                'superTypes' => static fn (array $types): array => [
+                    new GenericTypeNode(new IdentifierTypeNode(Optional::class), [
+                        $types[0] ?? new IdentifierTypeNode('mixed'),
+                    ]),
                 ],
                 'parameters' => [
                     ['variance' => 'out'],
@@ -525,8 +524,8 @@ class PhpDocTypeUtils
             ],
 
             OptionalNone::class => [
-                'superTypes' => [
-                    Optional::class => [new IdentifierTypeNode('never')],
+                'superTypes' => static fn (): array => [
+                    new GenericTypeNode(new IdentifierTypeNode(Optional::class), [new IdentifierTypeNode('never')]),
                 ],
             ],
 

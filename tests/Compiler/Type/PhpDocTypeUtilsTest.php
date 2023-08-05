@@ -507,6 +507,20 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
+        yield 'array<mixed>' => [
+            'true' => [
+                'array<mixed>',
+                'array<int>',
+                'array',
+                'never',
+            ],
+
+            'false' => [
+                'int',
+                'iterable<mixed>',
+            ],
+        ];
+
         yield 'array<string, int>' => [
             'true' => [
                 'array<string, int>',
