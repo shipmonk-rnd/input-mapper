@@ -264,6 +264,9 @@ class PhpDocTypeUtils
         return new IntersectionTypeNode($types);
     }
 
+    /**
+     * Returns true if $a is subtype of $b.
+     */
     public static function isSubTypeOf(TypeNode $a, TypeNode $b): bool
     {
         // normalize types
