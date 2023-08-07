@@ -7,7 +7,7 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapMultiplyBySeven}. Do not edit directly.
  *
  * @implements Mapper<int>
  */

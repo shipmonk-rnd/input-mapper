@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -10,7 +11,7 @@ use function implode;
 use function is_string;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapEnum}. Do not edit directly.
  *
  * @implements Mapper<SuitEnum>
  */

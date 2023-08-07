@@ -454,13 +454,15 @@ class PhpCodeBuilder extends BuilderFactory
         $outputType = $mapperCompiler->getOutputType();
         $this->importType($outputType);
 
+        $mapperCompilerType = $this->importClass($mapperCompiler::class);
+
         $implementsType = new GenericTypeNode(
             new IdentifierTypeNode($this->importClass(Mapper::class)),
             [$outputType],
         );
 
         $phpDoc = $this->phpDoc([
-            'Generated mapper. Do not edit directly.',
+            "Generated mapper by {@see $mapperCompilerType}. Do not edit directly.",
             '',
             "@implements {$implementsType}",
         ]);

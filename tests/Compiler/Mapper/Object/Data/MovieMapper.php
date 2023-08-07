@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -16,7 +17,7 @@ use function is_int;
 use function is_string;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see MapObject}. Do not edit directly.
  *
  * @implements Mapper<MovieInput>
  */

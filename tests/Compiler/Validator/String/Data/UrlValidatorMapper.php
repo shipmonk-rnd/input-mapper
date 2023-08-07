@@ -3,13 +3,14 @@
 namespace ShipMonkTests\InputMapper\Compiler\Validator\String\Data;
 
 use Nette\Utils\Validators;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
- * Generated mapper. Do not edit directly.
+ * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<string>
  */
