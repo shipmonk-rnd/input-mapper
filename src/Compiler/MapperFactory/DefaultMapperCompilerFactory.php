@@ -19,6 +19,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
@@ -57,6 +58,7 @@ use function class_parents;
 use function count;
 use function enum_exists;
 use function interface_exists;
+use function strcasecmp;
 use function strtolower;
 use function substr;
 
@@ -173,6 +175,23 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             }
 
             return new MapArrayShape($items, $type->sealed);
+        }
+
+        if ($type instanceof UnionTypeNode) {
+            $isNullable = false;
+            $subTypesWithoutNull = [];
+
+            foreach ($type->types as $subType) {
+                if ($subType instanceof IdentifierTypeNode && strcasecmp($subType->name, 'null') === 0) {
+                    $isNullable = true;
+                } else {
+                    $subTypesWithoutNull[] = $subType;
+                }
+            }
+
+            if ($isNullable && count($subTypesWithoutNull) === 1) {
+                return new MapNullable($this->createInner($subTypesWithoutNull[0], $options));
+            }
         }
 
         throw CannotCreateMapperCompilerException::fromType($type);

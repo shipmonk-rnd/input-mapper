@@ -174,6 +174,18 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             new MapString(),
         ];
 
+        yield '?int' => [
+            '?int',
+            [],
+            new MapNullable(new MapInt()),
+        ];
+
+        yield 'int|null' => [
+            'int|null',
+            [],
+            new MapNullable(new MapInt()),
+        ];
+
         yield 'int[]' => [
             'int[]',
             [],
