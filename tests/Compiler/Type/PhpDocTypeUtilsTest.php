@@ -431,19 +431,6 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         self::assertSame($expected, PhpDocTypeUtils::isSubTypeOf($typeNodeA, $typeNodeB));
     }
 
-    private function parseType(string $type): TypeNode
-    {
-        $lexer = new Lexer();
-        $constExprParser = new ConstExprParser(unescapeStrings: true);
-        $typeParser = new TypeParser($constExprParser);
-
-        $tokens = new TokenIterator($lexer->tokenize($type));
-        $typeNode = $typeParser->parse($tokens);
-        $tokens->consumeTokenType(Lexer::TOKEN_END);
-
-        return $typeNode;
-    }
-
     /**
      * @return iterable<string, array{a: string, b: string, expected: bool}>
      */
@@ -1034,6 +1021,88 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'stdClass',
             ],
         ];
+    }
+
+    #[DataProvider('provideInferGenericParameterData')]
+    public function testInferGenericParameter(
+        string $type,
+        string $genericTypeName,
+        int $parameter,
+        string $expectedResult
+    ): void
+    {
+        self::assertEquals(
+            $this->parseType($expectedResult),
+            PhpDocTypeUtils::inferGenericParameter($this->parseType($type), $genericTypeName, $parameter),
+        );
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string, 2: int, 3: string}>
+     */
+    public static function provideInferGenericParameterData(): iterable
+    {
+        yield [
+            'list<int>',
+            'list',
+            0,
+            'int',
+        ];
+
+        yield [
+            'list<int>|list<string>',
+            'list',
+            0,
+            'int|string',
+        ];
+
+        yield [
+            'array<int>',
+            'array',
+            0,
+            'mixed',
+        ];
+
+        yield [
+            'array<int>',
+            'array',
+            1,
+            'int',
+        ];
+
+        yield [
+            'list<string>',
+            'array',
+            0,
+            'int',
+        ];
+
+        yield [
+            'list<string>',
+            'array',
+            1,
+            'string',
+        ];
+
+        yield [
+            'ShipMonk\InputMapper\Runtime\Optional<Countable> & ShipMonk\InputMapper\Runtime\Optional<Traversable>',
+            'ShipMonk\InputMapper\Runtime\Optional',
+            0,
+            'Countable & Traversable',
+        ];
+    }
+
+    private function parseType(string $type): TypeNode
+    {
+        $lexer = new Lexer();
+        $constExprParser = new ConstExprParser(unescapeStrings: true);
+        $typeParser = new TypeParser($constExprParser);
+
+        $tokens = new TokenIterator($lexer->tokenize($type));
+        $typeNode = $typeParser->parse($tokens);
+        $tokens->consumeTokenType(Lexer::TOKEN_END);
+
+        return $typeNode;
     }
 
 }
