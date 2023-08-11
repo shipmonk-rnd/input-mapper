@@ -251,17 +251,22 @@ class PhpDocTypeUtils
         }
     }
 
+    public static function union(TypeNode ...$types): TypeNode
+    {
+        return match (count($types)) {
+            0 => new IdentifierTypeNode('never'),
+            1 => $types[0],
+            default => new UnionTypeNode($types),
+        };
+    }
+
     public static function intersect(TypeNode ...$types): TypeNode
     {
-        if (count($types) === 0) {
-            return new IdentifierTypeNode('mixed');
-        }
-
-        if (count($types) === 1) {
-            return $types[0];
-        }
-
-        return new IntersectionTypeNode($types);
+        return match (count($types)) {
+            0 => new IdentifierTypeNode('mixed'),
+            1 => $types[0],
+            default => new IntersectionTypeNode($types),
+        };
     }
 
     /**
@@ -449,6 +454,44 @@ class PhpDocTypeUtils
         }
 
         return false;
+    }
+
+    public static function inferGenericParameter(TypeNode $type, string $typeName, int $parameter): TypeNode
+    {
+        $type = self::normalizeType($type);
+
+        if ($type instanceof UnionTypeNode) {
+            return self::union(...Arrays::map(
+                $type->types,
+                static fn(TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
+            ));
+        }
+
+        if ($type instanceof IntersectionTypeNode) {
+            return self::intersect(...Arrays::map(
+                $type->types,
+                static fn(TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
+            ));
+        }
+
+        if ($type instanceof GenericTypeNode) {
+            $typeDef = self::getGenericTypeDefinition($type);
+
+            if (strcasecmp($type->type->name, $typeName) === 0) {
+                return $type->genericTypes[$parameter] ?? $typeDef['parameters'][$parameter]['bound'] ?? new IdentifierTypeNode('mixed');
+            }
+
+            $superTypes = isset($typeDef['superTypes']) ? $typeDef['superTypes']($type->genericTypes) : [];
+
+            if (count($superTypes) > 0) {
+                return self::union(...Arrays::map(
+                    $superTypes,
+                    static fn(TypeNode $superType) => self::inferGenericParameter($superType, $typeName, $parameter),
+                ));
+            }
+        }
+
+        throw new LogicException("Unable to infer generic parameter, {$type} is not subtype of {$typeName}");
     }
 
     private static function isSubTypeOfGeneric(GenericTypeNode $a, GenericTypeNode $b): bool
