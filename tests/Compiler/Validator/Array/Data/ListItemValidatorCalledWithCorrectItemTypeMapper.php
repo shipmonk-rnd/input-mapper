@@ -42,9 +42,6 @@ class ListItemValidatorCalledWithCorrectItemTypeMapper implements Mapper
             $mapped[] = $item;
         }
 
-        foreach ($mapped as $index2 => $item2) {
-        }
-
         return $mapped;
     }
 }
