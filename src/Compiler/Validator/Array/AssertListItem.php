@@ -12,6 +12,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use function array_map;
+use function count;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertListItem implements ValidatorCompiler
@@ -42,6 +43,10 @@ class AssertListItem implements ValidatorCompiler
             foreach ($validator->compile($itemValue, $itemType, $itemPath, $builder) as $statement) {
                 $foreachBody[] = $statement;
             }
+        }
+
+        if (count($foreachBody) === 0) {
+            return [];
         }
 
         return [
