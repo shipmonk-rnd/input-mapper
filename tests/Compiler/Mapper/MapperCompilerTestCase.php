@@ -37,12 +37,12 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         $mapperDir = strtr(str_replace('ShipMonkTests\InputMapper', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
         $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
 
-        if (!class_exists($mapperClassName, autoload: false)) {
-            $builder = new PhpCodeBuilder();
-            $printer = new PhpCodePrinter();
-            $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
+        $builder = new PhpCodeBuilder();
+        $printer = new PhpCodePrinter();
+        $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
+        self::assertSnapshot($mapperPath, $mapperCode);
 
-            self::assertSnapshot($mapperPath, $mapperCode);
+        if (!class_exists($mapperClassName, autoload: false)) {
             require $mapperPath;
         }
 

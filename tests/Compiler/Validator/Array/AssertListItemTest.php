@@ -2,11 +2,15 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Validator\Array;
 
+use PhpParser\Node\Expr;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListItem;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
+use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
 
@@ -49,6 +53,28 @@ class AssertListItemTest extends ValidatorCompilerTestCase
             'Failed to map data at path /2: Expected multiple of 5, got 3',
             static fn() => $validator->map([5, 10, 3]),
         );
+    }
+
+    public function testInnerValidatorIsCalledWithCorrectItemType(): void
+    {
+        $itemValidator = $this->createMock(ValidatorCompiler::class);
+
+        $itemValidator->expects(self::once())
+            ->method('compile')
+            ->with(
+                self::isInstanceOf(Expr::class),
+                self::equalTo(new IdentifierTypeNode('int')),
+                self::isInstanceOf(Expr::class),
+                self::isInstanceOf(PhpCodeBuilder::class),
+            );
+
+        $itemValidator->expects(self::once())
+            ->method('getInputType')
+            ->willReturn(new IdentifierTypeNode('int'));
+
+        $mapperCompiler = new MapList(new MapInt());
+        $validatorCompiler = new AssertListItem([$itemValidator]);
+        $this->compileValidator('ListItemValidatorCalledWithCorrectItemType', $mapperCompiler, $validatorCompiler);
     }
 
 }

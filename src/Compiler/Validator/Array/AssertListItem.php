@@ -36,9 +36,10 @@ class AssertListItem implements ValidatorCompiler
 
         foreach ($this->validators as $validator) {
             $itemValue = $builder->var($itemVariableName);
+            $itemType = PhpDocTypeUtils::inferGenericParameter($type, 'list', 0);
             $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
 
-            foreach ($validator->compile($itemValue, $type, $itemPath, $builder) as $statement) {
+            foreach ($validator->compile($itemValue, $itemType, $itemPath, $builder) as $statement) {
                 $foreachBody[] = $statement;
             }
         }
