@@ -1060,7 +1060,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             'array<int>',
             'array',
             0,
-            'mixed',
+            'int|string',
         ];
 
         yield [
