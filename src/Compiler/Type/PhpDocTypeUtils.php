@@ -535,7 +535,7 @@ class PhpDocTypeUtils
                     ]),
                 ],
                 'parameters' => [
-                    ['variance' => 'out'],
+                    ['variance' => 'out', 'bound' => new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')])],
                     ['variance' => 'out'],
                 ],
             ],
@@ -640,7 +640,10 @@ class PhpDocTypeUtils
         }
 
         if ($type instanceof ArrayTypeNode) {
-            return new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->type)]);
+            return new GenericTypeNode(new IdentifierTypeNode('array'), [
+                new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')]),
+                self::normalizeType($type->type),
+            ]);
         }
 
         if ($type instanceof ArrayShapeNode) {
@@ -684,11 +687,17 @@ class PhpDocTypeUtils
 
         if ($type instanceof GenericTypeNode) {
             if (strtolower($type->type->name) === 'array' && count($type->genericTypes) === 1) {
-                return new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->genericTypes[0])]);
+                return new GenericTypeNode(new IdentifierTypeNode('array'), [
+                    new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')]),
+                    self::normalizeType($type->genericTypes[0]),
+                ]);
             }
 
             if (strtolower($type->type->name) === 'iterable' && count($type->genericTypes) === 1) {
-                return new GenericTypeNode(new IdentifierTypeNode('iterable'), [new IdentifierTypeNode('mixed'), self::normalizeType($type->genericTypes[0])]);
+                return new GenericTypeNode(new IdentifierTypeNode('iterable'), [
+                    new IdentifierTypeNode('mixed'),
+                    self::normalizeType($type->genericTypes[0]),
+                ]);
             }
 
             if (self::isKeyword($type->type)) {
