@@ -71,6 +71,11 @@ class MappingFailedExceptionTest extends InputMapperTestCase
             'Failed to map data at path /foo: Expected int, got "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" (truncated)',
         ];
 
+        yield 'string with slash' => [
+            MappingFailedException::incorrectValue('foo/bar', ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got "foo/bar"',
+        ];
+
         yield 'string with control characters' => [
             MappingFailedException::incorrectValue("foo\x00bar", ['foo'], 'int'),
             'Failed to map data at path /foo: Expected int, got string',

@@ -23,11 +23,12 @@ use function strlen;
 use function substr;
 use const JSON_PRESERVE_ZERO_FRACTION;
 use const JSON_THROW_ON_ERROR;
+use const JSON_UNESCAPED_SLASHES;
 
 class MappingFailedException extends RuntimeException
 {
 
-    private const JSON_ENCODE_OPTIONS = JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR;
+    private const JSON_ENCODE_OPTIONS = JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
     private const MAX_STRING_LENGTH = 40;
 
     /**
