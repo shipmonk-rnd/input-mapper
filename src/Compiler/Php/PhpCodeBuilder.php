@@ -80,7 +80,7 @@ class PhpCodeBuilder extends BuilderFactory
     private array $functionImports = [];
 
     /**
-     * @var array<string, mixed>
+     * @var array<string, Expr|bool|int|float|string|array<mixed>|null>
      */
     private array $constants = [];
 
@@ -304,7 +304,10 @@ class PhpCodeBuilder extends BuilderFactory
         }
     }
 
-    public function addConstant(string $name, mixed $value): void
+    /**
+     * @param Expr|bool|int|float|string|array<mixed>|null $value
+     */
+    public function addConstant(string $name, Expr|bool|null|int|float|string|array $value): void
     {
         if (isset($this->constants[$name]) && $this->constants[$name] !== $value) {
             throw new LogicException('Constant already exists with different value');
@@ -469,7 +472,7 @@ class PhpCodeBuilder extends BuilderFactory
 
         $constants = Arrays::map(
             $this->constants,
-            function (mixed $value, string $name): ClassConst {
+            function (Expr|bool|null|int|float|string|array $value, string $name): ClassConst {
                 return $this->classConst($name, $value)
                     ->makePrivate()
                     ->getNode();
