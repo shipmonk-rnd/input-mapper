@@ -422,6 +422,120 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         self::assertSame(self::class, $identifier->name);
     }
 
+    /**
+     * @param list<string> $types
+     */
+    #[DataProvider('provideUnionData')]
+    public function testUnion(array $types, string $expected): void
+    {
+        $typesNodes = [];
+
+        foreach ($types as $type) {
+            $typesNodes[] = $this->parseType($type);
+        }
+
+        $expectedTypeNode = $this->parseType($expected);
+        self::assertEquals($expectedTypeNode, PhpDocTypeUtils::union(...$typesNodes));
+    }
+
+    /**
+     * @return iterable<string, array{0: list<string>, 1: string}>
+     */
+    public static function provideUnionData(): iterable
+    {
+        yield 'empty' => [
+            [],
+            'never',
+        ];
+
+        yield 'int' => [
+            ['int'],
+            'int',
+        ];
+
+        yield 'int | int' => [
+            ['int', 'int'],
+            'int',
+        ];
+
+        yield 'int | number' => [
+            ['int', 'number'],
+            'number',
+        ];
+
+        yield 'number | int' => [
+            ['number', 'int'],
+            'number',
+        ];
+
+        yield 'int | string | never' => [
+            ['int', 'string', 'never'],
+            'int | string',
+        ];
+
+        yield 'int | string | mixed' => [
+            ['int', 'string', 'mixed'],
+            'mixed',
+        ];
+    }
+
+    /**
+     * @param list<string> $types
+     */
+    #[DataProvider('provideIntersectData')]
+    public function testIntersect(array $types, string $expected): void
+    {
+        $typesNodes = [];
+
+        foreach ($types as $type) {
+            $typesNodes[] = $this->parseType($type);
+        }
+
+        $expectedTypeNode = $this->parseType($expected);
+        self::assertEquals($expectedTypeNode, PhpDocTypeUtils::intersect(...$typesNodes));
+    }
+
+    /**
+     * @return iterable<string, array{0: list<string>, 1: string}>
+     */
+    public static function provideIntersectData(): iterable
+    {
+        yield 'empty' => [
+            [],
+            'mixed',
+        ];
+
+        yield 'int' => [
+            ['int'],
+            'int',
+        ];
+
+        yield 'int & int' => [
+            ['int', 'int'],
+            'int',
+        ];
+
+        yield 'int & number' => [
+            ['int', 'number'],
+            'int',
+        ];
+
+        yield 'number & int' => [
+            ['number', 'int'],
+            'int',
+        ];
+
+        yield 'Countable & Traversable & mixed' => [
+            ['Countable', 'Traversable', 'mixed'],
+            'Countable & Traversable',
+        ];
+
+        yield 'Countable & Traversable & never' => [
+            ['Countable', 'Traversable', 'never'],
+            'never',
+        ];
+    }
+
     #[DataProvider('provideIsSubTypeOfData')]
     public function testIsSubTypeOf(string $a, string $b, bool $expected): void
     {
