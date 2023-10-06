@@ -28,6 +28,13 @@ parameters:
         allowNamedArgumentOnlyInAttributes:
             enabled: false
 
+        forbidAssignmentNotMatchingVarDoc:
+            enabled: false
+
+        forbidCheckedExceptionInCallable:
+            immediatelyCalledCallables:
+                'ShipMonkTests\InputMapper\InputMapperTestCase::assertException': 2
+
     ignoreErrors:
         -
             message: '#Property [\w\\]++::\$provider is never read, only written\.#'
