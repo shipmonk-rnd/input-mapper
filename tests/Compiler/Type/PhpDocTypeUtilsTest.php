@@ -170,7 +170,25 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 
         yield 'positive-int' => [
             new IdentifierTypeNode('positive-int'),
-            new Identifier('mixed'),
+            new Identifier('int'),
+            true,
+        ];
+
+        yield 'negative-int' => [
+            new IdentifierTypeNode('negative-int'),
+            new Identifier('int'),
+            true,
+        ];
+
+        yield 'non-positive-int' => [
+            new IdentifierTypeNode('non-positive-int'),
+            new Identifier('int'),
+            true,
+        ];
+
+        yield 'non-negative-int' => [
+            new IdentifierTypeNode('non-negative-int'),
+            new Identifier('int'),
             true,
         ];
 
@@ -795,12 +813,112 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             'true' => [
                 'int',
                 'integer',
+                'int<1, 10>',
+                'int<min, max>',
+                'int<min, 10>',
+                'int<1, max>',
+                'positive-int',
+                'negative-int',
                 '1',
             ],
 
             'false' => [
                 'string',
                 'float',
+            ],
+        ];
+
+        yield 'int<3, 5>' => [
+            'true' => [
+                'int<3, 5>',
+                'int<3, 4>',
+                'int<4, 5>',
+                '3',
+                '4',
+                '5',
+            ],
+
+            'false' => [
+                'int',
+                'int<1, 2>',
+                'int<6, 10>',
+                'int<min, 4>',
+                'int<4, max>',
+                'positive-int',
+                'negative-int',
+                '2',
+                '6',
+            ],
+        ];
+
+        yield 'int<min, 5>' => [
+            'true' => [
+                'int<min, 4>',
+                'int<min, 5>',
+                'int<-7, 5>',
+                'int<0, 5>',
+                'int<5, 5>',
+                'negative-int',
+                '-7',
+                '0',
+                '5',
+            ],
+
+            'false' => [
+                'int',
+                'int<0, 10>',
+                'int<0, max>',
+                'int<min, 6>',
+                'positive-int',
+                '6',
+            ],
+        ];
+
+        yield 'int<3, max>' => [
+            'true' => [
+                'int<3, 3>',
+                'int<3, 4>',
+                'int<3, 5>',
+                'int<3, max>',
+                'int<4, 4>',
+                'int<4, 5>',
+                'int<4, max>',
+                '3',
+                '4',
+                '5',
+                '6',
+            ],
+
+            'false' => [
+                'int',
+                'int<0, 5>',
+                'int<2, max>',
+                'int<min, max>',
+                'positive-int',
+                'negative-int',
+                '-2',
+                '0',
+                '2',
+            ],
+        ];
+
+        yield 'int<min, max>' => [
+            'true' => [
+                'int',
+                'int<min, max>',
+                'int<min, 3>',
+                'int<3, max>',
+                'positive-int',
+                'negative-int',
+                '-3',
+                '0',
+                '3',
+            ],
+
+            'false' => [
+                'string',
+                'array',
+                'null',
             ],
         ];
 
@@ -895,6 +1013,24 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             'false' => [],
         ];
 
+        yield 'negative-int' => [
+            'true' => [
+                'negative-int',
+                'int<min, -1>',
+                '-1',
+                '-2',
+            ],
+
+            'false' => [
+                'int',
+                'int<0, max>',
+                'int<min, max>',
+                'int<min, 0>',
+                '0',
+                '1',
+            ],
+        ];
+
         yield 'never' => [
             'true' => [
                 'never',
@@ -945,6 +1081,26 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'string',
                 'array',
                 'array<int>',
+            ],
+        ];
+
+        yield 'positive-int' => [
+            'true' => [
+                'positive-int',
+                'int<1, max>',
+                'int<1, 10>',
+                'int<1, 1>',
+                '1',
+                '10',
+            ],
+
+            'false' => [
+                'int',
+                'int<0, max>',
+                'int<min, max>',
+                'int<min, 1>',
+                '0',
+                '-1',
             ],
         ];
 
