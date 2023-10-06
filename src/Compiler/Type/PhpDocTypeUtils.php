@@ -55,6 +55,8 @@ use function method_exists;
 use function str_contains;
 use function strcasecmp;
 use function strtolower;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 class PhpDocTypeUtils
 {
@@ -147,6 +149,10 @@ class PhpDocTypeUtils
             $phpDocUseful = true;
             return match ($type->name) {
                 'list' => new Identifier('array'),
+                'positive-int',
+                'negative-int',
+                'non-positive-int',
+                'non-negative-int' => new Identifier('int'),
                 default => new Identifier('mixed'),
             };
         }
@@ -380,6 +386,7 @@ class PhpDocTypeUtils
 
                 'int' => match (true) {
                     $a instanceof IdentifierTypeNode => $a->name === 'int',
+                    $a instanceof GenericTypeNode => $a->type->name === 'int',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprIntegerNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_int(constant((string) $a->constExpr)),
@@ -445,6 +452,39 @@ class PhpDocTypeUtils
         }
 
         if ($b instanceof GenericTypeNode) {
+            if ($b->type->name === 'int' && count($b->genericTypes) === 2) {
+                $bLowerBound = self::resolveIntegerBoundary($b->genericTypes[0], 'min', PHP_INT_MIN);
+                $bUpperBound = self::resolveIntegerBoundary($b->genericTypes[1], 'max', PHP_INT_MAX);
+
+                if ($a instanceof GenericTypeNode && count($a->genericTypes) === 2) {
+                    $aLowerBound = self::resolveIntegerBoundary($a->genericTypes[0], 'min', PHP_INT_MIN);
+                    $aUpperBound = self::resolveIntegerBoundary($a->genericTypes[1], 'max', PHP_INT_MAX);
+
+                } elseif ($a instanceof ConstTypeNode) {
+                    if ($a->constExpr instanceof ConstExprIntegerNode) {
+                        $bound = (int) $a->constExpr->value;
+                        $aLowerBound = $bound;
+                        $aUpperBound = $bound;
+                    } elseif ($a->constExpr instanceof ConstFetchNode) {
+                        $bound = constant((string) $a->constExpr);
+
+                        if (!is_int($bound)) {
+                            return false;
+                        }
+
+                        $aLowerBound = $bound;
+                        $aUpperBound = $bound;
+
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+
+                return $aLowerBound >= $bLowerBound && $aUpperBound <= $bUpperBound;
+            }
+
             return match (true) {
                 $a instanceof GenericTypeNode => self::isSubTypeOfGeneric($a, $b),
                 $a instanceof IdentifierTypeNode => self::isSubTypeOfGeneric(new GenericTypeNode($a, []), $b),
@@ -652,8 +692,24 @@ class PhpDocTypeUtils
                     new IdentifierTypeNode('array'),
                     new IdentifierTypeNode(Traversable::class),
                 ]),
+                'negative-int' => new GenericTypeNode(new IdentifierTypeNode('int'), [
+                    new IdentifierTypeNode('min'),
+                    new ConstTypeNode(new ConstExprIntegerNode('-1')),
+                ]),
+                'non-negative-int' => new GenericTypeNode(new IdentifierTypeNode('int'), [
+                    new ConstTypeNode(new ConstExprIntegerNode('0')),
+                    new IdentifierTypeNode('max'),
+                ]),
+                'non-positive-int' => new GenericTypeNode(new IdentifierTypeNode('int'), [
+                    new IdentifierTypeNode('min'),
+                    new ConstTypeNode(new ConstExprIntegerNode('0')),
+                ]),
                 'noreturn' => new IdentifierTypeNode('never'),
                 'number' => new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+                'positive-int' => new GenericTypeNode(new IdentifierTypeNode('int'), [
+                    new ConstTypeNode(new ConstExprIntegerNode('1')),
+                    new IdentifierTypeNode('max'),
+                ]),
                 'scalar' => new UnionTypeNode([
                     new IdentifierTypeNode('int'),
                     new IdentifierTypeNode('float'),
@@ -729,12 +785,36 @@ class PhpDocTypeUtils
                 ]);
             }
 
+            if (
+                strtolower($type->type->name) === 'int'
+                && count($type->genericTypes) === 2
+                && $type->genericTypes[0] instanceof IdentifierTypeNode
+                && $type->genericTypes[1] instanceof IdentifierTypeNode
+                && strtolower($type->genericTypes[0]->name) === 'min'
+                && strtolower($type->genericTypes[1]->name) === 'max'
+            ) {
+                return new IdentifierTypeNode('int');
+            }
+
             if (self::isKeyword($type->type)) {
                 return new GenericTypeNode(new IdentifierTypeNode(strtolower($type->type->name)), $type->genericTypes);
             }
         }
 
         return $type;
+    }
+
+    private static function resolveIntegerBoundary(TypeNode $boundaryType, string $extremeName, int $extremeValue): int
+    {
+        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
+            return (int) $boundaryType->constExpr->value;
+        }
+
+        if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {
+            return $extremeValue;
+        }
+
+        throw new LogicException('Invalid integer boundary type');
     }
 
 }
