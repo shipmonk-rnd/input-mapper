@@ -38,6 +38,7 @@ use ShipMonk\InputMapper\Runtime\OptionalNone;
 use ShipMonk\InputMapper\Runtime\OptionalSome;
 use Traversable;
 use function array_map;
+use function array_splice;
 use function constant;
 use function count;
 use function get_object_vars;
@@ -253,6 +254,20 @@ class PhpDocTypeUtils
 
     public static function union(TypeNode ...$types): TypeNode
     {
+        for ($i = 0; $i < count($types); $i++) {
+            for ($j = $i + 1; $j < count($types); $j++) {
+                if (self::isSubTypeOf($types[$i], $types[$j])) {
+                    array_splice($types, $i--, 1);
+                    continue 2;
+                }
+
+                if (self::isSubTypeOf($types[$j], $types[$i])) {
+                    array_splice($types, $j--, 1);
+                    continue;
+                }
+            }
+        }
+
         return match (count($types)) {
             0 => new IdentifierTypeNode('never'),
             1 => $types[0],
@@ -262,6 +277,20 @@ class PhpDocTypeUtils
 
     public static function intersect(TypeNode ...$types): TypeNode
     {
+        for ($i = 0; $i < count($types); $i++) {
+            for ($j = $i + 1; $j < count($types); $j++) {
+                if (self::isSubTypeOf($types[$i], $types[$j])) {
+                    array_splice($types, $j--, 1);
+                    continue;
+                }
+
+                if (self::isSubTypeOf($types[$j], $types[$i])) {
+                    array_splice($types, $i--, 1);
+                    continue 2;
+                }
+            }
+        }
+
         return match (count($types)) {
             0 => new IdentifierTypeNode('mixed'),
             1 => $types[0],
