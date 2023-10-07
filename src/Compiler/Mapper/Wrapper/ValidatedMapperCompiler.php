@@ -10,6 +10,7 @@ use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 
 class ValidatedMapperCompiler implements MapperCompiler
@@ -65,7 +66,15 @@ class ValidatedMapperCompiler implements MapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return $this->mapperCompiler->getOutputType();
+        $outputTypes = [$this->mapperCompiler->getOutputType()];
+
+        foreach ($this->validatorCompilers as $validatorCompiler) {
+            if ($validatorCompiler instanceof NarrowingValidatorCompiler) {
+                $outputTypes[] = $validatorCompiler->getNarrowedInputType();
+            }
+        }
+
+        return PhpDocTypeUtils::intersect(...$outputTypes);
     }
 
 }
