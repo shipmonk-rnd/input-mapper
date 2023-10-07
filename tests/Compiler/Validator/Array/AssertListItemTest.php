@@ -68,7 +68,7 @@ class AssertListItemTest extends ValidatorCompilerTestCase
                 self::isInstanceOf(PhpCodeBuilder::class),
             );
 
-        $itemValidator->expects(self::once())
+        $itemValidator->expects(self::exactly(3))
             ->method('getInputType')
             ->willReturn(new IdentifierTypeNode('int'));
 

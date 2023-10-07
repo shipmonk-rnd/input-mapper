@@ -10,12 +10,13 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use function array_map;
 use function count;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class AssertListItem implements ValidatorCompiler
+class AssertListItem implements NarrowingValidatorCompiler
 {
 
     /**
@@ -69,6 +70,22 @@ class AssertListItem implements ValidatorCompiler
         return new GenericTypeNode(
             new IdentifierTypeNode('list'),
             [PhpDocTypeUtils::intersect(...$validatorInputTypes)],
+        );
+    }
+
+    public function getNarrowedInputType(): TypeNode
+    {
+        $validatorOutputTypes = [];
+
+        foreach ($this->validators as $validator) {
+            $validatorOutputTypes[] = $validator instanceof NarrowingValidatorCompiler
+                ? $validator->getNarrowedInputType()
+                : $validator->getInputType();
+        }
+
+        return new GenericTypeNode(
+            new IdentifierTypeNode('list'),
+            [PhpDocTypeUtils::intersect(...$validatorOutputTypes)],
         );
     }
 

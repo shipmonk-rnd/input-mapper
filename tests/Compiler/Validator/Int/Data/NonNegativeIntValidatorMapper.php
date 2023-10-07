@@ -11,9 +11,9 @@ use function is_int;
 /**
  * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<int<6, max>>
+ * @implements Mapper<int<0, max>>
  */
-class IntRangeValidatorWithExclusiveLowerBoundMapper implements Mapper
+class NonNegativeIntValidatorMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -21,7 +21,7 @@ class IntRangeValidatorWithExclusiveLowerBoundMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return int<6, max>
+     * @return int<0, max>
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): int
@@ -30,8 +30,8 @@ class IntRangeValidatorWithExclusiveLowerBoundMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        if ($data <= 5) {
-            throw MappingFailedException::incorrectValue($data, $path, 'value greater than 5');
+        if ($data < 0) {
+            throw MappingFailedException::incorrectValue($data, $path, 'value greater than or equal to 0');
         }
 
         return $data;

@@ -3,6 +3,8 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Int;
 
 use Attribute;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertPositiveInt extends AssertIntRange
@@ -13,6 +15,11 @@ class AssertPositiveInt extends AssertIntRange
         parent::__construct(
             gt: 0,
         );
+    }
+
+    public function getNarrowedInputType(): TypeNode
+    {
+        return new IdentifierTypeNode('positive-int');
     }
 
 }

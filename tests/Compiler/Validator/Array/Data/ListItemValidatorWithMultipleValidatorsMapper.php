@@ -13,7 +13,7 @@ use function is_int;
 /**
  * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<list<int>>
+ * @implements Mapper<list<positive-int>>
  */
 class ListItemValidatorWithMultipleValidatorsMapper implements Mapper
 {
@@ -23,7 +23,7 @@ class ListItemValidatorWithMultipleValidatorsMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return list<int>
+     * @return list<positive-int>
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): array

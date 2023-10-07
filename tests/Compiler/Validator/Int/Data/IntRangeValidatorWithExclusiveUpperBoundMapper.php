@@ -11,7 +11,7 @@ use function is_int;
 /**
  * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<int>
+ * @implements Mapper<int<min, 4>>
  */
 class IntRangeValidatorWithExclusiveUpperBoundMapper implements Mapper
 {
@@ -21,6 +21,7 @@ class IntRangeValidatorWithExclusiveUpperBoundMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @return int<min, 4>
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): int
