@@ -32,6 +32,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
@@ -106,7 +109,13 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new MapObject(
                 BrandInput::class,
-                ['name' => new MapString()],
+                [
+                    'name' => new MapString(),
+                    'foundedIn' => new ValidatedMapperCompiler(
+                        new MapInt(),
+                        [new AssertIntRange(gte: 1_900, lte: 2_100)],
+                    ),
+                ],
                 allowExtraKeys: true,
             ),
         ];
@@ -237,6 +246,38 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new ValidatedMapperCompiler(new MapInt(), [
                 new AssertIntRange(gte: 0),
+            ]),
+        ];
+
+        yield 'positive-int' => [
+            'positive-int',
+            [],
+            new ValidatedMapperCompiler(new MapInt(), [
+                new AssertPositiveInt(),
+            ]),
+        ];
+
+        yield 'negative-int' => [
+            'negative-int',
+            [],
+            new ValidatedMapperCompiler(new MapInt(), [
+                new AssertNegativeInt(),
+            ]),
+        ];
+
+        yield 'non-positive-int' => [
+            'non-positive-int',
+            [],
+            new ValidatedMapperCompiler(new MapInt(), [
+                new AssertNonPositiveInt(),
+            ]),
+        ];
+
+        yield 'non-negative-int' => [
+            'non-negative-int',
+            [],
+            new ValidatedMapperCompiler(new MapInt(), [
+                new AssertNonNegativeInt(),
             ]),
         ];
 
