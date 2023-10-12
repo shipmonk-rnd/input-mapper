@@ -88,6 +88,8 @@ class Person
 }
 ```
 
+By default, any extra properties are not allowed. You can change that by adding `#[AllowExtraKeys]` over the class.
+
 ### Map Input
 
 To map input, provide a path to a writable directory where generated mappers will be stored.
