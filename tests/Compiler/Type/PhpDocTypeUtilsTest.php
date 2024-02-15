@@ -32,6 +32,7 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use Traversable;
 use function array_map;
+use function array_reverse;
 
 class PhpDocTypeUtilsTest extends InputMapperTestCase
 {
@@ -73,6 +74,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         yield ['resource', true];
         yield ['unknown', false];
         yield ['positive-int', true];
+        yield ['non-empty-list', true];
         yield [DateTimeImmutable::class, false];
     }
 
@@ -501,7 +503,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
      * @param list<string> $types
      */
     #[DataProvider('provideIntersectData')]
-    public function testIntersect(array $types, string $expected): void
+    public function testIntersect(array $types, string $expected, ?string $expectedReversed = null): void
     {
         $typesNodes = [];
 
@@ -510,11 +512,13 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         }
 
         $expectedTypeNode = $this->parseType($expected);
-        self::assertEquals($expectedTypeNode, PhpDocTypeUtils::intersect(...$typesNodes));
+        $expectedTypeNodeReversed = $expectedReversed !== null ? $this->parseType($expectedReversed) : $expectedTypeNode;
+        self::assertEquals($expectedTypeNode->__toString(), PhpDocTypeUtils::intersect(...$typesNodes)->__toString());
+        self::assertEquals($expectedTypeNodeReversed->__toString(), PhpDocTypeUtils::intersect(...array_reverse($typesNodes))->__toString());
     }
 
     /**
-     * @return iterable<string, array{0: list<string>, 1: string}>
+     * @return iterable<string, array{0: list<string>, 1: string, 2?: string}>
      */
     public static function provideIntersectData(): iterable
     {
@@ -538,19 +542,56 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             'int',
         ];
 
-        yield 'number & int' => [
-            ['number', 'int'],
-            'int',
-        ];
-
         yield 'Countable & Traversable & mixed' => [
             ['Countable', 'Traversable', 'mixed'],
             'Countable & Traversable',
+            'Traversable & Countable',
         ];
 
         yield 'Countable & Traversable & never' => [
             ['Countable', 'Traversable', 'never'],
             'never',
+        ];
+
+        yield 'array<Countable> & array<Traversable>' => [
+            ['array<Countable>', 'array<Traversable>'],
+            'array<Countable & Traversable>',
+            'array<Traversable & Countable>',
+        ];
+
+        yield 'array<Countable> & list<Traversable>' => [
+            ['array<Countable>', 'list<Traversable>'],
+            'list<Countable & Traversable>',
+        ];
+
+        yield 'non-empty-list<mixed> & list<int>' => [
+            ['non-empty-list<mixed>', 'list<int>'],
+            'non-empty-list<int>',
+        ];
+
+        yield 'array<int> & non-empty-list<mixed>' => [
+            ['array<int>', 'non-empty-list<mixed>'],
+            'non-empty-list<int>',
+        ];
+
+        yield 'array<int, int> & non-empty-list<mixed>' => [
+            ['array<int, int>', 'non-empty-list<mixed>'],
+            'non-empty-list<int>',
+        ];
+
+        yield 'array<string, Countable> & iterable<string, Traversable>' => [
+            ['array<string, Countable>', 'iterable<string, Traversable>'],
+            'array<string, Traversable & Countable>',
+        ];
+
+        yield 'array<Countable> & iterable<string, Traversable>' => [
+            ['array<Countable>', 'iterable<string, Traversable>'],
+            'array<string, Traversable & Countable>',
+        ];
+
+        yield 'array & iterable<string, Traversable>' => [
+            ['array', 'iterable<string, Traversable>'],
+            'array<string, Traversable>',
         ];
     }
 
@@ -600,6 +641,8 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'list<int>',
                 'array<int>',
                 'array<int, int>',
+                'non-empty-list',
+                'non-empty-list<int>',
             ],
 
             'false' => [
@@ -613,6 +656,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'array<int>',
                 'array<int, int>',
                 'list<int>',
+                'non-empty-list<int>',
                 'array{int}',
                 'int[]',
             ],
@@ -623,6 +667,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'int',
                 'iterable',
                 'iterable<int>',
+                'non-empty-list<string>',
             ],
         ];
 
@@ -946,6 +991,8 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             'true' => [
                 'list',
                 'list<int>',
+                'non-empty-list',
+                'non-empty-list<int>',
                 'array{int, string}',
                 'array{0: int, 1: string}',
             ],
@@ -1043,6 +1090,30 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'void',
                 'array',
                 'array<int>',
+            ],
+        ];
+
+        yield 'non-empty-list' => [
+            'true' => [
+                'non-empty-list',
+                'non-empty-list<int>',
+            ],
+
+            'false' => [
+                'list',
+                'list<int>',
+            ],
+        ];
+
+        yield 'non-empty-list<int>' => [
+            'true' => [
+                'non-empty-list<int>',
+            ],
+
+            'false' => [
+                'list',
+                'list<int>',
+                'non-empty-list',
             ],
         ];
 

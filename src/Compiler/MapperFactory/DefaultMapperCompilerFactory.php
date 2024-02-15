@@ -49,6 +49,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
@@ -120,6 +121,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
                 default => match ($type->name) {
                     'list' => new MapList(new MapMixed()),
+                    'non-empty-list' => new ValidatedMapperCompiler(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
                     'negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNegativeInt()]),
                     'non-negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNonNegativeInt()]),
                     'non-positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNonPositiveInt()]),
@@ -152,6 +154,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 default => match ($type->type->name) {
                     'list' => match (count($type->genericTypes)) {
                         1 => new MapList($this->createInner($type->genericTypes[0], $options)),
+                        default => throw CannotCreateMapperCompilerException::fromType($type),
+                    },
+                    'non-empty-list' => match (count($type->genericTypes)) {
+                        1 => new ValidatedMapperCompiler(new MapList($this->createInner($type->genericTypes[0], $options)), [new AssertListLength(min: 1)]),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
