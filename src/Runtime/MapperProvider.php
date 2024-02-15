@@ -82,7 +82,7 @@ class MapperProvider
      */
     private function create(string $inputClassName): Mapper
     {
-        $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
+        $classLikeNames = [$inputClassName => true, ...class_parents($inputClassName), ...class_implements($inputClassName)];
 
         foreach ($classLikeNames as $classLikeName => $_) {
             if (isset($this->mapperFactories[$classLikeName])) {

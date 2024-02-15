@@ -47,6 +47,7 @@ class OptionalNoneTest extends InputMapperTestCase
 
     public function testGetOrElse(): void
     {
+        // @phpstan-ignore-next-line always true
         self::assertSame('default', Optional::none([], 'key')->getOrElse('default'));
     }
 
