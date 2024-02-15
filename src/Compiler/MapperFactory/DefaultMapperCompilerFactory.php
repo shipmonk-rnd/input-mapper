@@ -218,7 +218,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
      */
     protected function createObjectMapperCompiler(string $inputClassName, array $options): MapperCompiler
     {
-        $classLikeNames = [$inputClassName => true] + class_parents($inputClassName) + class_implements($inputClassName);
+        $classLikeNames = [$inputClassName => true, ...class_parents($inputClassName), ...class_implements($inputClassName)];
 
         foreach ($classLikeNames as $classLikeName => $_) {
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
