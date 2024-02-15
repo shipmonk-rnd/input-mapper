@@ -31,6 +31,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
@@ -114,6 +115,10 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                     'foundedIn' => new ValidatedMapperCompiler(
                         new MapInt(),
                         [new AssertIntRange(gte: 1_900, lte: 2_100)],
+                    ),
+                    'founders' => new ValidatedMapperCompiler(
+                        new MapList(new MapString()),
+                        [new AssertListLength(min: 1)],
                     ),
                 ],
                 allowExtraKeys: true,
@@ -262,6 +267,22 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new ValidatedMapperCompiler(new MapInt(), [
                 new AssertNegativeInt(),
+            ]),
+        ];
+
+        yield 'non-empty-list' => [
+            'non-empty-list',
+            [],
+            new ValidatedMapperCompiler(new MapList(new MapMixed()), [
+                new AssertListLength(min: 1),
+            ]),
+        ];
+
+        yield 'non-empty-list<int>' => [
+            'non-empty-list<int>',
+            [],
+            new ValidatedMapperCompiler(new MapList(new MapInt()), [
+                new AssertListLength(min: 1),
             ]),
         ];
 

@@ -17,8 +17,8 @@ composer require shipmonk/input-mapper
 Input Mapper comes with built-in mappers for the following types:
 
 * `array`, `bool`, `float`, `int`, `mixed`, `string`, `list`
-* `positive-int`, `negative-int`, `int<TMin, TMax>`
-* `array<V>`, `array<K, V>`, `list<V>`
+* `positive-int`, `negative-int`, `int<TMin, TMax>`, `non-empty-list`
+* `array<V>`, `array<K, V>`, `list<V>`, `non-empty-list<V>`
 * `array{K1: V1, ...}`
 * `?T`, `Optional<T>`
 * `DateTimeInterface`, `DateTimeImmutable`
@@ -53,6 +53,7 @@ Input Mapper comes with some built-in validators:
   * `AssertUrl`
 * list validators:
   * `AssertListItem`
+  * `AssertListLength`
 * date time validators:
   * `AssertDateTimeRange`
 
@@ -73,15 +74,15 @@ class Person
 {
     public function __construct(
         public readonly string $name,
-        
+
         public readonly int $age,
-        
+
         /** @var Optional<string> */
         public readonly Optional $email,
-        
+
         /** @var list<string> */
         public readonly array $hobbies,
-        
+
         /** @var Optional<list<self>> */
         public readonly Optional $friends,
     ) {}
@@ -138,7 +139,7 @@ class Person
 {
     public function __construct(
         public readonly string $name,
-        
+
         #[AssertIntRange(gte: 18, lte: 99)]
         public readonly int $age,
     ) {}
