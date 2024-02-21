@@ -1,5 +1,6 @@
 {
     "name": "shipmonk/input-mapper",
+    "description": "Performant array-to-object mapper supporting generics, array shapes, optional fields and much more!",
     "license": [
         "MIT"
     ],
