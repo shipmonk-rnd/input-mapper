@@ -153,7 +153,7 @@ To map classes with your custom mapper, you need to implement `ShipMonk\InputMap
 ```php
 class MyCustomMapper implements ShipMonk\InputMapper\Runtime\Mapper
 {
-    public function map(mixed $data, array $path): mixed
+    public function map(mixed $data, array $path = []): mixed
     {
         return MyCustomClass::createFrom($data);
     }
