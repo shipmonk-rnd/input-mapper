@@ -18,7 +18,7 @@
         "phpstan/phpstan-strict-rules": "^1.5.2",
         "phpunit/phpunit": "^10.1",
         "shipmonk/composer-dependency-analyser": "^1.2",
-        "shipmonk/name-collision-detector": "^1.1.0",
+        "shipmonk/name-collision-detector": "^2.1.0",
         "shipmonk/phpstan-rules": "^2.11",
         "slevomat/coding-standard": "^8.14.1"
     },
