@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_bool;
 
@@ -20,13 +21,12 @@ class BoolMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): bool
+    public function map(mixed $data, ?MapperContext $context = null): bool
     {
         if (!is_bool($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'bool');
+            throw MappingFailedException::incorrectType($data, $context, 'bool');
         }
 
         return $data;

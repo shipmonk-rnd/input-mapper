@@ -38,7 +38,7 @@ class AssertListLength implements NarrowingValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, TypeNode $type, Expr $path, PhpCodeBuilder $builder): array
+    public function compile(Expr $value, TypeNode $type, Expr $context, PhpCodeBuilder $builder): array
     {
         $statements = [];
         $length = $builder->funcCall($builder->importFunction('count'), [$value]);
@@ -49,7 +49,7 @@ class AssertListLength implements NarrowingValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("list with exactly {$this->min} items")],
+                        [$value, $context, $builder->val("list with exactly {$this->min} items")],
                     ),
                 ),
             ]);
@@ -61,7 +61,7 @@ class AssertListLength implements NarrowingValidatorCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'incorrectValue',
-                            [$value, $path, $builder->val("list with at least {$this->min} items")],
+                            [$value, $context, $builder->val("list with at least {$this->min} items")],
                         ),
                     ),
                 ]);
@@ -73,7 +73,7 @@ class AssertListLength implements NarrowingValidatorCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'incorrectValue',
-                            [$value, $path, $builder->val("list with at most {$this->max} items")],
+                            [$value, $context, $builder->val("list with at most {$this->max} items")],
                         ),
                     ),
                 ]);

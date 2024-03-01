@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
@@ -19,12 +20,11 @@ class MultipleOfSevenValidatorMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, ?MapperContext $context = null): mixed
     {
-        AssertMultipleOfSeven::assertValue($data, $path);
+        AssertMultipleOfSeven::assertValue($data, $context);
         return $data;
     }
 }

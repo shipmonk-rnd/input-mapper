@@ -20,9 +20,9 @@ class MapNullable implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
-        $mapper = $this->innerMapperCompiler->compile($value, $path, $builder);
+        $mapper = $this->innerMapperCompiler->compile($value, $context, $builder);
         $mappedVariableName = $builder->uniqVariableName('mapped');
 
         $statements = [

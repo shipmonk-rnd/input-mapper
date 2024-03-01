@@ -31,7 +31,7 @@ class AssertListItem implements NarrowingValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, TypeNode $type, Expr $path, PhpCodeBuilder $builder): array
+    public function compile(Expr $value, TypeNode $type, Expr $context, PhpCodeBuilder $builder): array
     {
         [$itemVariableName, $indexVariableName] = $builder->uniqVariableNames('item', 'index');
         $foreachBody = [];
@@ -39,9 +39,9 @@ class AssertListItem implements NarrowingValidatorCompiler
         foreach ($this->validators as $validator) {
             $itemValue = $builder->var($itemVariableName);
             $itemType = PhpDocTypeUtils::inferGenericParameter($type, 'list', 0);
-            $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
+            $itemContext = $builder->mapperContextAppend($context, $builder->var($indexVariableName));
 
-            foreach ($validator->compile($itemValue, $itemType, $itemPath, $builder) as $statement) {
+            foreach ($validator->compile($itemValue, $itemType, $itemContext, $builder) as $statement) {
                 $foreachBody[] = $statement;
             }
         }

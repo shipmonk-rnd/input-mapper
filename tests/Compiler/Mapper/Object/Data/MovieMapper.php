@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_diff_key;
@@ -28,126 +29,120 @@ class MovieMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): MovieInput
+    public function map(mixed $data, ?MapperContext $context = null): MovieInput
     {
         if (!is_array($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'array');
+            throw MappingFailedException::incorrectType($data, $context, 'array');
         }
 
         if (!array_key_exists('id', $data)) {
-            throw MappingFailedException::missingKey($path, 'id');
+            throw MappingFailedException::missingKey($context, 'id');
         }
 
         if (!array_key_exists('title', $data)) {
-            throw MappingFailedException::missingKey($path, 'title');
+            throw MappingFailedException::missingKey($context, 'title');
         }
 
         if (!array_key_exists('year', $data)) {
-            throw MappingFailedException::missingKey($path, 'year');
+            throw MappingFailedException::missingKey($context, 'year');
         }
 
         if (!array_key_exists('genres', $data)) {
-            throw MappingFailedException::missingKey($path, 'genres');
+            throw MappingFailedException::missingKey($context, 'genres');
         }
 
         if (!array_key_exists('director', $data)) {
-            throw MappingFailedException::missingKey($path, 'director');
+            throw MappingFailedException::missingKey($context, 'director');
         }
 
         if (!array_key_exists('actors', $data)) {
-            throw MappingFailedException::missingKey($path, 'actors');
+            throw MappingFailedException::missingKey($context, 'actors');
         }
 
         $knownKeys = ['id' => true, 'title' => true, 'description' => true, 'year' => true, 'genres' => true, 'director' => true, 'actors' => true];
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
+            throw MappingFailedException::extraKeys($context, array_keys($extraKeys));
         }
 
         return new MovieInput(
-            $this->mapId($data['id'], [...$path, 'id']),
-            $this->mapTitle($data['title'], [...$path, 'title']),
-            array_key_exists('description', $data) ? $this->mapDescription($data['description'], [...$path, 'description']) : Optional::none($path, 'description'),
-            $this->mapYear($data['year'], [...$path, 'year']),
-            $this->mapGenres($data['genres'], [...$path, 'genres']),
-            $this->mapDirector($data['director'], [...$path, 'director']),
-            $this->mapActors($data['actors'], [...$path, 'actors']),
+            $this->mapId($data['id'], MapperContext::append($context, 'id')),
+            $this->mapTitle($data['title'], MapperContext::append($context, 'title')),
+            array_key_exists('description', $data) ? $this->mapDescription($data['description'], MapperContext::append($context, 'description')) : Optional::none($context, 'description'),
+            $this->mapYear($data['year'], MapperContext::append($context, 'year')),
+            $this->mapGenres($data['genres'], MapperContext::append($context, 'genres')),
+            $this->mapDirector($data['director'], MapperContext::append($context, 'director')),
+            $this->mapActors($data['actors'], MapperContext::append($context, 'actors')),
         );
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapId(mixed $data, array $path = []): int
+    private function mapId(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapTitle(mixed $data, array $path = []): string
+    private function mapTitle(mixed $data, ?MapperContext $context = null): string
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @return Optional<string>
      * @throws MappingFailedException
      */
-    private function mapDescription(mixed $data, array $path = []): Optional
+    private function mapDescription(mixed $data, ?MapperContext $context = null): Optional
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         return Optional::of($data);
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapYear(mixed $data, array $path = []): int
+    private function mapYear(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @return list<string>
      * @throws MappingFailedException
      */
-    private function mapGenres(mixed $data, array $path = []): array
+    private function mapGenres(mixed $data, ?MapperContext $context = null): array
     {
         if (!is_array($data) || !array_is_list($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'list');
+            throw MappingFailedException::incorrectType($data, $context, 'list');
         }
 
         $mapped = [];
 
         foreach ($data as $index => $item) {
             if (!is_string($item)) {
-                throw MappingFailedException::incorrectType($item, [...$path, $index], 'string');
+                throw MappingFailedException::incorrectType($item, MapperContext::append($context, $index), 'string');
             }
 
             $mapped[] = $item;
@@ -157,29 +152,27 @@ class MovieMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapDirector(mixed $data, array $path = []): PersonInput
+    private function mapDirector(mixed $data, ?MapperContext $context = null): PersonInput
     {
-        return $this->provider->get(PersonInput::class)->map($data, $path);
+        return $this->provider->get(PersonInput::class)->map($data, $context);
     }
 
     /**
-     * @param  list<string|int> $path
      * @return list<PersonInput>
      * @throws MappingFailedException
      */
-    private function mapActors(mixed $data, array $path = []): array
+    private function mapActors(mixed $data, ?MapperContext $context = null): array
     {
         if (!is_array($data) || !array_is_list($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'list');
+            throw MappingFailedException::incorrectType($data, $context, 'list');
         }
 
         $mapped = [];
 
         foreach ($data as $index => $item) {
-            $mapped[] = $this->provider->get(PersonInput::class)->map($item, [...$path, $index]);
+            $mapped[] = $this->provider->get(PersonInput::class)->map($item, MapperContext::append($context, $index));
         }
 
         return $mapped;

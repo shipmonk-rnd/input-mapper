@@ -22,7 +22,7 @@ class AssertUrl implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -34,7 +34,7 @@ class AssertUrl implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val('valid URL')],
+                        [$value, $context, $builder->val('valid URL')],
                     ),
                 ),
             ]),

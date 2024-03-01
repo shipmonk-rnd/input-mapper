@@ -5,13 +5,14 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapRuntime;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use function assert;
 use function is_int;
 
 class MapToDouble extends MapRuntime
 {
 
-    public static function mapValue(mixed $value, array $path): int
+    public static function mapValue(mixed $value, ?MapperContext $context): int
     {
         assert(is_int($value));
         return $value * 2;

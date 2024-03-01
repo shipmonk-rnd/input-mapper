@@ -29,9 +29,9 @@ class ValidatedMapperCompiler implements MapperCompiler
     /**
      * @throws CannotCompileMapperException
      */
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
-        $mapper = $this->mapperCompiler->compile($value, $path, $builder);
+        $mapper = $this->mapperCompiler->compile($value, $context, $builder);
         $mapperOutputType = $this->mapperCompiler->getOutputType();
         $statements = $mapper->statements;
 
@@ -51,7 +51,7 @@ class ValidatedMapperCompiler implements MapperCompiler
                 throw CannotCompileMapperException::withIncompatibleValidator($validatorCompiler, $this->mapperCompiler);
             }
 
-            foreach ($validatorCompiler->compile($mapperVariable, $mapperOutputType, $path, $builder) as $statement) {
+            foreach ($validatorCompiler->compile($mapperVariable, $mapperOutputType, $context, $builder) as $statement) {
                 $statements[] = $statement;
             }
         }

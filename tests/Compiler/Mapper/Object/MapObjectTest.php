@@ -10,6 +10,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
@@ -29,10 +30,10 @@ class MapObjectTest extends MapperCompilerTestCase
             description: Optional::of('A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.'),
             year: 1_999,
             genres: ['Action', 'Sci-Fi'],
-            director: new PersonInput(7, 'Lana Wachowski', Optional::none(['director'], 'age')),
+            director: new PersonInput(7, 'Lana Wachowski', Optional::none(MapperContext::fromPath(['director']), 'age')),
             actors: [
                 new PersonInput(8, 'Keanu Reeves', age: Optional::of(56)),
-                new PersonInput(9, 'Laurence Fishburne', Optional::none(['actors', 1], 'age')),
+                new PersonInput(9, 'Laurence Fishburne', Optional::none(MapperContext::fromPath(['actors', 1]), 'age')),
             ],
         );
 
@@ -101,7 +102,7 @@ class MapObjectTest extends MapperCompilerTestCase
         $mapper = $this->compileMapper('PersonWithAllowedExtraProperties', $mapperCompiler);
 
         self::assertEquals(
-            new PersonInput(1, 'John', Optional::none([], 'age')),
+            new PersonInput(1, 'John', Optional::none(null, 'age')),
             $mapper->map(['id' => 1, 'name' => 'John', 'extra' => 'X']),
         );
     }

@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\String\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 use function preg_match;
@@ -21,17 +22,16 @@ class PatternValidatorWithCustomPatternDescriptionMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): string
+    public function map(mixed $data, ?MapperContext $context = null): string
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         if (preg_match('#^\\d+\\z#', $data) !== 1) {
-            throw MappingFailedException::incorrectValue($data, $path, 'numeric string');
+            throw MappingFailedException::incorrectValue($data, $context, 'numeric string');
         }
 
         return $data;

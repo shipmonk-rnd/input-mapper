@@ -37,7 +37,7 @@ class MapObject implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
@@ -45,7 +45,7 @@ class MapObject implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('array')],
+                        [$value, $context, $builder->val('array')],
                     ),
                 ),
             ]),
@@ -58,15 +58,15 @@ class MapObject implements MapperCompiler
             $isMissing = $builder->not($isPresent);
 
             $propertyValue = $builder->arrayDimFetch($value, $builder->val($key));
-            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($key));
+            $propertyContext = $builder->mapperContextAppend($context, $builder->val($key));
             $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
             $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $argMapperCompiler)->makePrivate()->getNode();
-            $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyPath]);
+            $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyContext]);
             $builder->addMethod($propertyMapperMethod);
 
             if ($argMapperCompiler instanceof UndefinedAwareMapperCompiler) {
                 $propertyValueVarName = $builder->uniqVariableName($key);
-                $fallbackValueMapper = $argMapperCompiler->compileUndefined($path, $builder->val($key), $builder);
+                $fallbackValueMapper = $argMapperCompiler->compileUndefined($context, $builder->val($key), $builder);
 
                 if (count($fallbackValueMapper->statements) > 0) {
                     $statements[] = $builder->if(
@@ -88,7 +88,7 @@ class MapObject implements MapperCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'missingKey',
-                            [$path, $key],
+                            [$context, $key],
                         ),
                     ),
                 ]);
@@ -98,7 +98,7 @@ class MapObject implements MapperCompiler
         }
 
         if (!$this->allowExtraKeys) {
-            array_push($statements, ...$this->checkForExtraKeys($value, $path, $builder));
+            array_push($statements, ...$this->checkForExtraKeys($value, $context, $builder));
         }
 
         return new CompiledExpr(
@@ -120,7 +120,7 @@ class MapObject implements MapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function checkForExtraKeys(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function checkForExtraKeys(Expr $value, Expr $context, PhpCodeBuilder $builder): array
     {
         $statements = [];
 
@@ -137,7 +137,7 @@ class MapObject implements MapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'extraKeys',
-                    [$path, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
+                    [$context, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
                 ),
             ),
         ]);

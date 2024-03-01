@@ -7,6 +7,7 @@ use DateTimeZone;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
@@ -22,19 +23,18 @@ class DateWithTargetTimeZoneMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): DateTimeImmutable
+    public function map(mixed $data, ?MapperContext $context = null): DateTimeImmutable
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
 
         if ($mapped === false) {
-            throw MappingFailedException::incorrectValue($data, $path, 'date string in Y-m-d format');
+            throw MappingFailedException::incorrectValue($data, $context, 'date string in Y-m-d format');
         }
 
         $mapped = $mapped->setTimezone(new DateTimeZone('America/New_York'));

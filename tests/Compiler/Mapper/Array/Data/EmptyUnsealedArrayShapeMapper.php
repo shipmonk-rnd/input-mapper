@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_array;
 
@@ -20,14 +21,13 @@ class EmptyUnsealedArrayShapeMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @return array{...}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): array
+    public function map(mixed $data, ?MapperContext $context = null): array
     {
         if (!is_array($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'array');
+            throw MappingFailedException::incorrectType($data, $context, 'array');
         }
 
         $mapped = [];

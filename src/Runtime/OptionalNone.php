@@ -11,11 +11,8 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 final class OptionalNone extends Optional
 {
 
-    /**
-     * @param  list<string|int> $path
-     */
     protected function __construct(
-        private readonly array $path,
+        private readonly ?MapperContext $context,
         private readonly string $key,
     )
     {
@@ -36,7 +33,7 @@ final class OptionalNone extends Optional
      */
     public function require(): never
     {
-        throw MappingFailedException::missingKey($this->path, $this->key);
+        throw MappingFailedException::missingKey($this->context, $this->key);
     }
 
     /**

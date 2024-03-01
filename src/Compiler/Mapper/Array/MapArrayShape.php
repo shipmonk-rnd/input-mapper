@@ -33,7 +33,7 @@ class MapArrayShape implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $statements = [];
         $mappedVariableName = $builder->uniqVariableName('mapped');
@@ -44,7 +44,7 @@ class MapArrayShape implements MapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'incorrectType',
-                    [$value, $path, $builder->val('array')],
+                    [$value, $context, $builder->val('array')],
                 ),
             ),
         ]);
@@ -56,14 +56,14 @@ class MapArrayShape implements MapperCompiler
             $isMissing = $builder->not($isPresent);
 
             $itemValue = $builder->arrayDimFetch($value, $builder->val($itemMapping->key));
-            $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping->key));
+            $itemContext = $builder->mapperContextAppend($context, $builder->val($itemMapping->key));
             $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping->key));
             $itemMapperMethod = $builder->mapperMethod($itemMapperMethodName, $itemMapping->mapper)->makePrivate()->getNode();
             $builder->addMethod($itemMapperMethod);
 
             $itemAssignment = $builder->assign(
                 $builder->arrayDimFetch($builder->var($mappedVariableName), $builder->val($itemMapping->key)),
-                $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemPath]),
+                $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemContext]),
             );
 
             if ($itemMapping->optional) {
@@ -75,7 +75,7 @@ class MapArrayShape implements MapperCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'missingKey',
-                            [$path, $builder->val($itemMapping->key)],
+                            [$context, $builder->val($itemMapping->key)],
                         ),
                     ),
                 ]);
@@ -85,7 +85,7 @@ class MapArrayShape implements MapperCompiler
         }
 
         if ($this->sealed) {
-            array_push($statements, ...$this->checkForExtraKeys($value, $path, $builder));
+            array_push($statements, ...$this->checkForExtraKeys($value, $context, $builder));
         }
 
         return new CompiledExpr($builder->var($mappedVariableName), $statements);
@@ -114,7 +114,7 @@ class MapArrayShape implements MapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function checkForExtraKeys(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function checkForExtraKeys(Expr $value, Expr $context, PhpCodeBuilder $builder): array
     {
         $statements = [];
 
@@ -131,7 +131,7 @@ class MapArrayShape implements MapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'extraKeys',
-                    [$path, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
+                    [$context, $builder->funcCall($builder->importFunction('array_keys'), [$builder->var($extraKeysVariableName)])],
                 ),
             ),
         ]);

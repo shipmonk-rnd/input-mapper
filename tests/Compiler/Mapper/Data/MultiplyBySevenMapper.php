@@ -4,6 +4,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Data;
 
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
@@ -18,11 +19,10 @@ class MultiplyBySevenMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): int
+    public function map(mixed $data, ?MapperContext $context = null): int
     {
-        return MapMultiplyBySeven::mapValue($data, $path);
+        return MapMultiplyBySeven::mapValue($data, $context);
     }
 }

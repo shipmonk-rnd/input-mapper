@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_array;
 use function is_int;
@@ -22,25 +23,24 @@ class GenericArrayMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @return array<string, int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): array
+    public function map(mixed $data, ?MapperContext $context = null): array
     {
         if (!is_array($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'array');
+            throw MappingFailedException::incorrectType($data, $context, 'array');
         }
 
         $mapped = [];
 
         foreach ($data as $key => $value) {
             if (!is_string($key)) {
-                throw MappingFailedException::incorrectType($key, [...$path, $key], 'string');
+                throw MappingFailedException::incorrectType($key, MapperContext::append($context, $key), 'string');
             }
 
             if (!is_int($value)) {
-                throw MappingFailedException::incorrectType($value, [...$path, $key], 'int');
+                throw MappingFailedException::incorrectType($value, MapperContext::append($context, $key), 'int');
             }
 
             $mapped[$key] = $value;

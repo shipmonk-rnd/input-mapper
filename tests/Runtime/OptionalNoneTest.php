@@ -4,6 +4,7 @@ namespace ShipMonkTests\InputMapper\Runtime;
 
 use LogicException;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 
@@ -12,7 +13,7 @@ class OptionalNoneTest extends InputMapperTestCase
 
     public function testIsDefined(): void
     {
-        self::assertFalse(Optional::none([], 'key')->isDefined());
+        self::assertFalse(Optional::none(null, 'key')->isDefined());
     }
 
     public function testGet(): void
@@ -21,7 +22,7 @@ class OptionalNoneTest extends InputMapperTestCase
             LogicException::class,
             'Optional is not defined',
             static function (): void {
-                Optional::none([], 'key')->get();
+                Optional::none(null, 'key')->get();
             },
         );
     }
@@ -32,7 +33,7 @@ class OptionalNoneTest extends InputMapperTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Missing required key "key"',
             static function (): void {
-                Optional::none([], 'key')->require();
+                Optional::none(null, 'key')->require();
             },
         );
 
@@ -40,7 +41,7 @@ class OptionalNoneTest extends InputMapperTestCase
             MappingFailedException::class,
             'Failed to map data at path /foo: Missing required key "bar"',
             static function (): void {
-                Optional::none(['foo'], 'bar')->require();
+                Optional::none(MapperContext::fromPath(['foo']), 'bar')->require();
             },
         );
     }
@@ -48,7 +49,7 @@ class OptionalNoneTest extends InputMapperTestCase
     public function testGetOrElse(): void
     {
         // @phpstan-ignore-next-line always true
-        self::assertSame('default', Optional::none([], 'key')->getOrElse('default'));
+        self::assertSame('default', Optional::none(null, 'key')->getOrElse('default'));
     }
 
 }

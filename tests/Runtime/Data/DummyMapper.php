@@ -3,6 +3,7 @@
 namespace ShipMonkTests\InputMapper\Runtime\Data;
 
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 
 /**
  * @implements Mapper<mixed>
@@ -10,10 +11,7 @@ use ShipMonk\InputMapper\Runtime\Mapper;
 class DummyMapper implements Mapper
 {
 
-    /**
-     * @param list<string | int> $path
-     */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, ?MapperContext $context = null): mixed
     {
         return $data;
     }

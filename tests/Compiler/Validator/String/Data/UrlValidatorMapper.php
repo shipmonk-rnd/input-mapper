@@ -6,6 +6,7 @@ use Nette\Utils\Validators;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
@@ -21,17 +22,16 @@ class UrlValidatorMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): string
+    public function map(mixed $data, ?MapperContext $context = null): string
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         if (!Validators::isUrl($data)) {
-            throw MappingFailedException::incorrectValue($data, $path, 'valid URL');
+            throw MappingFailedException::incorrectValue($data, $context, 'valid URL');
         }
 
         return $data;
