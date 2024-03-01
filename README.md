@@ -121,7 +121,7 @@ try {
             ],
         ],
     ]);
-} catch (\ShipMonk\InputMapper\Runtime\MappingFailedException $e) {
+} catch (\ShipMonk\InputMapper\Runtime\Exception\MappingFailedException $e) {
     // ...
 }
 ```
