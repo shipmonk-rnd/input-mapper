@@ -28,7 +28,7 @@ class AssertStringMatches implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -40,7 +40,7 @@ class AssertStringMatches implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val($this->expectedDescription ?? "string matching pattern {$this->pattern}")],
+                        [$value, $context, $builder->val($this->expectedDescription ?? "string matching pattern {$this->pattern}")],
                     ),
                 ),
             ]),

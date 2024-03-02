@@ -16,7 +16,7 @@ interface ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array;
 

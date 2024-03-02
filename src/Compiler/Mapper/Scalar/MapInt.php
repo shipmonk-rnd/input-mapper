@@ -15,7 +15,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 class MapInt implements MapperCompiler
 {
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_int'), [$value])), [
@@ -23,7 +23,7 @@ class MapInt implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('int')],
+                        [$value, $context, $builder->val('int')],
                     ),
                 ),
             ]),

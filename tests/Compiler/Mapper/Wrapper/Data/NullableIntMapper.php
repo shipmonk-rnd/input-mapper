@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
@@ -20,16 +21,15 @@ class NullableIntMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): ?int
+    public function map(mixed $data, ?MapperContext $context = null): ?int
     {
         if ($data === null) {
             $mapped = null;
         } else {
             if (!is_int($data)) {
-                throw MappingFailedException::incorrectType($data, $path, 'int');
+                throw MappingFailedException::incorrectType($data, $context, 'int');
             }
 
             $mapped = $data;

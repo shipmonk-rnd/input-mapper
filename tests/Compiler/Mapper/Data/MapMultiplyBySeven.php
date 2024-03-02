@@ -6,15 +6,16 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapRuntime;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use function is_int;
 
 class MapMultiplyBySeven extends MapRuntime
 {
 
-    public static function mapValue(mixed $value, array $path): int
+    public static function mapValue(mixed $value, ?MapperContext $context): int
     {
         if (!is_int($value)) {
-            throw MappingFailedException::incorrectType($value, $path, 'int');
+            throw MappingFailedException::incorrectType($value, $context, 'int');
         }
 
         return $value * 7;

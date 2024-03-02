@@ -35,7 +35,7 @@ class MapDateTimeImmutable implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $mappedVariableName = $builder->uniqVariableName('mapped');
         $timezoneVariableName = $builder->uniqVariableName('timezone');
@@ -60,7 +60,7 @@ class MapDateTimeImmutable implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('string')],
+                        [$value, $context, $builder->val('string')],
                     ),
                 ),
             ]),
@@ -97,7 +97,7 @@ class MapDateTimeImmutable implements MapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'incorrectValue',
-                    [$value, $path, $this->formatDescription],
+                    [$value, $context, $this->formatDescription],
                 ),
             ),
         ]);

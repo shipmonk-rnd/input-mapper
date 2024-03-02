@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_column;
 use function implode;
@@ -22,19 +23,18 @@ class SuitEnumMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): SuitEnum
+    public function map(mixed $data, ?MapperContext $context = null): SuitEnum
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         $enum = SuitEnum::tryFrom($data);
 
         if ($enum === null) {
-            throw MappingFailedException::incorrectValue($data, $path, 'one of ' . implode(', ', array_column(SuitEnum::cases(), 'value')));
+            throw MappingFailedException::incorrectValue($data, $context, 'one of ' . implode(', ', array_column(SuitEnum::cases(), 'value')));
         }
 
         return $enum;

@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Validator\Int\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
@@ -20,18 +21,17 @@ class IntRangeValidatorWithInclusiveUpperBoundMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @return int<min, 5>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): int
+    public function map(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         if ($data > 5) {
-            throw MappingFailedException::incorrectValue($data, $path, 'value less than or equal to 5');
+            throw MappingFailedException::incorrectValue($data, $context, 'value less than or equal to 5');
         }
 
         return $data;

@@ -14,7 +14,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 class MapMixed implements MapperCompiler
 {
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         return new CompiledExpr($value);
     }

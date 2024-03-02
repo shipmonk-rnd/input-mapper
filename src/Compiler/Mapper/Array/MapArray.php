@@ -24,13 +24,13 @@ class MapArray implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         [$keyVariableName, $valueVariableName, $mappedVariableName] = $builder->uniqVariableNames('key', 'value', 'mapped');
 
-        $itemPath = $builder->arrayImmutableAppend($path, $builder->var($keyVariableName));
-        $itemKeyMapper = $this->keyMapperCompiler->compile($builder->var($keyVariableName), $itemPath, $builder);
-        $itemValueMapper = $this->valueMapperCompiler->compile($builder->var($valueVariableName), $itemPath, $builder);
+        $itemContext = $builder->mapperContextAppend($context, $builder->var($keyVariableName));
+        $itemKeyMapper = $this->keyMapperCompiler->compile($builder->var($keyVariableName), $itemContext, $builder);
+        $itemValueMapper = $this->valueMapperCompiler->compile($builder->var($valueVariableName), $itemContext, $builder);
 
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
@@ -38,7 +38,7 @@ class MapArray implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('array')],
+                        [$value, $context, $builder->val('array')],
                     ),
                 ),
             ]),

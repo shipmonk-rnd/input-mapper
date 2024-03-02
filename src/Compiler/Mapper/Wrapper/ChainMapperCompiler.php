@@ -24,7 +24,7 @@ class ChainMapperCompiler implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $statements = [];
         $mappedVariableName = $builder->uniqVariableName('mapped');
@@ -38,7 +38,7 @@ class ChainMapperCompiler implements MapperCompiler
                 throw CannotCompileMapperException::withIncompatibleMapper($mapperCompiler, $mapperOutputType);
             }
 
-            $mapper = $mapperCompiler->compile($value, $path, $builder);
+            $mapper = $mapperCompiler->compile($value, $context, $builder);
             $mapperOutputType = $mapperCompiler->getOutputType();
 
             foreach ($mapper->statements as $statement) {

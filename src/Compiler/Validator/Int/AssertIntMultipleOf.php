@@ -28,7 +28,7 @@ class AssertIntMultipleOf implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -40,7 +40,7 @@ class AssertIntMultipleOf implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("multiple of {$this->value}")],
+                        [$value, $context, $builder->val("multiple of {$this->value}")],
                     ),
                 ),
             ]),

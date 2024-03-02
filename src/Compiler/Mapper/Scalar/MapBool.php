@@ -15,7 +15,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 class MapBool implements MapperCompiler
 {
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_bool'), [$value])), [
@@ -23,7 +23,7 @@ class MapBool implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('bool')],
+                        [$value, $context, $builder->val('bool')],
                     ),
                 ),
             ]),

@@ -6,6 +6,7 @@ use Nette\Utils\Floats;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function floatval;
 use function is_finite;
@@ -28,33 +29,32 @@ class FloatRangeValidatorWithInclusiveLowerAndUpperBoundMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): float
+    public function map(mixed $data, ?MapperContext $context = null): float
     {
         if (is_float($data)) {
             if (!is_finite($data)) {
-                throw MappingFailedException::incorrectType($data, $path, 'finite float');
+                throw MappingFailedException::incorrectType($data, $context, 'finite float');
             }
 
             $mapped = $data;
         } elseif (is_int($data)) {
             if ($data < self::MIN_SAFE_INTEGER || $data > self::MAX_SAFE_INTEGER) {
-                throw MappingFailedException::incorrectValue($data, $path, 'float or int with value that can be losslessly converted to float');
+                throw MappingFailedException::incorrectValue($data, $context, 'float or int with value that can be losslessly converted to float');
             }
 
             $mapped = floatval($data);
         } else {
-            throw MappingFailedException::incorrectType($data, $path, 'float');
+            throw MappingFailedException::incorrectType($data, $context, 'float');
         }
 
         if (Floats::isLessThan($mapped, 5.0)) {
-            throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to 5');
+            throw MappingFailedException::incorrectValue($mapped, $context, 'value greater than or equal to 5');
         }
 
         if (Floats::isGreaterThan($mapped, 10.0)) {
-            throw MappingFailedException::incorrectValue($mapped, $path, 'value less than or equal to 10');
+            throw MappingFailedException::incorrectValue($mapped, $context, 'value less than or equal to 10');
         }
 
         return $mapped;

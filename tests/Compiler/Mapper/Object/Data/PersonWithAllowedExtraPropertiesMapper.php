@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_key_exists;
@@ -24,65 +25,61 @@ class PersonWithAllowedExtraPropertiesMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): PersonInput
+    public function map(mixed $data, ?MapperContext $context = null): PersonInput
     {
         if (!is_array($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'array');
+            throw MappingFailedException::incorrectType($data, $context, 'array');
         }
 
         if (!array_key_exists('id', $data)) {
-            throw MappingFailedException::missingKey($path, 'id');
+            throw MappingFailedException::missingKey($context, 'id');
         }
 
         if (!array_key_exists('name', $data)) {
-            throw MappingFailedException::missingKey($path, 'name');
+            throw MappingFailedException::missingKey($context, 'name');
         }
 
         return new PersonInput(
-            $this->mapId($data['id'], [...$path, 'id']),
-            $this->mapName($data['name'], [...$path, 'name']),
-            array_key_exists('age', $data) ? $this->mapAge($data['age'], [...$path, 'age']) : Optional::none($path, 'age'),
+            $this->mapId($data['id'], MapperContext::append($context, 'id')),
+            $this->mapName($data['name'], MapperContext::append($context, 'name')),
+            array_key_exists('age', $data) ? $this->mapAge($data['age'], MapperContext::append($context, 'age')) : Optional::none($context, 'age'),
         );
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapId(mixed $data, array $path = []): int
+    private function mapId(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapName(mixed $data, array $path = []): string
+    private function mapName(mixed $data, ?MapperContext $context = null): string
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @return Optional<int>
      * @throws MappingFailedException
      */
-    private function mapAge(mixed $data, array $path = []): Optional
+    private function mapAge(mixed $data, ?MapperContext $context = null): Optional
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return Optional::of($data);

@@ -36,7 +36,7 @@ class AssertDateTimeRange implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -60,28 +60,28 @@ class AssertDateTimeRange implements ValidatorCompiler
         if ($this->gte !== null) {
             $boundary = $builder->new($builder->importClass(DateTimeImmutable::class), [$builder->val($this->gte), ...$timezoneArgs]);
             $statements[] = $builder->if($builder->lt($value, $boundary), [
-                $this->throwException('greater than or equal to', $this->gte, $value, $path, $builder),
+                $this->throwException('greater than or equal to', $this->gte, $value, $context, $builder),
             ]);
         }
 
         if ($this->gt !== null) {
             $boundary = $builder->new($builder->importClass(DateTimeImmutable::class), [$builder->val($this->gt), ...$timezoneArgs]);
             $statements[] = $builder->if($builder->lte($value, $boundary), [
-                $this->throwException('greater than', $this->gt, $value, $path, $builder),
+                $this->throwException('greater than', $this->gt, $value, $context, $builder),
             ]);
         }
 
         if ($this->lt !== null) {
             $boundary = $builder->new($builder->importClass(DateTimeImmutable::class), [$builder->val($this->lt), ...$timezoneArgs]);
             $statements[] = $builder->if($builder->gte($value, $boundary), [
-                $this->throwException('less than', $this->lt, $value, $path, $builder),
+                $this->throwException('less than', $this->lt, $value, $context, $builder),
             ]);
         }
 
         if ($this->lte !== null) {
             $boundary = $builder->new($builder->importClass(DateTimeImmutable::class), [$builder->val($this->lte), ...$timezoneArgs]);
             $statements[] = $builder->if($builder->gt($value, $boundary), [
-                $this->throwException('less than or equal to', $this->lte, $value, $path, $builder),
+                $this->throwException('less than or equal to', $this->lte, $value, $context, $builder),
             ]);
         }
 
@@ -99,7 +99,7 @@ class AssertDateTimeRange implements ValidatorCompiler
         string $boundaryDescription,
         string $boundaryValue,
         Expr $value,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): Throw_
     {
@@ -111,7 +111,7 @@ class AssertDateTimeRange implements ValidatorCompiler
             $builder->staticCall(
                 $builder->importClass(MappingFailedException::class),
                 'incorrectValue',
-                [$value, $path, $builder->val("value {$boundaryDescription} {$boundaryValue}")],
+                [$value, $context, $builder->val("value {$boundaryDescription} {$boundaryValue}")],
             ),
         );
     }

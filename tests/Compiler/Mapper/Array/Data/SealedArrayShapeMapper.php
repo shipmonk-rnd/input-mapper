@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_diff_key;
 use function array_key_exists;
@@ -26,59 +27,56 @@ class SealedArrayShapeMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @return array{a: int, b?: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): array
+    public function map(mixed $data, ?MapperContext $context = null): array
     {
         if (!is_array($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'array');
+            throw MappingFailedException::incorrectType($data, $context, 'array');
         }
 
         $mapped = [];
 
         if (!array_key_exists('a', $data)) {
-            throw MappingFailedException::missingKey($path, 'a');
+            throw MappingFailedException::missingKey($context, 'a');
         }
 
-        $mapped['a'] = $this->mapA($data['a'], [...$path, 'a']);
+        $mapped['a'] = $this->mapA($data['a'], MapperContext::append($context, 'a'));
 
         if (array_key_exists('b', $data)) {
-            $mapped['b'] = $this->mapB($data['b'], [...$path, 'b']);
+            $mapped['b'] = $this->mapB($data['b'], MapperContext::append($context, 'b'));
         }
 
         $knownKeys = ['a' => true, 'b' => true];
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
-            throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
+            throw MappingFailedException::extraKeys($context, array_keys($extraKeys));
         }
 
         return $mapped;
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapA(mixed $data, array $path = []): int
+    private function mapA(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return $data;
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapB(mixed $data, array $path = []): string
+    private function mapB(mixed $data, ?MapperContext $context = null): string
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         return $data;

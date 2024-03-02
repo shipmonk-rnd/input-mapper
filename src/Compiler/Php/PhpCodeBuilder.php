@@ -25,6 +25,7 @@ use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassConst;
@@ -50,6 +51,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_filter;
 use function array_pop;
@@ -105,15 +107,6 @@ class PhpCodeBuilder extends BuilderFactory
     public function arrayItem(Expr $value, ?Expr $key): ArrayItem
     {
         return new ArrayItem($value, $key);
-    }
-
-    public function arrayImmutableAppend(Expr $path, Expr $item): Expr
-    {
-        if ($path instanceof Array_) {
-            return $this->array([...$path->items, new ArrayItem($this->val($item))]);
-        }
-
-        return $this->array([new ArrayItem($path, unpack: true), new ArrayItem($this->val($item))]);
     }
 
     public function arrayDimFetch(Expr $var, ?Expr $dim = null): ArrayDimFetch
@@ -406,14 +399,19 @@ class PhpCodeBuilder extends BuilderFactory
         return "/**\n * " . implode("\n * ", $lines) . "\n */";
     }
 
+    public function mapperContextAppend(Expr $context, Expr $key): Expr
+    {
+        return $this->staticCall($this->importClass(MapperContext::class), 'append', [$context, $key]);
+    }
+
     public function mapperMethod(string $methodName, MapperCompiler $mapperCompiler): Method
     {
-        $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
-            [$dataVarName, $pathVarName] = $this->uniqVariableNames('data', 'path');
-            return $mapperCompiler->compile($this->var($dataVarName), $this->var($pathVarName), $this);
+        $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$contextVarName): CompiledExpr {
+            [$dataVarName, $contextVarName] = $this->uniqVariableNames('data', 'context');
+            return $mapperCompiler->compile($this->var($dataVarName), $this->var($contextVarName), $this);
         });
 
-        assert($dataVarName !== null && $pathVarName !== null);
+        assert($dataVarName !== null && $contextVarName !== null);
         $inputType = $mapperCompiler->getInputType();
         $outputType = $mapperCompiler->getOutputType();
 
@@ -425,7 +423,6 @@ class PhpCodeBuilder extends BuilderFactory
 
         $phpDoc = $this->phpDoc([
             $phpDocInputTypeUseful ? "@param  {$inputType} \${$dataVarName}" : null,
-            "@param  list<string|int> \${$pathVarName}",
             $phpDocOutputTypeUseful ? "@return {$outputType}" : null,
             '@throws ' . $this->importClass(MappingFailedException::class),
         ]);
@@ -433,7 +430,7 @@ class PhpCodeBuilder extends BuilderFactory
         return $this->method($methodName)
             ->setDocComment($phpDoc)
             ->addParam($this->param($dataVarName)->setType($nativeInputType))
-            ->addParam($this->param($pathVarName)->setType('array')->setDefault($this->array([])))
+            ->addParam($this->param($contextVarName)->setType(new NullableType(new Name($this->importClass(MapperContext::class))))->setDefault(null))
             ->setReturnType($nativeOutputType)
             ->addStmts($mapper->statements)
             ->addStmt($this->return($mapper->expr));

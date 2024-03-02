@@ -7,6 +7,7 @@ use DateTimeZone;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
@@ -22,20 +23,19 @@ class DateTimeRangeValidatorWithTimezoneMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): DateTimeImmutable
+    public function map(mixed $data, ?MapperContext $context = null): DateTimeImmutable
     {
         if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+            throw MappingFailedException::incorrectType($data, $context, 'string');
         }
 
         $timezone = new DateTimeZone('America/New_York');
         $mapped = DateTimeImmutable::createFromFormat('!Y-m-d', $data, $timezone);
 
         if ($mapped === false) {
-            throw MappingFailedException::incorrectValue($data, $path, 'date-time string in RFC 3339 format');
+            throw MappingFailedException::incorrectValue($data, $context, 'date-time string in RFC 3339 format');
         }
 
         $timezone2 = new DateTimeZone('America/New_York');
@@ -44,7 +44,7 @@ class DateTimeRangeValidatorWithTimezoneMapper implements Mapper
             '2000-01-05',
             $timezone2,
         )) {
-            throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to 2000-01-05 (in America/New_York timezone)');
+            throw MappingFailedException::incorrectValue($mapped, $context, 'value greater than or equal to 2000-01-05 (in America/New_York timezone)');
         }
 
         return $mapped;

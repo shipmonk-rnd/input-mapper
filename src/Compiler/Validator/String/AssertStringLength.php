@@ -40,7 +40,7 @@ class AssertStringLength implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -53,7 +53,7 @@ class AssertStringLength implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("string with exactly {$this->min} characters")],
+                        [$value, $context, $builder->val("string with exactly {$this->min} characters")],
                     ),
                 ),
             ]);
@@ -65,7 +65,7 @@ class AssertStringLength implements ValidatorCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'incorrectValue',
-                            [$value, $path, $builder->val("string with at least {$this->min} characters")],
+                            [$value, $context, $builder->val("string with at least {$this->min} characters")],
                         ),
                     ),
                 ]);
@@ -77,7 +77,7 @@ class AssertStringLength implements ValidatorCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'incorrectValue',
-                            [$value, $path, $builder->val("string with at most {$this->max} characters")],
+                            [$value, $context, $builder->val("string with at most {$this->max} characters")],
                         ),
                     ),
                 ]);

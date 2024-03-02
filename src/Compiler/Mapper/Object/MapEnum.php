@@ -26,9 +26,9 @@ class MapEnum implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
-        $backingValueMapper = $this->backingValueMapperCompiler->compile($value, $path, $builder);
+        $backingValueMapper = $this->backingValueMapperCompiler->compile($value, $context, $builder);
         $statements = $backingValueMapper->statements;
 
         $enumOrNull = $builder->staticCall($builder->importClass($this->enumName), 'tryFrom', [$backingValueMapper->expr]);
@@ -51,7 +51,7 @@ class MapEnum implements MapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'incorrectValue',
-                    [$value, $path, $expectedDescription],
+                    [$value, $context, $expectedDescription],
                 ),
             ),
         ]);

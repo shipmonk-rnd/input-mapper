@@ -5,6 +5,7 @@ namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
@@ -20,13 +21,12 @@ class IntMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): int
+    public function map(mixed $data, ?MapperContext $context = null): int
     {
         if (!is_int($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'int');
+            throw MappingFailedException::incorrectType($data, $context, 'int');
         }
 
         return $data;

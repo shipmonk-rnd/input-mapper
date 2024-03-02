@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use stdClass;
 use function str_repeat;
@@ -26,93 +27,95 @@ class MappingFailedExceptionTest extends InputMapperTestCase
      */
     public static function provideMessagesData(): iterable
     {
+        $context = new MapperContext(null, 'foo');
+
         yield 'null' => [
-            MappingFailedException::incorrectValue(null, ['foo'], 'int'),
+            MappingFailedException::incorrectValue(null, $context, 'int'),
             'Failed to map data at path /foo: Expected int, got null',
         ];
 
         yield 'true' => [
-            MappingFailedException::incorrectValue(true, ['foo'], 'int'),
+            MappingFailedException::incorrectValue(true, $context, 'int'),
             'Failed to map data at path /foo: Expected int, got true',
         ];
 
         yield '123' => [
-            MappingFailedException::incorrectValue(123, ['foo'], 'string'),
+            MappingFailedException::incorrectValue(123, $context, 'string'),
             'Failed to map data at path /foo: Expected string, got 123',
         ];
 
         yield '1.23' => [
-            MappingFailedException::incorrectValue(1.23, ['foo'], 'string'),
+            MappingFailedException::incorrectValue(1.23, $context, 'string'),
             'Failed to map data at path /foo: Expected string, got 1.23',
         ];
 
         yield '1.0' => [
-            MappingFailedException::incorrectValue(1.0, ['foo'], 'string'),
+            MappingFailedException::incorrectValue(1.0, $context, 'string'),
             'Failed to map data at path /foo: Expected string, got 1.0',
         ];
 
         yield 'INF' => [
-            MappingFailedException::incorrectValue(INF, ['foo'], 'string'),
+            MappingFailedException::incorrectValue(INF, $context, 'string'),
             'Failed to map data at path /foo: Expected string, got INF',
         ];
 
         yield 'NAN' => [
-            MappingFailedException::incorrectValue(NAN, ['foo'], 'string'),
+            MappingFailedException::incorrectValue(NAN, $context, 'string'),
             'Failed to map data at path /foo: Expected string, got NAN',
         ];
 
         yield 'short string' => [
-            MappingFailedException::incorrectValue('short string', ['foo'], 'int'),
+            MappingFailedException::incorrectValue('short string', $context, 'int'),
             'Failed to map data at path /foo: Expected int, got "short string"',
         ];
 
         yield 'long string' => [
-            MappingFailedException::incorrectValue(str_repeat('a', 1_000), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(str_repeat('a', 1_000), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" (truncated)',
         ];
 
         yield 'string with slash' => [
-            MappingFailedException::incorrectValue('foo/bar', ['foo'], 'int'),
+            MappingFailedException::incorrectValue('foo/bar', $context, 'int'),
             'Failed to map data at path /foo: Expected int, got "foo/bar"',
         ];
 
         yield 'string with control characters' => [
-            MappingFailedException::incorrectValue("foo\x00bar", ['foo'], 'int'),
+            MappingFailedException::incorrectValue("foo\x00bar", $context, 'int'),
             'Failed to map data at path /foo: Expected int, got string',
         ];
 
         yield 'string with invalid UTF-8' => [
-            MappingFailedException::incorrectValue("foo\x80bar", ['foo'], 'int'),
+            MappingFailedException::incorrectValue("foo\x80bar", $context, 'int'),
             'Failed to map data at path /foo: Expected int, got string',
         ];
 
         yield 'array' => [
-            MappingFailedException::incorrectValue([], ['foo'], 'int'),
+            MappingFailedException::incorrectValue([], $context, 'int'),
             'Failed to map data at path /foo: Expected int, got array',
         ];
 
         yield 'date UTC' => [
-            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25'), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25'), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got 2023-05-25 (UTC)',
         ];
 
         yield 'date Prague' => [
-            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25', new DateTimeZone('Europe/Prague')), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25', new DateTimeZone('Europe/Prague')), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got 2023-05-25 (Europe/Prague)',
         ];
 
         yield 'datetime UTC' => [
-            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25T12:14:15'), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25T12:14:15'), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got 2023-05-25T12:14:15+00:00',
         ];
 
         yield 'datetime Prague' => [
-            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25T12:14:15', new DateTimeZone('Europe/Prague')), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(new DateTimeImmutable('2023-05-25T12:14:15', new DateTimeZone('Europe/Prague')), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got 2023-05-25T12:14:15+02:00',
         ];
 
         yield 'object' => [
-            MappingFailedException::incorrectValue(new stdClass(), ['foo'], 'int'),
+            MappingFailedException::incorrectValue(new stdClass(), $context, 'int'),
             'Failed to map data at path /foo: Expected int, got stdClass',
         ];
     }

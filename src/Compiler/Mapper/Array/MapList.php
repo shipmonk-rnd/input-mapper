@@ -22,13 +22,13 @@ class MapList implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         [$indexVariableName, $itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('index', 'item', 'mapped');
 
         $itemValue = $builder->var($itemVariableName);
-        $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
-        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
+        $itemContext = $builder->mapperContextAppend($context, $builder->var($indexVariableName));
+        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemContext, $builder);
 
         $isArray = $builder->funcCall($builder->importFunction('is_array'), [$value]);
         $isList = $builder->funcCall($builder->importFunction('array_is_list'), [$value]);
@@ -39,7 +39,7 @@ class MapList implements MapperCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('list')],
+                        [$value, $context, $builder->val('list')],
                     ),
                 ),
             ]),

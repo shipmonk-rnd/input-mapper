@@ -21,12 +21,12 @@ class DelegateMapperCompiler implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(Expr $value, Expr $context, PhpCodeBuilder $builder): CompiledExpr
     {
         $shortName = $builder->importClass($this->className);
         $provider = $builder->propertyFetch($builder->var('this'), 'provider');
         $mapper = $builder->methodCall($provider, 'get', [$builder->classConstFetch($shortName, 'class')]);
-        $mapped = $builder->methodCall($mapper, 'map', [$value, $path]);
+        $mapped = $builder->methodCall($mapper, 'map', [$value, $context]);
 
         return new CompiledExpr($mapped);
     }

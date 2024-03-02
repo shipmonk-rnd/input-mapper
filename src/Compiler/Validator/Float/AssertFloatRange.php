@@ -31,7 +31,7 @@ class AssertFloatRange implements ValidatorCompiler
     public function compile(
         Expr $value,
         TypeNode $type,
-        Expr $path,
+        Expr $context,
         PhpCodeBuilder $builder,
     ): array
     {
@@ -43,7 +43,7 @@ class AssertFloatRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value greater than or equal to {$this->gte}")],
+                        [$value, $context, $builder->val("value greater than or equal to {$this->gte}")],
                     ),
                 ),
             ]);
@@ -55,7 +55,7 @@ class AssertFloatRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value greater than {$this->gt}")],
+                        [$value, $context, $builder->val("value greater than {$this->gt}")],
                     ),
                 ),
             ]);
@@ -67,7 +67,7 @@ class AssertFloatRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value less than {$this->lt}")],
+                        [$value, $context, $builder->val("value less than {$this->lt}")],
                     ),
                 ),
             ]);
@@ -79,7 +79,7 @@ class AssertFloatRange implements ValidatorCompiler
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectValue',
-                        [$value, $path, $builder->val("value less than or equal to {$this->lte}")],
+                        [$value, $context, $builder->val("value less than or equal to {$this->lte}")],
                     ),
                 ),
             ]);

@@ -10,12 +10,9 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 abstract class Optional
 {
 
-    /**
-     * @param  list<string|int> $path
-     */
-    public static function none(array $path, string $key): OptionalNone
+    public static function none(?MapperContext $context, string $key): OptionalNone
     {
-        return new OptionalNone($path, $key);
+        return new OptionalNone($context, $key);
     }
 
     /**

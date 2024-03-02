@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Runtime\Exception;
 
 use DateTimeInterface;
+use ShipMonk\InputMapper\Runtime\MapperContext;
 use Throwable;
 use function array_map;
 use function array_slice;
@@ -31,72 +32,59 @@ class MappingFailedException extends RuntimeException
     private const JSON_ENCODE_OPTIONS = JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
     private const MAX_STRING_LENGTH = 40;
 
-    /**
-     * @param  list<string|int> $path
-     */
-    private function __construct(array $path, string $reason, ?Throwable $previous = null)
+    private function __construct(?MapperContext $context, string $reason, ?Throwable $previous = null)
     {
-        $jsonPointer = self::toJsonPointer($path);
+        $jsonPointer = self::toJsonPointer($context?->getPath() ?? []);
         parent::__construct("Failed to map data at path {$jsonPointer}: {$reason}", $previous);
     }
 
-    /**
-     * @param  list<string|int> $path
-     */
     public static function incorrectType(
         mixed $data,
-        array $path,
+        ?MapperContext $context,
         string $expectedType,
         ?Throwable $previous = null
     ): self
     {
         $describedValue = self::describeValue($data);
         $reason = "Expected {$expectedType}, got {$describedValue}";
-        return new self($path, $reason, $previous);
+        return new self($context, $reason, $previous);
     }
 
-    /**
-     * @param  list<string|int> $path
-     */
     public static function incorrectValue(
         mixed $data,
-        array $path,
+        ?MapperContext $context,
         string $expectedValueDescription,
         ?Throwable $previous = null
     ): self
     {
         $describedValue = self::describeValue($data);
         $reason = "Expected {$expectedValueDescription}, got {$describedValue}";
-        return new self($path, $reason, $previous);
+        return new self($context, $reason, $previous);
     }
 
-    /**
-     * @param  list<string|int> $path
-     */
     public static function missingKey(
-        array $path,
+        ?MapperContext $context,
         string $missingKey,
         ?Throwable $previous = null
     ): self
     {
         $missingKeyDescription = self::describeValue($missingKey);
         $reason = "Missing required key {$missingKeyDescription}";
-        return new self($path, $reason, $previous);
+        return new self($context, $reason, $previous);
     }
 
     /**
-     * @param  list<string|int>           $path
      * @param  non-empty-list<string|int> $extraKeys
      */
     public static function extraKeys(
-        array $path,
+        ?MapperContext $context,
         array $extraKeys,
         ?Throwable $previous = null
     ): self
     {
         $keyLabel = count($extraKeys) > 1 ? 'keys' : 'key';
         $reason = "Unrecognized {$keyLabel} " . self::humanImplode(array_map(self::describeValue(...), $extraKeys));
-        return new self($path, $reason, $previous);
+        return new self($context, $reason, $previous);
     }
 
     /**
