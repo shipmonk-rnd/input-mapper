@@ -122,6 +122,8 @@ try {
         ],
     ]);
 } catch (\ShipMonk\InputMapper\Runtime\Exception\MappingFailedException $e) {
+    // $e->getMessage() // programmer readable error message in English
+    // $e->getPath() // path of the problematic field for example ['friends', 0, 'name']
     // ...
 }
 ```

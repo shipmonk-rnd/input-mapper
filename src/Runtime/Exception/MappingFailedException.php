@@ -34,10 +34,18 @@ class MappingFailedException extends RuntimeException
     /**
      * @param  list<string|int> $path
      */
-    private function __construct(array $path, string $reason, ?Throwable $previous = null)
+    private function __construct(private readonly array $path, string $reason, ?Throwable $previous = null)
     {
         $jsonPointer = self::toJsonPointer($path);
         parent::__construct("Failed to map data at path {$jsonPointer}: {$reason}", $previous);
+    }
+
+    /**
+     * @return list<string|int>
+     */
+    public function getPath(): array
+    {
+        return $this->path;
     }
 
     /**
