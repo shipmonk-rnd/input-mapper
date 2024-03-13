@@ -133,13 +133,27 @@ class PhpDocTypeUtils
         return new IdentifierTypeNode('mixed');
     }
 
-    public static function toNativeType(TypeNode $type, ?bool &$phpDocUseful): ComplexType|Identifier|Name
+    /**
+     * @param  list<GenericTypeParameter> $genericParameters
+     */
+    public static function toNativeType(
+        TypeNode $type,
+        array $genericParameters,
+        ?bool &$phpDocUseful
+    ): ComplexType|Identifier|Name
     {
         if ($phpDocUseful === null) {
             $phpDocUseful = false;
         }
 
         if ($type instanceof IdentifierTypeNode) {
+            foreach ($genericParameters as $genericParameter) {
+                if ($genericParameter->name === $type->name) {
+                    $phpDocUseful = true;
+                    return self::toNativeType($genericParameter->bound ?? new IdentifierTypeNode('mixed'), $genericParameters, $phpDocUseful);
+                }
+            }
+
             if (!self::isKeyword($type)) {
                 return new Name($type->name);
             }
@@ -161,7 +175,7 @@ class PhpDocTypeUtils
         }
 
         if ($type instanceof NullableTypeNode) {
-            return NativeTypeUtils::createNullable(self::toNativeType($type->type, $phpDocUseful));
+            return NativeTypeUtils::createNullable(self::toNativeType($type->type, $genericParameters, $phpDocUseful));
         }
 
         if ($type instanceof ArrayTypeNode || $type instanceof ArrayShapeNode) {
@@ -181,14 +195,14 @@ class PhpDocTypeUtils
 
         if ($type instanceof GenericTypeNode) {
             $phpDocUseful = true;
-            return self::toNativeType($type->type, $phpDocUseful);
+            return self::toNativeType($type->type, $genericParameters, $phpDocUseful);
         }
 
         if ($type instanceof UnionTypeNode) {
             $types = [];
 
             foreach ($type->types as $inner) {
-                $types[] = self::toNativeType($inner, $phpDocUseful);
+                $types[] = self::toNativeType($inner, $genericParameters, $phpDocUseful);
             }
 
             return NativeTypeUtils::createUnion(...$types);
@@ -198,7 +212,7 @@ class PhpDocTypeUtils
             $types = [];
 
             foreach ($type->types as $inner) {
-                $types[] = self::toNativeType($inner, $phpDocUseful);
+                $types[] = self::toNativeType($inner, $genericParameters, $phpDocUseful);
             }
 
             return NativeTypeUtils::createIntersection(...$types);

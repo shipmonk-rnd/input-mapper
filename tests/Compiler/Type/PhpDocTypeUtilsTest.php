@@ -28,6 +28,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionParameter;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use Traversable;
@@ -140,14 +141,18 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         );
     }
 
+    /**
+     * @param  list<GenericTypeParameter> $genericParameters
+     */
     #[DataProvider('provideToNativeTypeData')]
     public function testToNativeType(
         TypeNode $type,
+        array $genericParameters,
         ComplexType|Identifier|Name $expectedNative,
-        bool $expectedIsPhpDocUseful
+        bool $expectedIsPhpDocUseful,
     ): void
     {
-        $nativeType = PhpDocTypeUtils::toNativeType($type, $phpDocUseful);
+        $nativeType = PhpDocTypeUtils::toNativeType($type, $genericParameters, $phpDocUseful);
 
         self::assertEquals($expectedNative, $nativeType);
         self::assertSame($expectedIsPhpDocUseful, $phpDocUseful);
@@ -160,60 +165,70 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     {
         yield 'int' => [
             new IdentifierTypeNode('int'),
+            [],
             new Identifier('int'),
             false,
         ];
 
         yield 'list' => [
             new IdentifierTypeNode('list'),
+            [],
             new Identifier('array'),
             true,
         ];
 
         yield 'positive-int' => [
             new IdentifierTypeNode('positive-int'),
+            [],
             new Identifier('int'),
             true,
         ];
 
         yield 'negative-int' => [
             new IdentifierTypeNode('negative-int'),
+            [],
             new Identifier('int'),
             true,
         ];
 
         yield 'non-positive-int' => [
             new IdentifierTypeNode('non-positive-int'),
+            [],
             new Identifier('int'),
             true,
         ];
 
         yield 'non-negative-int' => [
             new IdentifierTypeNode('non-negative-int'),
+            [],
             new Identifier('int'),
             true,
         ];
 
         yield 'DateTimeImmutable' => [
             new IdentifierTypeNode(DateTimeImmutable::class),
+            [],
             new Name(DateTimeImmutable::class),
             false,
         ];
 
         yield '?int' => [
             new NullableTypeNode(new IdentifierTypeNode('int')),
+            [],
             new NullableType(new Identifier('int')),
             false,
         ];
 
         yield '?(int|float)' => [
             new NullableTypeNode(new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')])),
+            [],
             new UnionType([new Identifier('int'), new Identifier('float'), new Identifier('null')]),
             false,
         ];
 
         yield 'int|float' => [
             new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('float')]),
+            [],
             new UnionType([new Identifier('int'), new Identifier('float')]),
             false,
         ];
@@ -224,12 +239,14 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 new IdentifierTypeNode('float'),
                 new IdentifierTypeNode('null'),
             ]),
+            [],
             new UnionType([new Identifier('int'), new Identifier('float'), new Identifier('null')]),
             false,
         ];
 
         yield 'int|list' => [
             new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('list')]),
+            [],
             new UnionType([new Identifier('int'), new Identifier('array')]),
             true,
         ];
@@ -239,18 +256,21 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('int')),
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('string')),
             ]),
+            [],
             new Identifier('array'),
             true,
         ];
 
         yield 'int[]' => [
             new ArrayTypeNode(new IdentifierTypeNode('int')),
+            [],
             new Identifier('array'),
             true,
         ];
 
         yield 'array<int>' => [
             new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('int')]),
+            [],
             new Identifier('array'),
             true,
         ];
@@ -260,12 +280,14 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 new IdentifierTypeNode('int'),
                 new IdentifierTypeNode('string'),
             ]),
+            [],
             new Identifier('array'),
             true,
         ];
 
         yield 'iterable<int>' => [
             new GenericTypeNode(new IdentifierTypeNode('iterable'), [new IdentifierTypeNode('int')]),
+            [],
             new Identifier('iterable'),
             true,
         ];
@@ -275,7 +297,29 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 new IdentifierTypeNode('int'),
                 new IdentifierTypeNode('string'),
             ]),
+            [],
             new Identifier('iterable'),
+            true,
+        ];
+
+        yield 'T' => [
+            new IdentifierTypeNode('T'),
+            [new GenericTypeParameter('T')],
+            new Identifier('mixed'),
+            true,
+        ];
+
+        yield 'T of iterable' => [
+            new IdentifierTypeNode('T'),
+            [new GenericTypeParameter('T', bound: new IdentifierTypeNode('iterable'))],
+            new Identifier('iterable'),
+            true,
+        ];
+
+        yield 'list<T>' => [
+            new GenericTypeNode(new IdentifierTypeNode('list'), [new IdentifierTypeNode('T')]),
+            [new GenericTypeParameter('T')],
+            new Identifier('array'),
             true,
         ];
     }
