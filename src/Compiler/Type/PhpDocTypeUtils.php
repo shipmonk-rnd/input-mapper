@@ -704,10 +704,9 @@ class PhpDocTypeUtils
                 $genericTypeB = self::getGenericTypeParameter($b, $idx);
 
                 return match ($parameter['variance']) {
-                    'in' => self::isSubTypeOf($genericTypeB, $genericTypeA),
-                    'out' => self::isSubTypeOf($genericTypeA, $genericTypeB),
-                    'inout' => self::isSubTypeOf($genericTypeA, $genericTypeB) && self::isSubTypeOf($genericTypeB, $genericTypeA),
-                    default => throw new LogicException("Invalid variance {$parameter['variance']}"),
+                    GenericTypeVariance::Contravariant => self::isSubTypeOf($genericTypeB, $genericTypeA),
+                    GenericTypeVariance::Covariant => self::isSubTypeOf($genericTypeA, $genericTypeB),
+                    GenericTypeVariance::Invariant => self::isSubTypeOf($genericTypeA, $genericTypeB) && self::isSubTypeOf($genericTypeB, $genericTypeA),
                 };
             });
         }
@@ -752,7 +751,7 @@ class PhpDocTypeUtils
     /**
      * @return array{
      *     extends?: array<string, list<int | TypeNode>>,
-     *     parameters?: list<array{index?: array<int, int>, variance: 'in' | 'out' | 'inout', bound?: TypeNode}>,
+     *     parameters?: list<array{index?: array<int, int>, variance: GenericTypeVariance, bound?: TypeNode}>,
      * }
      */
     private static function getGenericTypeDefinition(GenericTypeNode $type): array
@@ -763,8 +762,8 @@ class PhpDocTypeUtils
                     'iterable' => [0, 1],
                 ],
                 'parameters' => [
-                    ['index' => [2 => 0], 'variance' => 'out', 'bound' => new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')])],
-                    ['index' => [1 => 0, 2 => 1], 'variance' => 'out'],
+                    ['index' => [2 => 0], 'variance' => GenericTypeVariance::Covariant, 'bound' => new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')])],
+                    ['index' => [1 => 0, 2 => 1], 'variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
@@ -773,14 +772,14 @@ class PhpDocTypeUtils
                     'array' => [new IdentifierTypeNode('int'), 0],
                 ],
                 'parameters' => [
-                    ['variance' => 'out'],
+                    ['variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
             'iterable' => [
                 'parameters' => [
-                    ['index' => [2 => 0], 'variance' => 'out'],
-                    ['index' => [1 => 0, 2 => 1], 'variance' => 'out'],
+                    ['index' => [2 => 0], 'variance' => GenericTypeVariance::Covariant],
+                    ['index' => [1 => 0, 2 => 1], 'variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
@@ -789,13 +788,13 @@ class PhpDocTypeUtils
                     'list' => [0],
                 ],
                 'parameters' => [
-                    ['variance' => 'out'],
+                    ['variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
             Optional::class => [
                 'parameters' => [
-                    ['variance' => 'out'],
+                    ['variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
@@ -804,7 +803,7 @@ class PhpDocTypeUtils
                     Optional::class => [0],
                 ],
                 'parameters' => [
-                    ['variance' => 'out'],
+                    ['variance' => GenericTypeVariance::Covariant],
                 ],
             ],
 
