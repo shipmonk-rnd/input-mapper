@@ -122,10 +122,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 default => match ($type->name) {
                     'list' => new MapList(new MapMixed()),
                     'non-empty-list' => new ValidatedMapperCompiler(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
-                    'negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNegativeInt()]),
-                    'non-negative-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNonNegativeInt()]),
-                    'non-positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertNonPositiveInt()]),
-                    'positive-int' => new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()]),
+                    'negative-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
+                    'non-negative-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
+                    'non-positive-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),
+                    'positive-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertPositiveInt()]),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
             };
@@ -143,7 +143,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
-                    2 => new ValidatedMapperCompiler(new MapInt(), [
+                    2 => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [
                         new AssertIntRange(
                             gte: $this->resolveIntegerBoundary($type, $type->genericTypes[0], 'min'),
                             lte: $this->resolveIntegerBoundary($type, $type->genericTypes[1], 'max'),
