@@ -458,32 +458,67 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
     }
 
-    public function testResolve(): void
+    /**
+     * @param  ReflectionClass<object> $context
+     * @param  list<string>            $genericParameterNames
+     */
+    #[DataProvider('provideResolveData')]
+    public function testResolve(
+        mixed $type,
+        ReflectionClass $context,
+        array $genericParameterNames,
+        string $expectedResolvedType,
+    ): void
     {
-        $context = new ReflectionClass($this);
-        $identifier = new IdentifierTypeNode('TestCase');
-        $typeA = $identifier;
+        PhpDocTypeUtils::resolve($type, $context, $genericParameterNames);
+        self::assertSame($expectedResolvedType, (string) $type);
+    }
 
-        PhpDocTypeUtils::resolve($typeA, $context);
-        self::assertSame(TestCase::class, $identifier->name);
+    public static function provideResolveData(): iterable
+    {
+        yield [
+            new IdentifierTypeNode('TestCase'),
+            new ReflectionClass(self::class),
+            [],
+            TestCase::class,
+        ];
 
-        $identifier = new IdentifierTypeNode('TestCase');
-        $typeB = new UnionTypeNode([
-            $identifier,
-            new IdentifierTypeNode('string'),
-        ]);
+        yield [
+            new UnionTypeNode([
+                new IdentifierTypeNode('TestCase'),
+                new IdentifierTypeNode('string'),
+            ]),
+            new ReflectionClass(self::class),
+            [],
+            '(PHPUnit\\Framework\\TestCase | string)',
+        ];
 
-        PhpDocTypeUtils::resolve($typeB, $context);
-        self::assertSame(TestCase::class, $identifier->name);
+        yield [
+            new UnionTypeNode([
+                new IdentifierTypeNode('self'),
+                new IdentifierTypeNode('string'),
+            ]),
+            new ReflectionClass(self::class),
+            [],
+            '(ShipMonkTests\\InputMapper\\Compiler\\Type\\PhpDocTypeUtilsTest | string)',
+        ];
 
-        $identifier = new IdentifierTypeNode('self');
-        $typeC = new UnionTypeNode([
-            $identifier,
-            new IdentifierTypeNode('string'),
-        ]);
+        yield [
+            new IdentifierTypeNode('T'),
+            new ReflectionClass(self::class),
+            ['T'],
+            'T',
+        ];
 
-        PhpDocTypeUtils::resolve($typeC, $context);
-        self::assertSame(self::class, $identifier->name);
+        yield [
+            new UnionTypeNode([
+                new IdentifierTypeNode('T'),
+                new IdentifierTypeNode('string'),
+            ]),
+            new ReflectionClass(self::class),
+            ['T'],
+            '(T | string)',
+        ];
     }
 
     /**

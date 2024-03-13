@@ -253,24 +253,27 @@ class PhpDocTypeUtils
     }
 
     /**
-     * @param ReflectionClass<object> $context
+     * @param  ReflectionClass<object> $context
+     * @param  list<string>            $genericParameterNames
      */
-    public static function resolve(mixed $type, ReflectionClass $context): void
+    public static function resolve(mixed $type, ReflectionClass $context, array $genericParameterNames = []): void
     {
         if (is_array($type)) {
             foreach ($type as $item) {
-                self::resolve($item, $context);
+                self::resolve($item, $context, $genericParameterNames);
             }
         } elseif ($type instanceof IdentifierTypeNode) {
             if (!self::isKeyword($type) || $type->name === 'self' || $type->name === 'static' || $type->name === 'parent') {
-                $type->name = Reflection::expandClassName($type->name, $context);
+                if (!in_array($type->name, $genericParameterNames, true)) {
+                    $type->name = Reflection::expandClassName($type->name, $context);
+                }
             }
         } elseif ($type instanceof ArrayShapeItemNode) {
-            self::resolve($type->valueType, $context); // intentionally not resolving key type
+            self::resolve($type->valueType, $context, $genericParameterNames); // intentionally not resolving key type
 
         } elseif (is_object($type)) {
             foreach (get_object_vars($type) as $item) {
-                self::resolve($item, $context);
+                self::resolve($item, $context, $genericParameterNames);
             }
         }
     }
