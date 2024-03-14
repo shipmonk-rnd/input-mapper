@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\Type;
 
+use BackedEnum;
 use LogicException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Reflection;
@@ -16,6 +17,11 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\ExtendsTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\ImplementsTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
@@ -28,23 +34,29 @@ use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\PhpDocParser\Lexer\Lexer;
+use PHPStan\PhpDocParser\Parser\ConstExprParser;
+use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\PhpDocParser\Parser\TypeParser;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
-use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonk\InputMapper\Runtime\OptionalNone;
-use ShipMonk\InputMapper\Runtime\OptionalSome;
 use Traversable;
+use function array_flip;
+use function array_keys;
 use function array_map;
 use function array_shift;
 use function array_splice;
 use function array_values;
+use function class_exists;
 use function constant;
 use function count;
 use function get_object_vars;
 use function in_array;
+use function interface_exists;
 use function is_a;
 use function is_array;
 use function is_callable;
@@ -55,6 +67,7 @@ use function is_string;
 use function max;
 use function method_exists;
 use function str_contains;
+use function str_ends_with;
 use function strcasecmp;
 use function strtolower;
 use const PHP_INT_MAX;
@@ -98,6 +111,11 @@ class PhpDocTypeUtils
         'scalar' => true,
     ];
 
+    /**
+     * @var array<string, GenericTypeDefinition>
+     */
+    private static array $genericTypeDefinitions = [];
+
     public static function isKeyword(IdentifierTypeNode $type): bool
     {
         return isset(self::KEYWORDS[$type->name])
@@ -139,7 +157,7 @@ class PhpDocTypeUtils
     public static function toNativeType(
         TypeNode $type,
         array $genericParameters,
-        ?bool &$phpDocUseful
+        ?bool &$phpDocUseful,
     ): ComplexType|Identifier|Name
     {
         if ($phpDocUseful === null) {
@@ -326,19 +344,19 @@ class PhpDocTypeUtils
                     && $b instanceof GenericTypeNode
                     && self::isSubTypeOf($b->type, $a->type)
                 ) {
-                    $typeDef = self::getGenericTypeDefinition($b);
+                    $typeDef = self::getGenericTypeDefinition($b->type);
                     $downCastedType = self::downCast($a, $b->type->name);
 
                     $intersectedParameters = [];
                     $intersectedParameterMapping = [];
                     $intersectedParameterCount = max(count($b->genericTypes), count($downCastedType->genericTypes));
 
-                    foreach ($typeDef['parameters'] ?? [] as $parameterIndex => $parameterDef) {
-                        if (!isset($parameterDef['index'])) {
+                    foreach ($typeDef->parameters as $parameterIndex => $parameterDef) {
+                        if (!isset($typeDef->parameterOffsetMapping[$intersectedParameterCount])) {
                             $intersectedParameterMapping[$parameterIndex] = $parameterIndex;
 
-                        } elseif (isset($parameterDef['index'][$intersectedParameterCount])) {
-                            $intersectedParameterIndex = $parameterDef['index'][$intersectedParameterCount];
+                        } elseif (isset($typeDef->parameterOffsetMapping[$intersectedParameterCount][$parameterIndex])) {
+                            $intersectedParameterIndex = $typeDef->parameterOffsetMapping[$intersectedParameterCount][$parameterIndex];
                             $intersectedParameterMapping[$intersectedParameterIndex] = $parameterIndex;
                         }
                     }
@@ -402,7 +420,7 @@ class PhpDocTypeUtils
         if ($b instanceof IdentifierTypeNode) {
             if (!self::isKeyword($b)) {
                 return match (true) {
-                    $a instanceof IdentifierTypeNode => is_a($a->name, $b->name, true),
+                    $a instanceof IdentifierTypeNode => $a->name === $b->name || is_a($a->name, $b->name, true),
                     $a instanceof GenericTypeNode => is_a($a->type->name, $b->name, true),
                     default => false,
                 };
@@ -653,9 +671,9 @@ class PhpDocTypeUtils
             return [];
         }
 
-        $targetTypeDef = self::getGenericTypeDefinition(new GenericTypeNode(new IdentifierTypeNode($targetTypeName), []));
+        $targetTypeDef = self::getGenericTypeDefinition(new IdentifierTypeNode($targetTypeName));
 
-        foreach ($targetTypeDef['extends'] ?? [] as $possibleTarget => $_) {
+        foreach ($targetTypeDef->extends ?? [] as $possibleTarget => $_) {
             $innerPath = self::findDownCastPath($sourceTypeName, $possibleTarget);
 
             if ($innerPath !== null) {
@@ -676,17 +694,17 @@ class PhpDocTypeUtils
         }
 
         $step = array_shift($path);
-        $targetTypeDef = self::getGenericTypeDefinition(new GenericTypeNode(new IdentifierTypeNode($step), []));
+        $targetTypeDef = self::getGenericTypeDefinition(new IdentifierTypeNode($step));
 
-        if (!isset($targetTypeDef['extends'][$type->type->name])) {
+        if (!isset($targetTypeDef->extends[$type->type->name])) {
             throw new LogicException('Invalid downcast path');
         }
 
-        $targetTypeParameters = Arrays::map($targetTypeDef['parameters'] ?? [], static function (array $parameter): TypeNode {
-            return $parameter['bound'] ?? new IdentifierTypeNode('mixed');
+        $targetTypeParameters = Arrays::map($targetTypeDef->parameters ?? [], static function (GenericTypeParameter $parameter): TypeNode {
+            return $parameter->default ?? $parameter->bound ?? new IdentifierTypeNode('mixed');
         });
 
-        foreach ($targetTypeDef['extends'][$type->type->name] as $sourceIndex => $typeOrIndex) {
+        foreach ($targetTypeDef->extends[$type->type->name] as $sourceIndex => $typeOrIndex) {
             if (is_int($typeOrIndex)) {
                 $targetTypeParameters[$typeOrIndex] = self::getGenericTypeParameter($type, $sourceIndex);
             }
@@ -698,12 +716,12 @@ class PhpDocTypeUtils
     private static function isSubTypeOfGeneric(GenericTypeNode $a, GenericTypeNode $b): bool
     {
         if (strcasecmp($a->type->name, $b->type->name) === 0) {
-            $typeDef = self::getGenericTypeDefinition($a);
-            return Arrays::every($typeDef['parameters'] ?? [], static function (array $parameter, int $idx) use ($a, $b): bool {
+            $typeDef = self::getGenericTypeDefinition($a->type);
+            return Arrays::every($typeDef->parameters ?? [], static function (GenericTypeParameter $parameter, int $idx) use ($a, $b): bool {
                 $genericTypeA = self::getGenericTypeParameter($a, $idx);
                 $genericTypeB = self::getGenericTypeParameter($b, $idx);
 
-                return match ($parameter['variance']) {
+                return match ($parameter->variance) {
                     GenericTypeVariance::Contravariant => self::isSubTypeOf($genericTypeB, $genericTypeA),
                     GenericTypeVariance::Covariant => self::isSubTypeOf($genericTypeA, $genericTypeB),
                     GenericTypeVariance::Invariant => self::isSubTypeOf($genericTypeA, $genericTypeB) && self::isSubTypeOf($genericTypeB, $genericTypeA),
@@ -721,9 +739,9 @@ class PhpDocTypeUtils
      */
     public static function getGenericTypeSuperTypes(GenericTypeNode $type): array
     {
-        $typeDef = self::getGenericTypeDefinition($type);
+        $typeDef = self::getGenericTypeDefinition($type->type);
 
-        return Arrays::map($typeDef['extends'] ?? [], static function (array $mapping, string $superTypeName) use ($type): GenericTypeNode {
+        return Arrays::map($typeDef->extends, static function (array $mapping, string $superTypeName) use ($type): GenericTypeNode {
             return new GenericTypeNode(new IdentifierTypeNode($superTypeName), Arrays::map($mapping, static function (TypeNode | int $typeOrIndex) use ($type): TypeNode {
                 return $typeOrIndex instanceof TypeNode ? $typeOrIndex : self::getGenericTypeParameter($type, $typeOrIndex);
             }));
@@ -732,89 +750,168 @@ class PhpDocTypeUtils
 
     private static function getGenericTypeParameter(GenericTypeNode $type, int $index): TypeNode
     {
-        $typeDef = self::getGenericTypeDefinition($type);
+        $typeDef = self::getGenericTypeDefinition($type->type);
 
-        if (!isset($typeDef['parameters'])) {
-            throw new LogicException('Generic type has no parameters');
+        if (!isset($typeDef->parameters[$index])) {
+            throw new LogicException("Generic type {$type->type} has no parameter at index {$index}");
         }
 
-        $parameterDef = $typeDef['parameters'][$index];
+        $parameterDef = $typeDef->parameters[$index];
         $count = count($type->genericTypes);
 
-        if (isset($parameterDef['index'])) {
-            $index = $parameterDef['index'][$count] ?? -1;
+        if (isset($typeDef->parameterOffsetMapping[$count])) {
+            $index = $typeDef->parameterOffsetMapping[$count][$index] ?? -1;
         }
 
-        return $type->genericTypes[$index] ?? $parameterDef['bound'] ?? new IdentifierTypeNode('mixed');
+        return $type->genericTypes[$index] ?? $parameterDef->default ?? $parameterDef->bound ?? new IdentifierTypeNode('mixed');
     }
 
-    /**
-     * @return array{
-     *     extends?: array<string, list<int | TypeNode>>,
-     *     parameters?: list<array{index?: array<int, int>, variance: GenericTypeVariance, bound?: TypeNode}>,
-     * }
-     */
-    private static function getGenericTypeDefinition(GenericTypeNode $type): array
+    public static function getGenericTypeDefinition(IdentifierTypeNode $type): GenericTypeDefinition
     {
-        return match ($type->type->name) {
-            'array' => [
-                'extends' => [
+        return self::$genericTypeDefinitions[$type->name] ??= match ($type->name) {
+            'array' => new GenericTypeDefinition(
+                extends: [
                     'iterable' => [0, 1],
                 ],
-                'parameters' => [
-                    ['index' => [2 => 0], 'variance' => GenericTypeVariance::Covariant, 'bound' => new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')])],
-                    ['index' => [1 => 0, 2 => 1], 'variance' => GenericTypeVariance::Covariant],
+                parameters: [
+                    new GenericTypeParameter(
+                        name: 'K',
+                        variance: GenericTypeVariance::Covariant,
+                        bound: new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')]),
+                    ),
+                    new GenericTypeParameter(
+                        name: 'V',
+                        variance: GenericTypeVariance::Covariant,
+                    ),
                 ],
-            ],
+                parameterOffsetMapping: [
+                    1 => [null, 0],
+                ],
+            ),
 
-            'list' => [
-                'extends' => [
+            'list' => new GenericTypeDefinition(
+                extends: [
                     'array' => [new IdentifierTypeNode('int'), 0],
                 ],
-                'parameters' => [
-                    ['variance' => GenericTypeVariance::Covariant],
+                parameters: [
+                    new GenericTypeParameter(
+                        name: 'T',
+                        variance: GenericTypeVariance::Covariant,
+                    ),
                 ],
-            ],
+            ),
 
-            'iterable' => [
-                'parameters' => [
-                    ['index' => [2 => 0], 'variance' => GenericTypeVariance::Covariant],
-                    ['index' => [1 => 0, 2 => 1], 'variance' => GenericTypeVariance::Covariant],
+            'iterable' => new GenericTypeDefinition(
+                parameters: [
+                    new GenericTypeParameter(
+                        name: 'K',
+                        variance: GenericTypeVariance::Covariant,
+                    ),
+                    new GenericTypeParameter(
+                        name: 'V',
+                        variance: GenericTypeVariance::Covariant,
+                    ),
                 ],
-            ],
+                parameterOffsetMapping: [
+                    1 => [null, 0],
+                ],
+            ),
 
-            'non-empty-list' => [
-                'extends' => [
+            'non-empty-list' => new GenericTypeDefinition(
+                extends: [
                     'list' => [0],
                 ],
-                'parameters' => [
-                    ['variance' => GenericTypeVariance::Covariant],
+                parameters: [
+                    new GenericTypeParameter(
+                        name: 'T',
+                        variance: GenericTypeVariance::Covariant,
+                    ),
                 ],
-            ],
+            ),
 
-            Optional::class => [
-                'parameters' => [
-                    ['variance' => GenericTypeVariance::Covariant],
+            BackedEnum::class => new GenericTypeDefinition(
+                parameters: [
+                    new GenericTypeParameter(
+                        name: 'T',
+                        variance: GenericTypeVariance::Covariant,
+                        bound: new UnionTypeNode([new IdentifierTypeNode('int'), new IdentifierTypeNode('string')]),
+                    ),
                 ],
-            ],
+            ),
 
-            OptionalSome::class => [
-                'extends' => [
-                    Optional::class => [0],
-                ],
-                'parameters' => [
-                    ['variance' => GenericTypeVariance::Covariant],
-                ],
-            ],
-
-            OptionalNone::class => [
-                'extends' => [
-                    Optional::class => [new IdentifierTypeNode('never')],
-                ],
-            ],
-
-            default => [],
+            default => self::isKeyword($type) ? new GenericTypeDefinition() : self::getGenericTypeDefinitionFromPhpDoc($type->name),
         };
+    }
+
+    private static function getGenericTypeDefinitionFromPhpDoc(string $className): GenericTypeDefinition
+    {
+        if (!class_exists($className) && !interface_exists($className)) {
+            return new GenericTypeDefinition();
+        }
+
+        $classReflection = new ReflectionClass($className);
+        $classPhpDoc = $classReflection->getDocComment();
+
+        if ($classPhpDoc === false) {
+            return new GenericTypeDefinition();
+        }
+
+        $phpDocNode = self::parsePhpDoc($classPhpDoc);
+        $extends = [];
+        $genericParameters = [];
+
+        foreach ($phpDocNode->children as $node) {
+            if ($node instanceof PhpDocTagNode && $node->value instanceof TemplateTagValueNode) {
+                $variance = match (true) {
+                    str_ends_with($node->name, '-covariant') => GenericTypeVariance::Covariant,
+                    str_ends_with($node->name, '-contravariant') => GenericTypeVariance::Contravariant,
+                    default => GenericTypeVariance::Invariant,
+                };
+
+                $genericParameters[$node->value->name] = new GenericTypeParameter(
+                    name: $node->value->name,
+                    variance: $variance,
+                    bound: $node->value->bound,
+                    default: $node->value->default,
+                );
+            }
+        }
+
+        foreach ($genericParameters as $genericParameter) {
+            self::resolve($genericParameter->bound, $classReflection, array_keys($genericParameters));
+            self::resolve($genericParameter->default, $classReflection, array_keys($genericParameters));
+        }
+
+        $genericParameterOffsets = array_flip(array_keys($genericParameters));
+
+        foreach ($phpDocNode->children as $node) {
+            if ($node instanceof PhpDocTagNode && ($node->value instanceof ImplementsTagValueNode || $node->value instanceof ExtendsTagValueNode)) {
+                self::resolve($node->value->type, $classReflection, array_keys($genericParameters));
+                $extends[$node->value->type->type->name] = array_values(
+                    Arrays::map($node->value->type->genericTypes, static function (TypeNode $type) use ($genericParameterOffsets): TypeNode|int {
+                        return $type instanceof IdentifierTypeNode && isset($genericParameterOffsets[$type->name])
+                            ? $genericParameterOffsets[$type->name]
+                            : $type;
+                    }),
+                );
+            }
+        }
+
+        return new GenericTypeDefinition(
+            extends: $extends,
+            parameters: array_values($genericParameters),
+        );
+    }
+
+    private static function parsePhpDoc(string $phpDoc): PhpDocNode
+    {
+        $phpDocLexer = new Lexer();
+        $phpDocTypeParser = new TypeParser();
+        $phpDocConstExprParser = new ConstExprParser(unescapeStrings: true);
+        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocConstExprParser);
+        $phpDocTokens = $phpDocLexer->tokenize($phpDoc);
+
+        return $phpDocParser->parse(new TokenIterator($phpDocTokens));
     }
 
     private static function convertArrayShapeToGenericType(ArrayShapeNode $type): GenericTypeNode

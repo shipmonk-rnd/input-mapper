@@ -11,14 +11,17 @@ class CallbackMapperTest extends InputMapperTestCase
 
     public function testMapOk(): void
     {
+        // @phpstan-ignore-next-line allow casting to int
         $mapper = new CallbackMapper(static fn (mixed $data, array $path) => (int) $data);
         self::assertSame(123, $mapper->map('123'));
     }
 
     public function testMapThrowsException(): void
     {
-        $exception = MappingFailedException::incorrectValue('123', [], 'int');
-        $mapper = new CallbackMapper(static fn (mixed $data, array $path) => throw $exception);
+        $mapper = new CallbackMapper(static function (mixed $data, array $path): never {
+            // @phpstan-ignore-next-line intentionally throwing checked exception
+            throw MappingFailedException::incorrectValue('123', [], 'int');
+        });
 
         self::assertException(
             MappingFailedException::class,

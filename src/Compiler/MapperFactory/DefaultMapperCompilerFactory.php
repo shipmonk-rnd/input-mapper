@@ -57,12 +57,14 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
+use function array_column;
+use function array_fill_keys;
 use function class_exists;
 use function class_implements;
 use function class_parents;
 use function count;
-use function enum_exists;
 use function interface_exists;
+use function is_array;
 use function strcasecmp;
 use function strtolower;
 use function substr;
@@ -71,6 +73,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
+    final public const GENERIC_PARAMETERS = 'genericParameters';
 
     /**
      * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
@@ -102,13 +105,21 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
-                if (!class_exists($type->name) && !interface_exists($type->name) && !enum_exists($type->name)) {
+                if (isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true) {
+                    if (!class_exists($type->name) && !interface_exists($type->name)) {
+                        if (!isset($options[self::GENERIC_PARAMETERS]) || !is_array($options[self::GENERIC_PARAMETERS]) || !isset($options[self::GENERIC_PARAMETERS][$type->name])) {
+                            throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
+                        }
+                    }
+
+                    return new DelegateMapperCompiler($type->name);
+                }
+
+                if (!class_exists($type->name) && !interface_exists($type->name)) {
                     throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
                 }
 
-                return isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true
-                    ? new DelegateMapperCompiler($type->name)
-                    : $this->createObjectMapperCompiler($type->name, $options);
+                return $this->createObjectMapperCompiler($type->name, $options);
             }
 
             return match (strtolower($type->name)) {
@@ -164,7 +175,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                         1 => new MapOptional($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
-                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                    default => $this->createFromGenericType($type, $options),
                 },
             };
         }
@@ -219,12 +230,44 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
+     * @param  array<string, mixed> $options
+     */
+    protected function createFromGenericType(GenericTypeNode $type, array $options): MapperCompiler
+    {
+        if (!class_exists($type->type->name) && !interface_exists($type->type->name)) {
+            throw CannotCreateMapperCompilerException::fromType($type, 'there is no class or interface with this name');
+        }
+
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($type->type)->parameters;
+        $innerMapperCompilers = [];
+
+        foreach ($type->genericTypes as $index => $genericType) {
+            $genericParameter = $genericParameters[$index] ?? throw CannotCreateMapperCompilerException::fromType($type, "generic parameter at index {$index} does not exist");
+
+            if ($genericParameter->bound !== null && !PhpDocTypeUtils::isSubTypeOf($genericType, $genericParameter->bound)) {
+                throw CannotCreateMapperCompilerException::fromType($type, "type {$genericType} is not a subtype of {$genericParameter->bound}");
+            }
+
+            $innerMapperCompilers[] = $this->createInner($genericType, $options);
+        }
+
+        return new DelegateMapperCompiler($type->type->name, $innerMapperCompilers);
+    }
+
+    /**
      * @param  class-string         $inputClassName
      * @param  array<string, mixed> $options
      */
     protected function createObjectMapperCompiler(string $inputClassName, array $options): MapperCompiler
     {
-        $classLikeNames = [$inputClassName => true, ...class_parents($inputClassName), ...class_implements($inputClassName)];
+        $classParents = class_parents($inputClassName);
+        $classImplements = class_implements($inputClassName);
+
+        if ($classParents === false || $classImplements === false) {
+            throw new LogicException("Unable to get class parents or implements for '$inputClassName'.");
+        }
+
+        $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
 
         foreach ($classLikeNames as $classLikeName => $_) {
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
@@ -245,20 +288,24 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         array $options,
     ): MapperCompiler
     {
+        $inputType = new IdentifierTypeNode($inputClassName);
         $classReflection = new ReflectionClass($inputClassName);
-
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
-            throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($inputClassName), 'class has no constructor');
+            throw CannotCreateMapperCompilerException::fromType($inputType, 'class has no constructor');
         }
 
         if (!$constructor->isPublic()) {
-            throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($inputClassName), 'class has a non-public constructor');
+            throw CannotCreateMapperCompilerException::fromType($inputType, 'class has a non-public constructor');
         }
 
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
+        $genericParameterNames = array_column($genericParameters, 'name');
+        $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
+
         $constructorParameterMapperCompilers = [];
-        $constructorParameterTypes = $this->getConstructorParameterTypes($constructor);
+        $constructorParameterTypes = $this->getConstructorParameterTypes($constructor, $genericParameterNames);
 
         foreach ($constructor->getParameters() as $parameter) {
             $name = $parameter->getName();
@@ -267,13 +314,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         $allowExtraKeys = count($classReflection->getAttributes(AllowExtraKeys::class)) > 0;
-        return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers, $allowExtraKeys);
+        return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers, $allowExtraKeys, $genericParameters);
     }
 
     /**
+     * @param  list<string> $genericParameterNames
      * @return array<string, TypeNode>
      */
-    protected function getConstructorParameterTypes(ReflectionMethod $constructor): array
+    protected function getConstructorParameterTypes(ReflectionMethod $constructor, array $genericParameterNames): array
     {
         $class = $constructor->getDeclaringClass();
         $parameterTypes = [];
@@ -290,7 +338,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         if ($constructorDocComment !== false) {
             foreach ($this->parsePhpDoc($constructorDocComment)->children as $node) {
                 if ($node instanceof PhpDocTagNode && $node->value instanceof ParamTagValueNode) {
-                    PhpDocTypeUtils::resolve($node->value->type, $class);
+                    PhpDocTypeUtils::resolve($node->value->type, $class, $genericParameterNames);
                     $parameterName = substr($node->value->parameterName, 1);
                     $parameterTypes[$parameterName] = $node->value->type;
                 }
@@ -312,7 +360,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                         && $node->value instanceof VarTagValueNode
                         && ($node->value->variableName === '' || substr($node->value->variableName, 1) === $parameterName)
                     ) {
-                        PhpDocTypeUtils::resolve($node->value->type, $class);
+                        PhpDocTypeUtils::resolve($node->value->type, $class, $genericParameterNames);
                         $parameterTypes[$parameterName] = $node->value->type;
                     }
                 }

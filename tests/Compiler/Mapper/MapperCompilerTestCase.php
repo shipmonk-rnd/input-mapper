@@ -12,20 +12,24 @@ use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function assert;
 use function class_exists;
 use function str_replace;
+use function strrpos;
 use function strtr;
+use function substr;
 use function ucfirst;
 
 abstract class MapperCompilerTestCase extends InputMapperTestCase
 {
 
     /**
-     * @param  array<class-string, Mapper<mixed>> $mappers
+     * @param  array<class-string, MapperCompiler> $providedMapperCompilers
+     * @param  list<Mapper<mixed>>                 $innerMappers
      * @return Mapper<mixed>
      */
     protected function compileMapper(
         string $name,
         MapperCompiler $mapperCompiler,
-        array $mappers = [],
+        array $providedMapperCompilers = [],
+        array $innerMappers = [],
     ): Mapper
     {
         $testCaseReflection = new ReflectionClass($this);
@@ -48,14 +52,23 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $mapperProvider = $this->createMock(MapperProvider::class);
 
-        foreach ($mappers as $inputClassName => $mapper) {
-            $mapperProvider->expects(self::any())->method('get')->with($inputClassName)->willReturn($mapper);
-        }
+        $mapperProvider->expects(self::any())->method('get')->willReturnCallback(
+            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): Mapper {
+                /** @var list<Mapper<mixed>> $innerMappers */
+                return $this->compileMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $innerMappers);
+            },
+        );
 
-        $mapper = new $mapperClassName($mapperProvider);
+        $mapper = new $mapperClassName($mapperProvider, $innerMappers);
         assert($mapper instanceof Mapper);
 
         return $mapper;
+    }
+
+    private function toShortClassName(string $className): string
+    {
+        $pos = strrpos($className, '\\');
+        return $pos === false ? $className : substr($className, $pos + 1);
     }
 
 }

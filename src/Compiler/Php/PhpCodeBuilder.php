@@ -41,16 +41,21 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use function array_column;
+use function array_fill_keys;
 use function array_filter;
 use function array_pop;
 use function array_slice;
@@ -62,12 +67,19 @@ use function implode;
 use function is_array;
 use function is_object;
 use function ksort;
+use function serialize;
 use function str_ends_with;
 use function strrpos;
 use function substr;
+use function unserialize;
 
 class PhpCodeBuilder extends BuilderFactory
 {
+
+    /**
+     * @var list<GenericTypeParameter>
+     */
+    private array $genericParameters = [];
 
     /**
      * @var array<string, string> alias => class like FQN
@@ -325,9 +337,6 @@ class PhpCodeBuilder extends BuilderFactory
         $this->methods[$method->name->name] = $method;
     }
 
-    /**
-     * @param class-string $className
-     */
     public function importClass(string $className): string
     {
         $lastBackslashOffset = strrpos($className, '\\');
@@ -420,13 +429,25 @@ class PhpCodeBuilder extends BuilderFactory
         $this->importType($inputType);
         $this->importType($outputType);
 
-        $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $phpDocInputTypeUseful);
-        $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $phpDocOutputTypeUseful);
+        $clonedGenericParameters = [];
+
+        foreach ($this->genericParameters as $genericParameter) {
+            /** @var GenericTypeParameter $clonedGenericParameter */
+            $clonedGenericParameter = unserialize(serialize($genericParameter));
+            $clonedGenericParameters[] = $clonedGenericParameter;
+
+            if ($clonedGenericParameter->bound !== null) {
+                $this->importType($clonedGenericParameter->bound);
+            }
+        }
+
+        $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $clonedGenericParameters, $phpDocInputTypeUseful);
+        $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $clonedGenericParameters, $phpDocOutputTypeUseful);
 
         $phpDoc = $this->phpDoc([
-            $phpDocInputTypeUseful ? "@param  {$inputType} \${$dataVarName}" : null,
+            $phpDocInputTypeUseful !== false ? "@param  {$inputType} \${$dataVarName}" : null,
             "@param  list<string|int> \${$pathVarName}",
-            $phpDocOutputTypeUseful ? "@return {$outputType}" : null,
+            $phpDocOutputTypeUseful !== false ? "@return {$outputType}" : null,
             '@throws ' . $this->importClass(MappingFailedException::class),
         ]);
 
@@ -439,16 +460,44 @@ class PhpCodeBuilder extends BuilderFactory
             ->addStmt($this->return($mapper->expr));
     }
 
+    public function mapperClassConstructor(MapperCompiler $mapperCompiler): ClassMethod
+    {
+        $mapperConstructorPhpDocLines = [];
+        $mapperConstructorBuilder = $this->method('__construct');
+
+        $providerParameter = $this->param('provider')->setType($this->importClass(MapperProvider::class))->getNode();
+        $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+        $mapperConstructorBuilder->addParam($providerParameter);
+
+        if ($mapperCompiler instanceof GenericMapperCompiler && count($mapperCompiler->getGenericParameters()) > 0) {
+            $innerMappersParameter = $this->param('innerMappers')->setType('array')->getNode();
+            $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+            $mapperConstructorBuilder->addParam($innerMappersParameter);
+
+            $innerMappersType = new ArrayShapeNode(Arrays::map(
+                $mapperCompiler->getGenericParameters(),
+                static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
+                    return new ArrayShapeItemNode(
+                        keyName: null,
+                        valueType: new GenericTypeNode(new IdentifierTypeNode(Mapper::class), [new IdentifierTypeNode($genericParameter->name)]),
+                        optional: false,
+                    );
+                },
+            ));
+
+            $this->importType($innerMappersType);
+            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
+        }
+
+        return $mapperConstructorBuilder
+            ->makePublic()
+            ->setDocComment($this->phpDoc($mapperConstructorPhpDocLines))
+            ->getNode();
+    }
+
     public function mapperClass(string $shortClassName, MapperCompiler $mapperCompiler): Class_
     {
-        $providerType = $this->importClass(MapperProvider::class);
-        $providerParameter = $this->param('provider')->setType($providerType)->getNode();
-        $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
-
-        $mapperConstructor = $this->method('__construct')
-            ->makePublic()
-            ->addParam($providerParameter)
-            ->getNode();
+        $mapperConstructor = $this->mapperClassConstructor($mapperCompiler);
 
         $mapMethod = $this->mapperMethod('map', $mapperCompiler)
             ->makePublic()
@@ -464,11 +513,19 @@ class PhpCodeBuilder extends BuilderFactory
             [$outputType],
         );
 
-        $phpDoc = $this->phpDoc([
+        $phpDocLines = [
             "Generated mapper by {@see $mapperCompilerType}. Do not edit directly.",
             '',
-            "@implements {$implementsType}",
-        ]);
+        ];
+
+        if ($mapperCompiler instanceof GenericMapperCompiler) {
+            foreach ($mapperCompiler->getGenericParameters() as $genericParameter) {
+                $phpDocLines[] = $genericParameter->toPhpDocLine();
+            }
+        }
+
+        $phpDocLines[] = "@implements {$implementsType}";
+        $phpDoc = $this->phpDoc($phpDocLines);
 
         $constants = Arrays::map(
             $this->constants,
@@ -496,6 +553,10 @@ class PhpCodeBuilder extends BuilderFactory
         $pos = strrpos($mapperClassName, '\\');
         $namespaceName = $pos === false ? '' : substr($mapperClassName, 0, $pos);
         $shortClassName = $pos === false ? $mapperClassName : substr($mapperClassName, $pos + 1);
+
+        if ($mapperCompiler instanceof GenericMapperCompiler) {
+            $this->genericParameters = $mapperCompiler->getGenericParameters();
+        }
 
         $mapperClass = $this->mapperClass($shortClassName, $mapperCompiler)
             ->getNode();
@@ -530,10 +591,19 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
+     * @return list<GenericTypeParameter>
+     */
+    public function getGenericParameters(): array
+    {
+        return $this->genericParameters;
+    }
+
+    /**
      * @return list<Use_>
      */
     public function getImports(string $namespace): array
     {
+        $genericParameterNames = array_fill_keys(array_column($this->genericParameters, 'name'), true);
         $classLikeImports = [];
         $functionImports = [];
 
@@ -544,6 +614,9 @@ class PhpCodeBuilder extends BuilderFactory
                 $use->as($alias);
 
             } elseif ($fqn === "{$namespace}\\{$alias}") {
+                continue;
+
+            } elseif (isset($genericParameterNames[$alias])) {
                 continue;
             }
 

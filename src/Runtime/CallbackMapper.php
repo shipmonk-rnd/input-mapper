@@ -28,7 +28,7 @@ class CallbackMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        // @phpstan-ignore-next-line is thrown by the callback
+        /** @throws MappingFailedException */
         return ($this->callback)($data, $path);
     }
 

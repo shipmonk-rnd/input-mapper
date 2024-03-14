@@ -159,7 +159,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @return iterable<string, array{TypeNode, ComplexType|Identifier|Name, bool}>
+     * @return iterable<string, array{TypeNode, list<GenericTypeParameter>, ComplexType|Identifier|Name, bool}>
      */
     public static function provideToNativeTypeData(): iterable
     {
@@ -464,7 +464,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
      */
     #[DataProvider('provideResolveData')]
     public function testResolve(
-        mixed $type,
+        TypeNode $type,
         ReflectionClass $context,
         array $genericParameterNames,
         string $expectedResolvedType,
@@ -474,16 +474,19 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         self::assertSame($expectedResolvedType, (string) $type);
     }
 
+    /**
+     * @return iterable<string, array{TypeNode, ReflectionClass<object>, list<string>, string}>
+     */
     public static function provideResolveData(): iterable
     {
-        yield [
+        yield 'TestCase' => [
             new IdentifierTypeNode('TestCase'),
             new ReflectionClass(self::class),
             [],
             TestCase::class,
         ];
 
-        yield [
+        yield 'TestCase|string' => [
             new UnionTypeNode([
                 new IdentifierTypeNode('TestCase'),
                 new IdentifierTypeNode('string'),
@@ -493,7 +496,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             '(PHPUnit\\Framework\\TestCase | string)',
         ];
 
-        yield [
+        yield 'self|string' => [
             new UnionTypeNode([
                 new IdentifierTypeNode('self'),
                 new IdentifierTypeNode('string'),
@@ -503,14 +506,14 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             '(ShipMonkTests\\InputMapper\\Compiler\\Type\\PhpDocTypeUtilsTest | string)',
         ];
 
-        yield [
+        yield 'T' => [
             new IdentifierTypeNode('T'),
             new ReflectionClass(self::class),
             ['T'],
             'T',
         ];
 
-        yield [
+        yield 'T|string' => [
             new UnionTypeNode([
                 new IdentifierTypeNode('T'),
                 new IdentifierTypeNode('string'),
@@ -1332,6 +1335,46 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
+        yield 'BackedEnum' => [
+            'true' => [
+                'BackedEnum',
+                'BackedEnum<string>',
+            ],
+
+            'false' => [
+                'int',
+                'UnitEnum',
+                'ShipMonk\InputMapper\Compiler\Type\GenericTypeVariance',
+            ],
+        ];
+
+        yield 'BackedEnum<string>' => [
+            'true' => [
+                'BackedEnum<string>',
+            ],
+
+            'false' => [
+                'int',
+                'UnitEnum',
+                'BackedEnum',
+                'BackedEnum<int>',
+            ],
+        ];
+
+        yield 'BackedEnum<string | int>' => [
+            'true' => [
+                'BackedEnum<string | int>',
+                'BackedEnum<string>',
+                'BackedEnum<int>',
+                'BackedEnum',
+            ],
+
+            'false' => [
+                'int',
+                'UnitEnum',
+            ],
+        ];
+
         yield 'Countable & Traversable' => [
             'true' => [
                 'Countable & Traversable',
@@ -1437,6 +1480,31 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
                 'ShipMonk\InputMapper\Runtime\Optional',
                 'ShipMonk\InputMapper\Runtime\Optional<bool>',
                 'ShipMonk\InputMapper\Runtime\OptionalSome<bool>',
+                'int',
+                'stdClass',
+            ],
+        ];
+
+        yield 'T' => [
+            'true' => [
+                'T',
+            ],
+
+            'false' => [
+                'X',
+                'int',
+                'stdClass',
+            ],
+        ];
+
+        yield 'UnitEnum' => [
+            'true' => [
+                'UnitEnum',
+                'BackedEnum',
+                'BackedEnum<string>',
+            ],
+
+            'false' => [
                 'int',
                 'stdClass',
             ],

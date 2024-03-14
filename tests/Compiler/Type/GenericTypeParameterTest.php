@@ -17,6 +17,9 @@ class GenericTypeParameterTest extends InputMapperTestCase
         self::assertSame($expected, $parameter->toPhpDocLine());
     }
 
+    /**
+     * @return iterable<array{GenericTypeParameter, string}>
+     */
     public static function provideToPhpDocLineData(): iterable
     {
         yield [

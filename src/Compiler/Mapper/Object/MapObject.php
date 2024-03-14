@@ -3,14 +3,18 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
 
 use Attribute;
+use Nette\Utils\Arrays;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function array_fill_keys;
 use function array_keys;
@@ -22,17 +26,19 @@ use function ucfirst;
  * @template T of object
  */
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapObject implements MapperCompiler
+class MapObject implements GenericMapperCompiler
 {
 
     /**
      * @param  class-string<T>               $className
      * @param  array<string, MapperCompiler> $constructorArgsMapperCompilers
+     * @param  list<GenericTypeParameter>    $genericParameters
      */
     public function __construct(
         public readonly string $className,
         public readonly array $constructorArgsMapperCompilers,
         public readonly bool $allowExtraKeys = false,
+        public readonly array $genericParameters = [],
     )
     {
     }
@@ -114,7 +120,26 @@ class MapObject implements MapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode($this->className);
+        $outputType = new IdentifierTypeNode($this->className);
+
+        if (count($this->genericParameters) === 0) {
+            return $outputType;
+        }
+
+        return new GenericTypeNode(
+            $outputType,
+            Arrays::map($this->genericParameters, static function (GenericTypeParameter $parameter): TypeNode {
+                return new IdentifierTypeNode($parameter->name);
+            }),
+        );
+    }
+
+    /**
+     * @return list<GenericTypeParameter>
+     */
+    public function getGenericParameters(): array
+    {
+        return $this->genericParameters;
     }
 
     /**
