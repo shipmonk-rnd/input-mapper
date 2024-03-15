@@ -31,6 +31,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
@@ -40,9 +41,13 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarFilterInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\EnumFilterInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\EqualsFilterInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InFilterInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
@@ -125,6 +130,22 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             ),
         ];
 
+        yield 'CarFilterInput' => [
+            CarFilterInput::class,
+            [],
+            new MapObject(
+                className: CarFilterInput::class,
+                constructorArgsMapperCompilers: [
+                    'id' => new DelegateMapperCompiler(InFilterInput::class, [
+                        new MapInt(),
+                    ]),
+                    'color' => new DelegateMapperCompiler(EqualsFilterInput::class, [
+                        new DelegateMapperCompiler(ColorEnum::class),
+                    ]),
+                ],
+            ),
+        ];
+
         yield 'ColorEnum' => [
             ColorEnum::class,
             [],
@@ -141,6 +162,20 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             DateTimeInterface::class,
             [],
             new MapDateTimeImmutable(),
+        ];
+
+        yield 'EqualsFilterInput' => [
+            EqualsFilterInput::class,
+            [],
+            new MapObject(
+                className: EqualsFilterInput::class,
+                constructorArgsMapperCompilers: [
+                    'equals' => new DelegateMapperCompiler('T'),
+                ],
+                genericParameters: [
+                    new GenericTypeParameter('T'),
+                ],
+            ),
         ];
 
         yield 'InputWithDate' => [
@@ -399,11 +434,6 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
         ];
 
-        yield 'List<int>' => [
-            'List<int>',
-            [],
-        ];
-
         yield 'callable(): void' => [
             'callable(): void',
             [],
@@ -414,6 +444,12 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             'int<foo, bar>',
             [],
             'Cannot create mapper for type int<foo, bar>, because integer boundary foo is not supported',
+        ];
+
+        yield 'EnumFilterInput<int>' => [
+            EnumFilterInput::class . '<int>',
+            [],
+            'Cannot create mapper for type ShipMonkTests\\InputMapper\\Compiler\\MapperFactory\\Data\\EnumFilterInput<int>, because type int is not a subtype of BackedEnum',
         ];
     }
 

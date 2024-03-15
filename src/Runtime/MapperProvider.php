@@ -9,18 +9,22 @@ use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProv
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
+use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
+use function count;
 use function dirname;
 use function file_put_contents;
 use function flock;
 use function fopen;
+use function implode;
 use function is_dir;
 use function is_file;
 use function md5;
 use function mkdir;
 use function rename;
+use function spl_object_id;
 use function strlen;
 use function strrpos;
 use function substr;
@@ -32,12 +36,12 @@ class MapperProvider
 {
 
     /**
-     * @var array<class-string, Mapper<mixed>>
+     * @var array<string, Mapper<mixed>>
      */
     private array $mappers = [];
 
     /**
-     * @var array<class-string, callable(never, self): Mapper<mixed>>
+     * @var array<class-string, callable(never, list<Mapper<mixed>>, self): Mapper<mixed>>
      */
     private array $mapperFactories = [];
 
@@ -51,20 +55,27 @@ class MapperProvider
 
     /**
      * @template T of object
-     * @param  class-string<T> $inputClassName
+     * @param  class-string<T>     $inputClassName
+     * @param  list<Mapper<mixed>> $innerMappers
      * @return Mapper<T>
      */
-    public function get(string $inputClassName): Mapper
+    public function get(string $inputClassName, array $innerMappers = []): Mapper
     {
+        $key = $inputClassName;
+
+        if (count($innerMappers) > 0) {
+            $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $innerMappers)));
+        }
+
         /** @var Mapper<T> $mapper */
-        $mapper = $this->mappers[$inputClassName] ??= $this->create($inputClassName);
+        $mapper = $this->mappers[$key] ??= $this->create($inputClassName, $innerMappers);
         return $mapper;
     }
 
     /**
      * @template T of object
-     * @param  class-string<T>                            $inputClassName
-     * @param  callable(class-string<T>, self): Mapper<T> $mapperFactory
+     * @param  class-string<T>                                                 $inputClassName
+     * @param  callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $mapperFactory
      */
     public function registerFactory(string $inputClassName, callable $mapperFactory): void
     {
@@ -77,18 +88,26 @@ class MapperProvider
 
     /**
      * @template T of object
-     * @param  class-string<T> $inputClassName
+     * @param  class-string<T>     $inputClassName
+     * @param  list<Mapper<mixed>> $innerMappers
      * @return Mapper<T>
      */
-    private function create(string $inputClassName): Mapper
+    private function create(string $inputClassName, array $innerMappers): Mapper
     {
-        $classLikeNames = [$inputClassName => true, ...class_parents($inputClassName), ...class_implements($inputClassName)];
+        $classParents = class_parents($inputClassName);
+        $classImplements = class_implements($inputClassName);
+
+        if ($classParents === false || $classImplements === false) {
+            throw new LogicException("Unable to get class parents or implements for '$inputClassName'.");
+        }
+
+        $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
 
         foreach ($classLikeNames as $classLikeName => $_) {
             if (isset($this->mapperFactories[$classLikeName])) {
-                /** @var callable(class-string<T>, self): Mapper<T> $factory */
+                /** @var callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $factory */
                 $factory = $this->mapperFactories[$classLikeName];
-                return $factory($inputClassName, $this);
+                return $factory($inputClassName, $innerMappers, $this);
             }
         }
 
@@ -98,7 +117,7 @@ class MapperProvider
             $this->load($inputClassName, $mapperClassName);
         }
 
-        return new $mapperClassName($this);
+        return new $mapperClassName($this, $innerMappers);
     }
 
     /**

@@ -34,6 +34,8 @@ parameters:
         forbidCheckedExceptionInCallable:
             immediatelyCalledCallables:
                 'ShipMonkTests\InputMapper\InputMapperTestCase::assertException': 2
+            allowedCheckedExceptionCallables:
+                'ShipMonk\InputMapper\Runtime\CallbackMapper::__construct': 0
 
     ignoreErrors:
         -
@@ -53,3 +55,7 @@ parameters:
             message: "#^Method ShipMonkTests\\\\InputMapper\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorWithMultipleValidatorsMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
             count: 1
             path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
+        -
+            message: "#^Throwing checked exception ShipMonk\\\\InputMapper\\\\Runtime\\\\Exception\\\\MappingFailedException in first-class-callable!$#"
+            count: 1
+            path: tests/Compiler/Mapper/Object/Data/DelegateToIntCollectionMapper.php

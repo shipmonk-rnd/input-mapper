@@ -9,9 +9,11 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\PersonInput;
 
@@ -20,8 +22,8 @@ class MapObjectTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $personInputMapper = $this->compileMapper('Person', $this->createPersonInputMapperCompiler());
-        $movieInputMapper = $this->compileMapper('Movie', $this->createMovieInputMapperCompiler(), [PersonInput::class => $personInputMapper]);
+        $personInputMapperCompiler = $this->createPersonInputMapperCompiler();
+        $movieInputMapper = $this->compileMapper('Movie', $this->createMovieInputMapperCompiler(), [PersonInput::class => $personInputMapperCompiler]);
 
         $movieInputObject = new MovieInput(
             id: 1,
@@ -103,6 +105,38 @@ class MapObjectTest extends MapperCompilerTestCase
         self::assertEquals(
             new PersonInput(1, 'John', Optional::none([], 'age')),
             $mapper->map(['id' => 1, 'name' => 'John', 'extra' => 'X']),
+        );
+    }
+
+    public function testCompileGeneric(): void
+    {
+        $collectionMapperCompiler = new MapObject(
+            className: CollectionInput::class,
+            constructorArgsMapperCompilers: [
+                'items' => new MapList(new DelegateMapperCompiler('T')),
+                'size' => new MapInt(),
+            ],
+            genericParameters: [
+                new GenericTypeParameter('T'),
+            ],
+        );
+
+        $intCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
+            $this->compileMapper('CollectionInnerInt', new MapInt()),
+        ]);
+
+        $stringCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
+            $this->compileMapper('CollectionInnerString', new MapString()),
+        ]);
+
+        self::assertEquals(
+            new CollectionInput([1, 2, 3], 3),
+            $intCollectionMapper->map(['items' => [1, 2, 3], 'size' => 3]),
+        );
+
+        self::assertEquals(
+            new CollectionInput(['a', 'b', 'c'], 3),
+            $stringCollectionMapper->map(['items' => ['a', 'b', 'c'], 'size' => 3]),
         );
     }
 
