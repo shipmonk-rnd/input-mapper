@@ -12,3 +12,6 @@ updates:
             -
                 dependency-name: "*"
                 update-types: ["version-update:semver-major"] # never update major versions
+        groups:
+            dev-dependencies:
+                dependency-type: development
