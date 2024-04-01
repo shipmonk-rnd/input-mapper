@@ -20,7 +20,7 @@
         "shipmonk/composer-dependency-analyser": "^1.2",
         "shipmonk/name-collision-detector": "^2.1.0",
         "shipmonk/phpstan-rules": "^2.11",
-        "slevomat/coding-standard": "^8.14.1"
+        "slevomat/coding-standard": "^8.15.0"
     },
     "autoload": {
         "psr-4": {
