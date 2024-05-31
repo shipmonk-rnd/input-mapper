@@ -24,7 +24,6 @@ class AssertUniqueItems implements ValidatorCompiler
             'index',
             'item',
             'innerIndex',
-            'innerLoopItem',
         );
 
         $statements = [];
