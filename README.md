@@ -54,6 +54,7 @@ Input Mapper comes with some built-in validators:
 * list validators:
   * `AssertListItem`
   * `AssertListLength`
+  * `AssertUniqueItems` (compares items by `===`)
 * date time validators:
   * `AssertDateTimeRange`
 
