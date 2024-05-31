@@ -40,11 +40,14 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
@@ -74,6 +77,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
     final public const GENERIC_PARAMETERS = 'genericParameters';
+    final public const DEFAULT_VALUE = 'defaultValue';
 
     /**
      * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
@@ -213,7 +217,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             }
 
             if ($isNullable && count($subTypesWithoutNull) === 1) {
-                return new MapNullable($this->createInner($subTypesWithoutNull[0], $options));
+                return $this->create(new NullableTypeNode($subTypesWithoutNull[0]), $options);
             }
         }
 
@@ -396,6 +400,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             default => new ChainMapperCompiler($mappers),
         };
 
+        foreach ($parameterReflection->getAttributes(OptionalAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            $mapper = new MapDefaultValue($mapper, $attribute->newInstance()->default);
+        }
+
         if (!PhpDocTypeUtils::isSubTypeOf($mapper->getOutputType(), $type)) {
             throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mapper, $parameterReflection, $type);
         }
@@ -423,6 +431,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
             return new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);
+        }
+
+        if ($mapperCompiler instanceof MapDefaultValue) {
+            return new MapDefaultValue($this->addValidator($mapperCompiler->mapperCompiler, $validatorCompiler), $mapperCompiler->defaultValue);
         }
 
         if ($mapperCompiler instanceof MapNullable) {
