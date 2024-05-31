@@ -35,7 +35,7 @@ class MapDefaultValue implements UndefinedAwareMapperCompiler
     public function compileUndefined(Expr $path, Expr $key, PhpCodeBuilder $builder): CompiledExpr
     {
         if ($this->defaultValue === null || is_scalar($this->defaultValue) || is_array($this->defaultValue)) {
-            return new CompiledExpr($builder->val(null));
+            return new CompiledExpr($builder->val($this->defaultValue));
         }
 
         if ($this->defaultValue instanceof BackedEnum) {
