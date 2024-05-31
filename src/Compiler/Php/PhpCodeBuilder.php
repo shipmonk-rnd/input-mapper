@@ -19,10 +19,12 @@ use PhpParser\Node\Expr\BinaryOp\Greater;
 use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Instanceof_;
+use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -34,6 +36,7 @@ use PhpParser\Node\Stmt\DeclareDeclare;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Expression;
+use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
@@ -193,7 +196,7 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
-     * @param list<Stmt>      $then
+     * @param list<Stmt> $then
      * @param list<Stmt>|null $else
      */
     public function if(Expr $if, array $then, ?array $else = null): If_
@@ -222,6 +225,29 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
+     * @param list<Stmt> $statements
+     */
+    public function for(Expr $init, Expr $cond, Expr $loop, array $statements): For_
+    {
+        return new For_([
+            'init' => [$init],
+            'cond' => [$cond],
+            'loop' => [$loop],
+            'stmts' => $statements,
+        ]);
+    }
+
+    public function preIncrement(Expr $var): PreInc
+    {
+        return new PreInc($var, []);
+    }
+
+    public function plus(Expr $var, Expr $value): Plus
+    {
+        return new Plus($var, $value);
+    }
+
+    /**
      * @param array<int|string, scalar|array<mixed>|Expr|Arg|null> $args
      */
     public function throwNew(string $className, array $args): Throw_
@@ -237,6 +263,11 @@ class PhpCodeBuilder extends BuilderFactory
     public function assign(Expr $var, Expr $expr): Expression
     {
         return new Expression(new Assign($var, $expr));
+    }
+
+    public function assignExpr(Expr $var, Expr $expr): Assign
+    {
+        return new Assign($var, $expr);
     }
 
     public function return(Expr $expr): Return_
@@ -303,7 +334,7 @@ class PhpCodeBuilder extends BuilderFactory
 
     /**
      * @template T
-     * @param  callable(): T $cb
+     * @param callable(): T $cb
      * @return T
      */
     public function withVariableScope(callable $cb): mixed
@@ -406,7 +437,7 @@ class PhpCodeBuilder extends BuilderFactory
      */
     public function phpDoc(array $lines): string
     {
-        $lines = array_filter($lines, static fn (?string $line): bool => $line !== null);
+        $lines = array_filter($lines, static fn(?string $line): bool => $line !== null);
 
         if (count($lines) === 0) {
             return '';
