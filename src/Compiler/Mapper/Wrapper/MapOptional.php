@@ -12,6 +12,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Runtime\OptionalNone;
+use ShipMonk\InputMapper\Runtime\OptionalSome;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapOptional implements UndefinedAwareMapperCompiler
@@ -44,9 +46,14 @@ class MapOptional implements UndefinedAwareMapperCompiler
     public function getOutputType(): TypeNode
     {
         return new GenericTypeNode(
-            new IdentifierTypeNode(Optional::class),
+            new IdentifierTypeNode(OptionalSome::class),
             [$this->mapperCompiler->getOutputType()],
         );
+    }
+
+    public function getDefaultValueType(): TypeNode
+    {
+        return new IdentifierTypeNode(OptionalNone::class);
     }
 
 }

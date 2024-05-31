@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function array_diff_key;
 use function array_is_list;
 use function array_key_exists;
@@ -107,10 +108,10 @@ class MovieMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return Optional<string>
+     * @return OptionalSome<string>
      * @throws MappingFailedException
      */
-    private function mapDescription(mixed $data, array $path = []): Optional
+    private function mapDescription(mixed $data, array $path = []): OptionalSome
     {
         if (!is_string($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'string');

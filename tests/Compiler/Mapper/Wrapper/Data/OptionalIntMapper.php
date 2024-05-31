@@ -7,12 +7,13 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function is_int;
 
 /**
  * Generated mapper by {@see MapOptional}. Do not edit directly.
  *
- * @implements Mapper<Optional<int>>
+ * @implements Mapper<OptionalSome<int>>
  */
 class OptionalIntMapper implements Mapper
 {
@@ -22,10 +23,10 @@ class OptionalIntMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return Optional<int>
+     * @return OptionalSome<int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): Optional
+    public function map(mixed $data, array $path = []): OptionalSome
     {
         if (!is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'int');

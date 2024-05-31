@@ -400,6 +400,12 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mapper, $parameterReflection, $type);
         }
 
+        if ($mapper instanceof UndefinedAwareMapperCompiler) {
+            if (!PhpDocTypeUtils::isSubTypeOf($mapper->getDefaultValueType(), $type)) {
+                throw CannotCreateMapperCompilerException::withIncompatibleDefaultValueParameter($mapper, $parameterReflection, $type);
+            }
+        }
+
         foreach ($validators as $validator) {
             $mapper = $this->addValidator($mapper, $validator);
         }

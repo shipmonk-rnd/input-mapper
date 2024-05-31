@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
 
@@ -34,6 +35,25 @@ class CannotCreateMapperCompilerException extends LogicException
         $methodFullName = $className !== null ? "{$className}::{$methodName}" : $methodName;
 
         $reason = "mapper output type '{$mapperOutputType}' is not compatible with parameter type '{$parameterType}'";
+        return new self("Cannot use mapper {$mapperCompilerClass} for parameter \${$parameterName} of method {$methodFullName}, because {$reason}", 0, $previous);
+    }
+
+    public static function withIncompatibleDefaultValueParameter(
+        UndefinedAwareMapperCompiler $mapperCompiler,
+        ReflectionParameter $parameter,
+        TypeNode $parameterType,
+        ?Throwable $previous = null
+    ): self
+    {
+        $mapperCompilerClass = $mapperCompiler::class;
+        $defaultValueType = $mapperCompiler->getDefaultValueType();
+
+        $parameterName = $parameter->getName();
+        $className = $parameter->getDeclaringClass()?->getName();
+        $methodName = $parameter->getDeclaringFunction()->getName();
+        $methodFullName = $className !== null ? "{$className}::{$methodName}" : $methodName;
+
+        $reason = "default value of type '{$defaultValueType}' is not compatible with parameter type '{$parameterType}'";
         return new self("Cannot use mapper {$mapperCompilerClass} for parameter \${$parameterName} of method {$methodFullName}, because {$reason}", 0, $previous);
     }
 
