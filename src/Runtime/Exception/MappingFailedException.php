@@ -81,6 +81,21 @@ class MappingFailedException extends RuntimeException
     /**
      * @param  list<string|int> $path
      */
+    public static function duplicateValue(
+        mixed $data,
+        array $path,
+        string $expectedValueDescription,
+        ?Throwable $previous = null
+    ): self
+    {
+        $describedValue = self::describeValue($data);
+        $reason = "Expected {$expectedValueDescription}, got {$describedValue} multiple times";
+        return new self($path, $reason, $previous);
+    }
+
+    /**
+     * @param  list<string|int> $path
+     */
     public static function missingKey(
         array $path,
         string $missingKey,
