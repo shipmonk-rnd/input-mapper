@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
@@ -86,10 +87,10 @@ class Movie__PersonInputMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return Optional<int>
+     * @return OptionalSome<int>
      * @throws MappingFailedException
      */
-    private function mapAge(mixed $data, array $path = []): Optional
+    private function mapAge(mixed $data, array $path = []): OptionalSome
     {
         if (!is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'int');

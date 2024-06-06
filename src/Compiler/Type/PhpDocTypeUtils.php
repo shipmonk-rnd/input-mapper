@@ -46,6 +46,7 @@ use ReflectionType;
 use ReflectionUnionType;
 use Traversable;
 use function array_flip;
+use function array_is_list;
 use function array_keys;
 use function array_map;
 use function array_shift;
@@ -54,6 +55,7 @@ use function array_values;
 use function class_exists;
 use function constant;
 use function count;
+use function get_debug_type;
 use function get_object_vars;
 use function in_array;
 use function interface_exists;
@@ -63,6 +65,8 @@ use function is_callable;
 use function is_float;
 use function is_int;
 use function is_object;
+use function is_resource;
+use function is_scalar;
 use function is_string;
 use function max;
 use function method_exists;
@@ -149,6 +153,44 @@ class PhpDocTypeUtils
         }
 
         return new IdentifierTypeNode('mixed');
+    }
+
+    public static function fromValue(mixed $value): TypeNode
+    {
+        if (is_scalar($value) || $value === null) {
+            return new IdentifierTypeNode(get_debug_type($value));
+        }
+
+        if (is_array($value)) {
+            $items = [];
+            $isList = array_is_list($value);
+
+            foreach ($value as $k => $v) {
+                $keyName = match (true) {
+                    $isList => null,
+                    is_int($k) => new ConstExprIntegerNode((string) $k),
+                    is_string($k) => new IdentifierTypeNode($k),
+                };
+
+                $items[] = new ArrayShapeItemNode(
+                    keyName: $keyName,
+                    optional: false,
+                    valueType: self::fromValue($v),
+                );
+            }
+
+            return new ArrayShapeNode($items);
+        }
+
+        if (is_object($value)) {
+            return new IdentifierTypeNode($value::class);
+        }
+
+        if (is_resource($value)) {
+            return new IdentifierTypeNode('resource');
+        }
+
+        throw new LogicException('Unsupported value type');
     }
 
     /**

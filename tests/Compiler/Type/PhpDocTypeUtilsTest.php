@@ -141,6 +141,33 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         );
     }
 
+    #[DataProvider('provideFromValueData')]
+    public function testFromValue(mixed $value, string $expectedType): void
+    {
+        self::assertEquals(
+            $this->parseType($expectedType),
+            PhpDocTypeUtils::fromValue($value),
+        );
+    }
+
+    /**
+     * @return iterable<array{mixed, string}>
+     */
+    public static function provideFromValueData(): iterable
+    {
+        yield [null, 'null'];
+        yield [true, 'bool'];
+        yield [false, 'bool'];
+        yield [1, 'int'];
+        yield [1.1, 'float'];
+        yield ['abc', 'string'];
+        yield [[], 'array{}'];
+        yield [[1, 2, 'abc'], 'array{int, int, string}'];
+        yield [['key' => 'value'], 'array{key: string}'];
+        yield [['foo' => 'abc', 'bar' => null], 'array{foo: string, bar: null}'];
+        yield [new DateTimeImmutable(), DateTimeImmutable::class];
+    }
+
     /**
      * @param  list<GenericTypeParameter> $genericParameters
      */

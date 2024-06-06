@@ -66,10 +66,11 @@ You can write your own validators if you need more.
 
 To use Input Mapper, write a class with a public constructor and add either native or PHPDoc types to all constructor parameters.
 
-Optional fields need to be wrapped with the Optional class, which allows distinguishing between null and missing values.
+Optional fields can either be marked with `#[Optional]` attribute (allowing you to specify a default value),
+or if you need to distinguish between default and missing values, you can wrap the type with `ShipMonk\InputMapper\Runtime\Optional` class.
 
 ```php
-use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapper\Compiler\Mapper\Optional;
 
 class Person
 {
@@ -78,14 +79,15 @@ class Person
 
         public readonly int $age,
 
-        /** @var Optional<string> */
-        public readonly Optional $email,
+        #[Optional]
+        public readonly ?string $email,
 
         /** @var list<string> */
         public readonly array $hobbies,
 
-        /** @var Optional<list<self>> */
-        public readonly Optional $friends,
+        /** @var list<self> */
+        #[Optional(default: [])]
+        public readonly array $friends,
     ) {}
 }
 ```

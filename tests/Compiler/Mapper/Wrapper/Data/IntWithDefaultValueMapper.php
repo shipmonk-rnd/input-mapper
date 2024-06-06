@@ -2,20 +2,18 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function is_int;
 
 /**
- * Generated mapper by {@see MapOptional}. Do not edit directly.
+ * Generated mapper by {@see MapDefaultValue}. Do not edit directly.
  *
- * @implements Mapper<OptionalSome<int>>
+ * @implements Mapper<int>
  */
-class OptionalIntMapper implements Mapper
+class IntWithDefaultValueMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -23,15 +21,14 @@ class OptionalIntMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return OptionalSome<int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): OptionalSome
+    public function map(mixed $data, array $path = []): int
     {
         if (!is_int($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'int');
         }
 
-        return Optional::of($data);
+        return $data;
     }
 }

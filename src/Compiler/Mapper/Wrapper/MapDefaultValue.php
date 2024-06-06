@@ -3,39 +3,46 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Wrapper;
 
 use Attribute;
+use BackedEnum;
+use LogicException;
 use PhpParser\Node\Expr;
-use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonk\InputMapper\Runtime\OptionalNone;
-use ShipMonk\InputMapper\Runtime\OptionalSome;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use function get_debug_type;
+use function is_array;
+use function is_scalar;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapOptional implements UndefinedAwareMapperCompiler
+class MapDefaultValue implements UndefinedAwareMapperCompiler
 {
 
     public function __construct(
         public readonly MapperCompiler $mapperCompiler,
+        public readonly mixed $defaultValue,
     )
     {
     }
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
-        $mapper = $this->mapperCompiler->compile($value, $path, $builder);
-        $mapped = $builder->staticCall($builder->importClass(Optional::class), 'of', [$mapper->expr]);
-        return new CompiledExpr($mapped, $mapper->statements);
+        return $this->mapperCompiler->compile($value, $path, $builder);
     }
 
     public function compileUndefined(Expr $path, Expr $key, PhpCodeBuilder $builder): CompiledExpr
     {
-        $mapped = $builder->staticCall($builder->importClass(Optional::class), 'none', [$path, $key]);
-        return new CompiledExpr($mapped);
+        if ($this->defaultValue === null || is_scalar($this->defaultValue) || is_array($this->defaultValue)) {
+            return new CompiledExpr($builder->val($this->defaultValue));
+        }
+
+        if ($this->defaultValue instanceof BackedEnum) {
+            return new CompiledExpr($builder->classConstFetch($builder->importClass($this->defaultValue::class), $this->defaultValue->name));
+        }
+
+        throw new LogicException('Unsupported default value type: ' . get_debug_type($this->defaultValue));
     }
 
     public function getInputType(): TypeNode
@@ -45,15 +52,12 @@ class MapOptional implements UndefinedAwareMapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new GenericTypeNode(
-            new IdentifierTypeNode(OptionalSome::class),
-            [$this->mapperCompiler->getOutputType()],
-        );
+        return $this->mapperCompiler->getOutputType();
     }
 
     public function getDefaultValueType(): TypeNode
     {
-        return new IdentifierTypeNode(OptionalNone::class);
+        return PhpDocTypeUtils::fromValue($this->defaultValue);
     }
 
 }

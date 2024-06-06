@@ -27,6 +27,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
@@ -41,6 +42,7 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInputWithDefaultValues;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarFilterInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
@@ -127,6 +129,28 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                     ),
                 ],
                 allowExtraKeys: true,
+            ),
+        ];
+
+        yield 'BrandInputWithDefaultValues' => [
+            BrandInputWithDefaultValues::class,
+            [],
+            new MapObject(
+                BrandInputWithDefaultValues::class,
+                [
+                    'name' => new MapDefaultValue(
+                        new MapString(),
+                        'ShipMonk',
+                    ),
+                    'foundedIn' => new MapDefaultValue(
+                        new MapNullable(new MapInt()),
+                        null,
+                    ),
+                    'founders' => new MapDefaultValue(
+                        new MapList(new MapString()),
+                        ['Jan Bednář'],
+                    ),
+                ],
             ),
         ];
 
