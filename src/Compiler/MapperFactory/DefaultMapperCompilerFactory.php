@@ -40,6 +40,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\SourceKey;
 use ShipMonk\InputMapper\Compiler\Mapper\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
@@ -314,6 +315,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         foreach ($constructor->getParameters() as $parameter) {
             $name = $parameter->getName();
             $type = $constructorParameterTypes[$name];
+
+            foreach ($parameter->getAttributes(SourceKey::class) as $attribute) {
+                $name = $attribute->newInstance()->key;
+            }
+
             $constructorParameterMapperCompilers[$name] = $this->createParameterMapperCompiler($parameter, $type, $options);
         }
 

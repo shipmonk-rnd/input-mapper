@@ -140,6 +140,22 @@ class MapObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithRenamedSourceKey(): void
+    {
+        $mapperCompiler = new MapObject(PersonInput::class, [
+            'ID' => new MapInt(),
+            'NAME' => new MapString(),
+            'AGE' => new MapOptional(new MapInt()),
+        ]);
+
+        $mapper = $this->compileMapper('PersonWithRenamedSourceKeys', $mapperCompiler);
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::none([], 'AGE')),
+            $mapper->map(['ID' => 1, 'NAME' => 'John']),
+        );
+    }
+
     private function createMovieInputMapperCompiler(): MapperCompiler
     {
         return new MapObject(MovieInput::class, [

@@ -54,6 +54,7 @@ use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 
 class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
@@ -209,6 +210,18 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 'date' => new MapDateTimeImmutable('Y-m-d', 'date string in Y-m-d format'),
                 'dateTime' => new DelegateMapperCompiler(DateTimeImmutable::class),
             ]),
+        ];
+
+        yield 'InputWithRenamedSourceKey' => [
+            InputWithRenamedSourceKey::class,
+            [],
+            new MapObject(
+                className: InputWithRenamedSourceKey::class,
+                constructorArgsMapperCompilers: [
+                    'old_value' => new MapInt(),
+                    'new_value' => new MapInt(),
+                ],
+            ),
         ];
 
         yield 'array' => [
