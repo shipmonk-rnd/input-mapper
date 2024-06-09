@@ -151,6 +151,22 @@ class Person
 }
 ```
 
+### Renaming keys
+
+If the input keys do not match the property names, you can use the `#[SourceKey]` attribute to specify the key name:
+
+```php
+use ShipMonk\InputMapper\Compiler\Mapper\Object\SourceKey;
+
+class Person
+{
+    public function __construct(
+        #[SourceKey('full_name')]
+        public readonly string $name,
+    ) {}
+}
+```
+
 ### Using custom mappers
 
 To map classes with your custom mapper, you need to implement `ShipMonk\InputMapper\Runtime\Mapper` interface and register it with `MapperProvider`:
