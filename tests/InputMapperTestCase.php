@@ -28,6 +28,7 @@ abstract class InputMapperTestCase extends TestCase
      * @template T of Throwable
      * @param  class-string<T>   $type
      * @param  callable(): mixed $cb
+     * @param-immediately-invoked-callable $cb
      */
     protected static function assertException(string $type, ?string $message, callable $cb): void
     {

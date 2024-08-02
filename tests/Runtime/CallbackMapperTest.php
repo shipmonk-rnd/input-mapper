@@ -19,7 +19,6 @@ class CallbackMapperTest extends InputMapperTestCase
     public function testMapThrowsException(): void
     {
         $mapper = new CallbackMapper(static function (mixed $data, array $path): never {
-            // @phpstan-ignore-next-line intentionally throwing checked exception
             throw MappingFailedException::incorrectValue('123', [], 'int');
         });
 
