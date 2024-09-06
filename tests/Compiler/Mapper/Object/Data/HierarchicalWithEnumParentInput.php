@@ -7,7 +7,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
 #[Discriminator(
     'type',
     mapping: [
-        HierarchicalWithEnumType::ChildOne->value => HierarchicalWithEnumChildInput::class,
+        'childOne' => HierarchicalWithEnumChildInput::class,
     ],
 )]
 abstract class HierarchicalWithEnumParentInput

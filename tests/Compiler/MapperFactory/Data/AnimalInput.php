@@ -7,8 +7,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
 #[Discriminator(
     'type',
     mapping: [
-        AnimalType::Cat->value => AnimalCatInput::class,
-        AnimalType::Dog->value => AnimalDogInput::class,
+        'cat' => AnimalCatInput::class,
+        'dog' => AnimalDogInput::class,
     ],
 )]
 abstract class AnimalInput
