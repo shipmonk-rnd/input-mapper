@@ -25,8 +25,6 @@ use function is_string;
  */
 class HierarchicalParentInputMapper implements Mapper
 {
-    private const VALID_MAPPINGS = ['childOne' => 'mapChildOne', 'childTwo' => 'mapChildTwo'];
-
     public function __construct(private readonly MapperProvider $provider)
     {
     }
@@ -49,7 +47,10 @@ class HierarchicalParentInputMapper implements Mapper
             throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne', 'childTwo']));
         }
 
-        return $this->{self::VALID_MAPPINGS[$this->mapType3($data['type'], [...$path, 'type'])]}($data, $path);
+        return match ($this->mapType3($data['type'], [...$path, 'type'])) {
+            'childOne' => $this->mapChildOne($data, $path),
+            'childTwo' => $this->mapChildTwo($data, $path),
+        };
     }
 
     /**

@@ -24,8 +24,6 @@ use function is_string;
  */
 class HierarchicalWithEnumParentInputMapper implements Mapper
 {
-    private const VALID_MAPPINGS = ['childOne' => 'mapChildOne'];
-
     public function __construct(private readonly MapperProvider $provider)
     {
     }
@@ -48,7 +46,9 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
             throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne']));
         }
 
-        return $this->{self::VALID_MAPPINGS[$this->mapType2($data['type'], [...$path, 'type'])]}($data, $path);
+        return match ($this->mapType2($data['type'], [...$path, 'type'])) {
+            'childOne' => $this->mapChildOne($data, $path),
+        };
     }
 
     /**

@@ -42,18 +42,16 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
-        $objectMapperMethods = [];
+        $objectMapperMethodCalls = [];
 
         foreach ($this->objectMappers as $key => $objectMapper) {
             $objectMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
             $objectMapperMethod = $builder->mapperMethod($objectMapperMethodName, $objectMapper)->makePrivate()->getNode();
-            $objectMapperMethods[$key] = $objectMapperMethodName;
+            $objectMapperMethodCall = $builder->methodCall($builder->var('this'), $objectMapperMethodName, [$value, $path]);
+            $objectMapperMethodCalls[$key] = $objectMapperMethodCall;
 
             $builder->addMethod($objectMapperMethod);
         }
-
-        $validMappingKeysConstName = $builder->uniqConstantName('VALID_MAPPINGS', $objectMapperMethods);
-        $builder->addConstant($validMappingKeysConstName, $objectMapperMethods);
 
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
@@ -108,10 +106,19 @@ class MapDiscriminatedObject implements GenericMapperCompiler
             ),
         ]);
 
-        $selectedMapperMethodName = $builder->arrayDimFetch($builder->classConstFetch('self', $validMappingKeysConstName), $discriminatorMapperCall);
+        $subtypeMatchArms = [];
+
+        foreach ($objectMapperMethodCalls as $key => $objectMapperMethodCall) {
+            $subtypeMatchArms[] = $builder->matchArm(
+                $builder->val($key),
+                $objectMapperMethodCall,
+            );
+        }
+
+        $matchedSubtype = $builder->match($discriminatorMapperCall, $subtypeMatchArms);
 
         return new CompiledExpr(
-            $builder->methodCall($builder->var('this'), $selectedMapperMethodName, [$value, $path]),
+            $matchedSubtype,
             $statements,
         );
     }

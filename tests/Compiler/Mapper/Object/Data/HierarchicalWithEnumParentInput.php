@@ -3,7 +3,6 @@
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
-use ShipMonk\InputMapper\Runtime\Optional;
 
 #[Discriminator(
     'type',

@@ -24,8 +24,10 @@ use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Instanceof_;
+use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
@@ -214,6 +216,22 @@ class PhpCodeBuilder extends BuilderFactory
         }
 
         return new If_($if, ['stmts' => $then, 'elseifs' => $elseIfClauses, 'else' => $elseClause]);
+    }
+
+    /**
+     * @param list<MatchArm> $arms
+     */
+    public function match(Expr $cond, array $arms = []): Match_
+    {
+        return new Match_($cond, $arms);
+    }
+
+    public function matchArm(?Expr $cond, Expr $body): MatchArm
+    {
+        return new MatchArm(
+            $cond !== null ? [$cond] : null,
+            $body,
+        );
     }
 
     /**
