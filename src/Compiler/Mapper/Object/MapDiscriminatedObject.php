@@ -10,7 +10,6 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
@@ -28,13 +27,13 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     /**
      * @param class-string<T> $className
-     * @param array<string, MapperCompiler> $objectMappers
+     * @param array<string, class-string> $subtypeMapping
      * @param list<GenericTypeParameter> $genericParameters
      */
     public function __construct(
         public readonly string $className,
         public readonly string $discriminatorFieldName,
-        public readonly array $objectMappers,
+        public readonly array $subtypeMapping,
         public readonly array $genericParameters = [],
     )
     {
@@ -42,16 +41,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
-        $objectMapperMethodCalls = [];
-
-        foreach ($this->objectMappers as $key => $objectMapper) {
-            $objectMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
-            $objectMapperMethod = $builder->mapperMethod($objectMapperMethodName, $objectMapper)->makePrivate()->getNode();
-            $objectMapperMethodCall = $builder->methodCall($builder->var('this'), $objectMapperMethodName, [$value, $path]);
-            $objectMapperMethodCalls[$key] = $objectMapperMethodCall;
-
-            $builder->addMethod($objectMapperMethod);
-        }
+        $provider = $builder->propertyFetch($builder->var('this'), 'provider');
 
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
@@ -85,7 +75,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
         $discriminatorMapperCall = $builder->methodCall($builder->var('this'), $discriminatorMapperMethodName, [$discriminatorRawValue, $discriminatorPath]);
         $builder->addMethod($discriminatorMapperMethod);
 
-        $validMappingKeys = array_keys($this->objectMappers);
+        $validMappingKeys = array_keys($this->subtypeMapping);
         $isDiscriminatorValid = $builder->funcCall($builder->importFunction('in_array'), [$discriminatorRawValue, $builder->val($validMappingKeys), $builder->val(true)]);
 
         $expectedDescription = $builder->concat(
@@ -108,10 +98,14 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
         $subtypeMatchArms = [];
 
-        foreach ($objectMapperMethodCalls as $key => $objectMapperMethodCall) {
+        foreach ($this->subtypeMapping as $key => $subtype) {
+            $mapperProviderMethodCall = $builder->methodCall($provider, 'get', [
+                $builder->classConstFetch($builder->importClass($subtype), 'class'),
+            ]);
+
             $subtypeMatchArms[] = $builder->matchArm(
                 $builder->val($key),
-                $objectMapperMethodCall,
+                $builder->methodCall($mapperProviderMethodCall, 'map', [$value, $path]),
             );
         }
 

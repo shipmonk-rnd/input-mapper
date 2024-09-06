@@ -24,7 +24,10 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $parentInputMapper = $this->compileMapper('HierarchicalParentInput', $this->createParentInputMapperCompiler());
+        $parentInputMapper = $this->compileMapper('HierarchicalParentInput', $this->createParentInputMapperCompiler(), [
+            HierarchicalChildOneInput::class => $this->createHierarchicalChildOneInputMapperCompiler(),
+            HierarchicalChildTwoInput::class => $this->createHierarchicalChildTwoInputMapperCompiler(),
+        ]);
 
         $childOneInputObject = new HierarchicalChildOneInput(
             id: 1,
@@ -104,7 +107,9 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithEnumAsType(): void
     {
-        $parentInputMapper = $this->compileMapper('HierarchicalWithEnumParentInput', $this->createParentInputWithEnumMapperCompiler());
+        $parentInputMapper = $this->compileMapper('HierarchicalWithEnumParentInput', $this->createParentInputWithEnumMapperCompiler(), [
+            HierarchicalWithEnumChildInput::class => $this->createHierarchicalChildWithEnumMapperCompiler(),
+        ]);
 
         $childOneInputObject = new HierarchicalWithEnumChildInput(
             id: 1,
@@ -137,20 +142,8 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             HierarchicalParentInput::class,
             'type',
             [
-                'childOne' => new MapObject(HierarchicalChildOneInput::class, [
-                    'id' => new MapInt(),
-                    'name' => new MapString(),
-                    'age' => new MapOptional(new MapInt()),
-                    'type' => new MapString(),
-                    'childOneField' => new MapString(),
-                ]),
-                'childTwo' => new MapObject(HierarchicalChildTwoInput::class, [
-                    'id' => new MapInt(),
-                    'name' => new MapString(),
-                    'age' => new MapOptional(new MapInt()),
-                    'type' => new MapString(),
-                    'childTwoField' => new MapInt(),
-                ]),
+                'childOne' => HierarchicalChildOneInput::class,
+                'childTwo' => HierarchicalChildTwoInput::class,
             ],
         );
     }
@@ -161,12 +154,39 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             HierarchicalWithEnumParentInput::class,
             'type',
             [
-                'childOne' => new MapObject(HierarchicalWithEnumChildInput::class, [
-                    'id' => new MapInt(),
-                    'type' => new MapEnum(HierarchicalWithEnumType::class, new MapString()),
-                ]),
+                'childOne' => HierarchicalWithEnumChildInput::class,
             ],
         );
+    }
+
+    public function createHierarchicalChildOneInputMapperCompiler(): MapperCompiler
+    {
+        return new MapObject(HierarchicalChildOneInput::class, [
+            'id' => new MapInt(),
+            'name' => new MapString(),
+            'age' => new MapOptional(new MapInt()),
+            'type' => new MapString(),
+            'childOneField' => new MapString(),
+        ]);
+    }
+
+    public function createHierarchicalChildTwoInputMapperCompiler(): MapperCompiler
+    {
+        return new MapObject(HierarchicalChildTwoInput::class, [
+            'id' => new MapInt(),
+            'name' => new MapString(),
+            'age' => new MapOptional(new MapInt()),
+            'type' => new MapString(),
+            'childTwoField' => new MapInt(),
+        ]);
+    }
+
+    public function createHierarchicalChildWithEnumMapperCompiler(): MapperCompiler
+    {
+        return new MapObject(HierarchicalWithEnumChildInput::class, [
+            'id' => new MapInt(),
+            'type' => new MapEnum(HierarchicalWithEnumType::class, new MapString()),
+        ]);
     }
 
 }

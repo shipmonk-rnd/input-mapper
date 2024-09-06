@@ -286,7 +286,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $classReflection = new ReflectionClass($inputClassName);
 
         foreach ($classReflection->getAttributes(Discriminator::class) as $discriminatorAttribute) {
-            return $this->createDiscriminatorObjectMapping($inputClassName, $discriminatorAttribute->newInstance(), $options);
+            return $this->createDiscriminatorObjectMapping($inputClassName, $discriminatorAttribute->newInstance());
         }
 
         return $this->createObjectMappingByConstructorInvocation($inputClassName, $options);
@@ -336,24 +336,20 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     /**
      * @param class-string $inputClassName
-     * @param array<string, mixed> $options
      */
     public function createDiscriminatorObjectMapping(
         string $inputClassName,
         Discriminator $discriminatorAttribute,
-        array $options,
     ): MapperCompiler
     {
-        $objectMappers = [];
-
-        foreach ($discriminatorAttribute->mapping as $key => $mappingClass) {
-            $objectMappers[$key] = $this->createObjectMapperCompiler($mappingClass, $options);
-        }
+        $inputType = new IdentifierTypeNode($inputClassName);
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
 
         return new MapDiscriminatedObject(
             $inputClassName,
             $discriminatorAttribute->key,
-            $objectMappers,
+            $discriminatorAttribute->mapping,
+            $genericParameters,
         );
     }
 
