@@ -27,6 +27,7 @@ use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Expr\Throw_ as ThrowExpr_;
 use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -276,6 +277,11 @@ class PhpCodeBuilder extends BuilderFactory
     public function throw(Expr $expr): Throw_
     {
         return new Throw_($expr);
+    }
+
+    public function throwExpr(Expr $expr): ThrowExpr_
+    {
+        return new ThrowExpr_($expr);
     }
 
     public function assign(Expr $var, Expr $expr): Expression

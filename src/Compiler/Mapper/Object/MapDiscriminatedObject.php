@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
 
 use Attribute;
+use LogicException;
 use Nette\Utils\Arrays;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
@@ -108,6 +109,16 @@ class MapDiscriminatedObject implements GenericMapperCompiler
                 $builder->methodCall($mapperProviderMethodCall, 'map', [$value, $path]),
             );
         }
+
+        $subtypeMatchArms[] = $builder->matchArm(
+            null,
+            $builder->throwExpr(
+                $builder->new(
+                    $builder->importClass(LogicException::class),
+                    ['Impossible case detected. Please report this as a bug.'],
+                ),
+            ),
+        );
 
         $matchedSubtype = $builder->match($discriminatorMapperCall, $subtypeMatchArms);
 

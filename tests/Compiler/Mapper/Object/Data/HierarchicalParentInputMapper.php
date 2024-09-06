@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
@@ -44,6 +45,7 @@ class HierarchicalParentInputMapper implements Mapper
         return match ($this->mapType($data['type'], [...$path, 'type'])) {
             'childOne' => $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path),
             'childTwo' => $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path),
+            default => throw new LogicException('Impossible case detected. Please report this as a bug.'),
         };
     }
 
