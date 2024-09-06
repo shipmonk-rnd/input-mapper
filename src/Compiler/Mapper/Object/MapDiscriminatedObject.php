@@ -33,7 +33,6 @@ class MapDiscriminatedObject implements GenericMapperCompiler
      */
     public function __construct(
         public readonly string $className,
-        public readonly MapString $discriminatorMapper,
         public readonly string $discriminatorFieldName,
         public readonly array $objectMappers,
         public readonly array $genericParameters = [],
@@ -84,7 +83,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
         $discriminatorRawValue = $builder->arrayDimFetch($value, $builder->val($this->discriminatorFieldName));
         $discriminatorPath = $builder->arrayImmutableAppend($path, $builder->val($this->discriminatorFieldName));
         $discriminatorMapperMethodName = $builder->uniqMethodName('map' . ucfirst($this->discriminatorFieldName));
-        $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, $this->discriminatorMapper)->makePrivate()->getNode();
+        $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, new MapString())->makePrivate()->getNode();
         $discriminatorMapperCall = $builder->methodCall($builder->var('this'), $discriminatorMapperMethodName, [$discriminatorRawValue, $discriminatorPath]);
         $builder->addMethod($discriminatorMapperMethod);
 

@@ -135,7 +135,6 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
     {
         return new MapDiscriminatedObject(
             HierarchicalParentInput::class,
-            new MapString(),
             'type',
             [
                 'childOne' => new MapObject(HierarchicalChildOneInput::class, [
@@ -160,7 +159,6 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
     {
         return new MapDiscriminatedObject(
             HierarchicalWithEnumParentInput::class,
-            new MapString(),
             'type',
             [
                 'childOne' => new MapObject(HierarchicalWithEnumChildInput::class, [

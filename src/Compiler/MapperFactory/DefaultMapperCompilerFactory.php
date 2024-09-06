@@ -352,7 +352,6 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         return new MapDiscriminatedObject(
             $inputClassName,
-            new MapString(),
             $discriminatorAttribute->key,
             $objectMappers,
         );
