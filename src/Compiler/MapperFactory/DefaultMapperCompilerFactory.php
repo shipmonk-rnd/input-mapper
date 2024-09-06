@@ -83,7 +83,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     final public const DEFAULT_VALUE = 'defaultValue';
 
     /**
-     * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
+     * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
      */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
@@ -97,8 +97,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     /**
      * @template T of object
-     * @param class-string<T> $className
-     * @param callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
+     * @param  class-string<T>                                                 $className
+     * @param  callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
      */
     public function setMapperCompilerFactory(string $className, callable $factory): void
     {
@@ -106,7 +106,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed> $options
      */
     public function create(TypeNode $type, array $options = []): MapperCompiler
     {
@@ -293,6 +293,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
+     * @param  class-string         $inputClassName
      * @param  array<string, mixed> $options
      */
     protected function createObjectMappingByConstructorInvocation(
@@ -300,8 +301,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         array $options,
     ): MapperCompiler
     {
-        $classReflection = new ReflectionClass($inputClassName);
         $inputType = new IdentifierTypeNode($inputClassName);
+        $classReflection = new ReflectionClass($inputClassName);
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
@@ -354,7 +355,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param list<string> $genericParameterNames
+     * @param  list<string> $genericParameterNames
      * @return array<string, TypeNode>
      */
     protected function getConstructorParameterTypes(ReflectionMethod $constructor, array $genericParameterNames): array
@@ -407,7 +408,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed> $options
      */
     protected function createParameterMapperCompiler(
         ReflectionParameter $parameterReflection,
@@ -481,8 +482,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param class-string<BackedEnum> $enumName
-     * @param array<string, mixed> $options
+     * @param  class-string<BackedEnum> $enumName
+     * @param  array<string, mixed>     $options
      */
     protected function createEnumMapperCompiler(string $enumName, array $options): MapperCompiler
     {
@@ -495,8 +496,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param class-string $className
-     * @param array<string, mixed> $options
+     * @param  class-string         $className
+     * @param  array<string, mixed> $options
      */
     protected function createDateTimeMapperCompiler(string $className, array $options): MapperCompiler
     {
