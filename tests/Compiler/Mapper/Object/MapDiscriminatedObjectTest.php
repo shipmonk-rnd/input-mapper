@@ -3,6 +3,7 @@
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
 
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
@@ -142,8 +143,8 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             HierarchicalParentInput::class,
             'type',
             [
-                'childOne' => HierarchicalChildOneInput::class,
-                'childTwo' => HierarchicalChildTwoInput::class,
+                'childOne' => new DelegateMapperCompiler(HierarchicalChildOneInput::class),
+                'childTwo' => new DelegateMapperCompiler(HierarchicalChildTwoInput::class),
             ],
         );
     }
@@ -154,7 +155,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             HierarchicalWithEnumParentInput::class,
             'type',
             [
-                'childOne' => HierarchicalWithEnumChildInput::class,
+                'childOne' => new DelegateMapperCompiler(HierarchicalWithEnumChildInput::class),
             ],
         );
     }

@@ -37,8 +37,8 @@ class HierarchicalParentInputMapper implements Mapper
         }
 
         return match ($this->mapType($data['type'], [...$path, 'type'])) {
-            'childOne' => $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path),
-            'childTwo' => $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path),
+            'childOne' => $this->mapChildOne($data, $path),
+            'childTwo' => $this->mapChildTwo($data, $path),
             default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne', 'childTwo'])),
         };
     }
@@ -60,5 +60,23 @@ class HierarchicalParentInputMapper implements Mapper
         }
 
         return $mapped;
+    }
+
+    /**
+     * @param  list<string|int> $path
+     * @throws MappingFailedException
+     */
+    private function mapChildOne(mixed $data, array $path = []): HierarchicalChildOneInput
+    {
+        return $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path);
+    }
+
+    /**
+     * @param  list<string|int> $path
+     * @throws MappingFailedException
+     */
+    private function mapChildTwo(mixed $data, array $path = []): HierarchicalChildTwoInput
+    {
+        return $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path);
     }
 }

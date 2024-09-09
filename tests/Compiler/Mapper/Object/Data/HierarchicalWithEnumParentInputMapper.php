@@ -37,7 +37,7 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
         }
 
         return match ($this->mapType($data['type'], [...$path, 'type'])) {
-            'childOne' => $this->provider->get(HierarchicalWithEnumChildInput::class)->map($data, $path),
+            'childOne' => $this->mapChildOne($data, $path),
             default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne'])),
         };
     }
@@ -59,5 +59,14 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
         }
 
         return $mapped;
+    }
+
+    /**
+     * @param  list<string|int> $path
+     * @throws MappingFailedException
+     */
+    private function mapChildOne(mixed $data, array $path = []): HierarchicalWithEnumChildInput
+    {
+        return $this->provider->get(HierarchicalWithEnumChildInput::class)->map($data, $path);
     }
 }

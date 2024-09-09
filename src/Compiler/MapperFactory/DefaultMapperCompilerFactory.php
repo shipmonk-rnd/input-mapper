@@ -65,6 +65,7 @@ use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
 use function array_fill_keys;
+use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -346,10 +347,15 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $inputType = new IdentifierTypeNode($inputClassName);
         $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
 
+        $subtypeMappers = array_map(
+            static fn (string $subtypeClassName): MapperCompiler => new DelegateMapperCompiler($subtypeClassName),
+            $discriminatorAttribute->mapping,
+        );
+
         return new MapDiscriminatedObject(
             $inputClassName,
             $discriminatorAttribute->key,
-            $discriminatorAttribute->mapping,
+            $subtypeMappers,
             $genericParameters,
         );
     }

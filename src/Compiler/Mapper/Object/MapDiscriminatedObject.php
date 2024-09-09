@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
@@ -28,7 +29,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     /**
      * @param class-string<T> $className
-     * @param array<string, class-string> $subtypeCompilers
+     * @param array<string, MapperCompiler> $subtypeCompilers
      * @param list<GenericTypeParameter> $genericParameters
      */
     public function __construct(
@@ -42,8 +43,6 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
-        $provider = $builder->propertyFetch($builder->var('this'), 'provider');
-
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
                 $builder->throw(
@@ -88,14 +87,16 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
         $subtypeMatchArms = [];
 
-        foreach ($this->subtypeCompilers as $key => $subtype) {
-            $mapperProviderMethodCall = $builder->methodCall($provider, 'get', [
-                $builder->classConstFetch($builder->importClass($subtype), 'class'),
-            ]);
+        foreach ($this->subtypeCompilers as $key => $subtypeCompiler) {
+            $subtypeMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
+            $subtypeMapperMethod = $builder->mapperMethod($subtypeMapperMethodName, $subtypeCompiler)->makePrivate()->getNode();
+
+            $builder->addMethod($subtypeMapperMethod);
+            $subtypeMapperMethodCall = $builder->methodCall($builder->var('this'), $subtypeMapperMethodName, [$value, $path]);
 
             $subtypeMatchArms[] = $builder->matchArm(
                 $builder->val($key),
-                $builder->methodCall($mapperProviderMethodCall, 'map', [$value, $path]),
+                $subtypeMapperMethodCall,
             );
         }
 
