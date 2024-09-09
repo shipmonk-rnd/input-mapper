@@ -187,7 +187,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
         self::assertException(
             CannotCompileMapperException::class,
-            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput\' is not super type of \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
+            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
             fn(): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }

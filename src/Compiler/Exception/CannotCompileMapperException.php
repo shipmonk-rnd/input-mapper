@@ -39,7 +39,7 @@ class CannotCompileMapperException extends LogicException
         $subtypeMapperCompilerClass = $subtypeMapperCompiler::class;
         $subtypeMapperOutputType = $subtypeMapperCompiler->getOutputType();
 
-        $reason = "its output type '{$subtypeMapperOutputType}' is not super type of '{$mapperOutputType}'";
+        $reason = "its output type '{$subtypeMapperOutputType}' is not subtype of '{$mapperOutputType}'";
         return new self("Cannot compile mapper {$subtypeMapperCompilerClass} as subtype (#[Discriminator]) mapper, because {$reason}", 0, $previous);
     }
 
