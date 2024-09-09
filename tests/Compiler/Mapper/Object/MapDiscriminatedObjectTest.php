@@ -21,6 +21,8 @@ use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInpu
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumChildInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumParentInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumType;
+use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldChildInput;
+use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldParentInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
 
 class MapDiscriminatedObjectTest extends MapperCompilerTestCase
@@ -140,6 +142,38 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithNoTypeFieldMapping(): void
+    {
+        $parentInputMapper = $this->compileMapper('HierarchicalWithNoTypeFieldInput', $this->createParentInputWithNoTypeFieldMapperCompiler(), [
+            HierarchicalWithNoTypeFieldChildInput::class => $this->createHierarchicalChildWithNoTypeFieldMapperCompiler(),
+        ]);
+
+        $childOneInputObject = new HierarchicalWithNoTypeFieldChildInput(
+            id: 1,
+            childOneField: 'abc',
+        );
+
+        $childOneInputArray = [
+            'id' => 1,
+            '$type' => 'childOne',
+            'childOneField' => 'abc',
+        ];
+
+        self::assertEquals($childOneInputObject, $parentInputMapper->map($childOneInputArray));
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /$type: Expected one of childOne, got null',
+            static fn() => $parentInputMapper->map([...$childOneInputArray, '$type' => null]),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /$type: Expected one of childOne, got "c"',
+            static fn() => $parentInputMapper->map([...$childOneInputArray, '$type' => 'c']),
+        );
+    }
+
     public function testCompileWithSubtypesFromDifferentHierarchies(): void
     {
         $mapperCompiler = new MapDiscriminatedObject(
@@ -209,6 +243,25 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             'id' => new MapInt(),
             'type' => new MapEnum(HierarchicalWithEnumType::class, new MapString()),
         ]);
+    }
+
+    private function createParentInputWithNoTypeFieldMapperCompiler(): MapperCompiler
+    {
+        return new MapDiscriminatedObject(
+            HierarchicalWithNoTypeFieldParentInput::class,
+            '$type',
+            [
+                'childOne' => new DelegateMapperCompiler(HierarchicalWithNoTypeFieldChildInput::class),
+            ],
+        );
+    }
+
+    public function createHierarchicalChildWithNoTypeFieldMapperCompiler(): MapperCompiler
+    {
+        return new MapObject(HierarchicalWithNoTypeFieldChildInput::class, [
+            'id' => new MapInt(),
+            'childOneField' => new MapString(),
+        ], allowExtraKeys: true);
     }
 
 }

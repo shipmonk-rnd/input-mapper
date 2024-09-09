@@ -14,9 +14,9 @@ use function is_string;
 /**
  * Generated mapper by {@see MapDiscriminatedObject}. Do not edit directly.
  *
- * @implements Mapper<HierarchicalParentInput>
+ * @implements Mapper<HierarchicalWithNoTypeFieldParentInput>
  */
-class HierarchicalParentInputMapper implements Mapper
+class HierarchicalWithNoTypeFieldInputMapper implements Mapper
 {
     public function __construct(private readonly MapperProvider $provider)
     {
@@ -26,20 +26,19 @@ class HierarchicalParentInputMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): HierarchicalParentInput
+    public function map(mixed $data, array $path = []): HierarchicalWithNoTypeFieldParentInput
     {
         if (!is_array($data)) {
             throw MappingFailedException::incorrectType($data, $path, 'array');
         }
 
-        if (!array_key_exists('type', $data)) {
-            throw MappingFailedException::missingKey($path, 'type');
+        if (!array_key_exists('$type', $data)) {
+            throw MappingFailedException::missingKey($path, '$type');
         }
 
-        return match ($this->mapDiscriminatorField($data['type'], [...$path, 'type'])) {
+        return match ($this->mapDiscriminatorField($data['$type'], [...$path, '$type'])) {
             'childOne' => $this->mapChildOne($data, $path),
-            'childTwo' => $this->mapChildTwo($data, $path),
-            default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne', 'childTwo'])),
+            default => throw MappingFailedException::incorrectValue($data['$type'], [...$path, '$type'], 'one of ' . implode(', ', ['childOne'])),
         };
     }
 
@@ -66,17 +65,8 @@ class HierarchicalParentInputMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapChildOne(mixed $data, array $path = []): HierarchicalChildOneInput
+    private function mapChildOne(mixed $data, array $path = []): HierarchicalWithNoTypeFieldChildInput
     {
-        return $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path);
-    }
-
-    /**
-     * @param  list<string|int> $path
-     * @throws MappingFailedException
-     */
-    private function mapChildTwo(mixed $data, array $path = []): HierarchicalChildTwoInput
-    {
-        return $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path);
+        return $this->provider->get(HierarchicalWithNoTypeFieldChildInput::class)->map($data, $path);
     }
 }

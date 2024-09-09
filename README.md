@@ -167,6 +167,96 @@ class Person
 }
 ```
 
+### Parsing polymorphic classes (subtypes with a common parent)
+
+If you need to parse a hierarchy of classes, you can use the `#[Discriminator]` attribute.
+(The discriminator field does not need to be mapped to a property if `#[AllowExtraKeys]` is used.)
+
+```php
+use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
+
+#[Discriminator(
+    key: 'type', // key to use for mapping
+    mapping: [
+        'car' => Car::class,
+        'truck' => Truck::class,
+    ]
+)]
+abstract class Vehicle {
+    public function __construct(
+        public readonly string $type,
+    ) {}
+}
+
+class Car extends Vehicle {
+
+    public function __construct(
+        string $type,
+        public readonly string $color,
+    ) {
+        parent::__construct($type);
+    }
+
+}
+
+class Truck extends Vehicle {
+
+    public function __construct(
+        string $type,
+        public readonly string $color,
+    ) {
+        parent::__construct($type);
+    }
+
+}
+```
+
+or, with enum:
+
+```php
+use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
+
+enum VehicleType: string {
+    case Car = 'car';
+    case Truck = 'truck';
+}
+
+#[Discriminator(
+    key: 'type', // key to use for mapping
+    mapping: [
+        VehicleType::Car->value => Car::class,
+        VehicleType::Truck->value => Truck::class,
+    ]
+)]
+abstract class Vehicle {
+    public function __construct(
+        VehicleType $type,
+    ) {}
+}
+
+class Car extends Vehicle {
+
+    public function __construct(
+        VehicleType $type,
+        public readonly string $color,
+    ) {
+        parent::__construct($type);
+    }
+
+}
+
+class Truck extends Vehicle {
+
+    public function __construct(
+        VehicleType $type,
+        public readonly string $color,
+    ) {
+        parent::__construct($type);
+    }
+
+}
+```
+
 ### Using custom mappers
 
 To map classes with your custom mapper, you need to implement `ShipMonk\InputMapper\Runtime\Mapper` interface and register it with `MapperProvider`:

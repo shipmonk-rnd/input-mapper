@@ -63,7 +63,9 @@ class MapDiscriminatedObject implements GenericMapperCompiler
             ]),
         ];
 
-        $isDiscriminatorPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($this->discriminatorFieldName), $value]);
+        $discriminatorFieldNameValue = $builder->val($this->discriminatorFieldName);
+
+        $isDiscriminatorPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$discriminatorFieldNameValue, $value]);
         $isDiscriminatorMissing = $builder->not($isDiscriminatorPresent);
 
         $statements[] = $builder->if($isDiscriminatorMissing, [
@@ -71,14 +73,14 @@ class MapDiscriminatedObject implements GenericMapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'missingKey',
-                    [$path, $this->discriminatorFieldName],
+                    [$path, $discriminatorFieldNameValue],
                 ),
             ),
         ]);
 
-        $discriminatorRawValue = $builder->arrayDimFetch($value, $builder->val($this->discriminatorFieldName));
-        $discriminatorPath = $builder->arrayImmutableAppend($path, $builder->val($this->discriminatorFieldName));
-        $discriminatorMapperMethodName = $builder->uniqMethodName('map' . ucfirst($this->discriminatorFieldName));
+        $discriminatorRawValue = $builder->arrayDimFetch($value, $discriminatorFieldNameValue);
+        $discriminatorPath = $builder->arrayImmutableAppend($path, $discriminatorFieldNameValue);
+        $discriminatorMapperMethodName = $builder->uniqMethodName('mapDiscriminatorField');
         $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, new MapNullable(new MapString()))->makePrivate()->getNode();
         $discriminatorMapperCall = $builder->methodCall($builder->var('this'), $discriminatorMapperMethodName, [$discriminatorRawValue, $discriminatorPath]);
         $builder->addMethod($discriminatorMapperMethod);

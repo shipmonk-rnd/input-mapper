@@ -36,7 +36,7 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
             throw MappingFailedException::missingKey($path, 'type');
         }
 
-        return match ($this->mapType($data['type'], [...$path, 'type'])) {
+        return match ($this->mapDiscriminatorField($data['type'], [...$path, 'type'])) {
             'childOne' => $this->mapChildOne($data, $path),
             default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne'])),
         };
@@ -46,7 +46,7 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapType(mixed $data, array $path = []): ?string
+    private function mapDiscriminatorField(mixed $data, array $path = []): ?string
     {
         if ($data === null) {
             $mapped = null;
