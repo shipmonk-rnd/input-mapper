@@ -12,8 +12,6 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
@@ -80,10 +78,6 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
         $discriminatorRawValue = $builder->arrayDimFetch($value, $discriminatorFieldNameValue);
         $discriminatorPath = $builder->arrayImmutableAppend($path, $discriminatorFieldNameValue);
-        $discriminatorMapperMethodName = $builder->uniqMethodName('mapDiscriminatorField');
-        $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, new MapNullable(new MapString()))->makePrivate()->getNode();
-        $discriminatorMapperCall = $builder->methodCall($builder->var('this'), $discriminatorMapperMethodName, [$discriminatorRawValue, $discriminatorPath]);
-        $builder->addMethod($discriminatorMapperMethod);
 
         $validMappingKeys = array_keys($this->subtypeCompilers);
 
@@ -121,7 +115,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
             ),
         );
 
-        $matchedSubtype = $builder->match($discriminatorMapperCall, $subtypeMatchArms);
+        $matchedSubtype = $builder->match($discriminatorRawValue, $subtypeMatchArms);
 
         return new CompiledExpr(
             $matchedSubtype,

@@ -9,7 +9,6 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_key_exists;
 use function implode;
 use function is_array;
-use function is_string;
 
 /**
  * Generated mapper by {@see MapDiscriminatedObject}. Do not edit directly.
@@ -36,30 +35,11 @@ class HierarchicalParentInputMapper implements Mapper
             throw MappingFailedException::missingKey($path, 'type');
         }
 
-        return match ($this->mapDiscriminatorField($data['type'], [...$path, 'type'])) {
+        return match ($data['type']) {
             'childOne' => $this->mapChildOne($data, $path),
             'childTwo' => $this->mapChildTwo($data, $path),
             default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne', 'childTwo'])),
         };
-    }
-
-    /**
-     * @param  list<string|int> $path
-     * @throws MappingFailedException
-     */
-    private function mapDiscriminatorField(mixed $data, array $path = []): ?string
-    {
-        if ($data === null) {
-            $mapped = null;
-        } else {
-            if (!is_string($data)) {
-                throw MappingFailedException::incorrectType($data, $path, 'string');
-            }
-
-            $mapped = $data;
-        }
-
-        return $mapped;
     }
 
     /**
