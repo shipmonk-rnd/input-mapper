@@ -8,11 +8,11 @@ use Attribute;
 class Discriminator
 {
 
+    /**
+     * @param array<string, class-string> $mapping
+     */
     public function __construct(
         public readonly string $key,
-        /**
-         * @var array<string, class-string>
-         */
         public readonly array $mapping
     )
     {
