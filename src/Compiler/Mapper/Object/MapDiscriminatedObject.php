@@ -3,7 +3,6 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
 
 use Attribute;
-use LogicException;
 use Nette\Utils\Arrays;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
@@ -12,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -28,13 +28,13 @@ class MapDiscriminatedObject implements GenericMapperCompiler
 
     /**
      * @param class-string<T> $className
-     * @param array<string, class-string> $subtypeMapping
+     * @param array<string, class-string> $subtypeCompilers
      * @param list<GenericTypeParameter> $genericParameters
      */
     public function __construct(
         public readonly string $className,
         public readonly string $discriminatorFieldName,
-        public readonly array $subtypeMapping,
+        public readonly array $subtypeCompilers,
         public readonly array $genericParameters = [],
     )
     {
@@ -72,12 +72,11 @@ class MapDiscriminatedObject implements GenericMapperCompiler
         $discriminatorRawValue = $builder->arrayDimFetch($value, $builder->val($this->discriminatorFieldName));
         $discriminatorPath = $builder->arrayImmutableAppend($path, $builder->val($this->discriminatorFieldName));
         $discriminatorMapperMethodName = $builder->uniqMethodName('map' . ucfirst($this->discriminatorFieldName));
-        $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, new MapString())->makePrivate()->getNode();
+        $discriminatorMapperMethod = $builder->mapperMethod($discriminatorMapperMethodName, new MapNullable(new MapString()))->makePrivate()->getNode();
         $discriminatorMapperCall = $builder->methodCall($builder->var('this'), $discriminatorMapperMethodName, [$discriminatorRawValue, $discriminatorPath]);
         $builder->addMethod($discriminatorMapperMethod);
 
-        $validMappingKeys = array_keys($this->subtypeMapping);
-        $isDiscriminatorValid = $builder->funcCall($builder->importFunction('in_array'), [$discriminatorRawValue, $builder->val($validMappingKeys), $builder->val(true)]);
+        $validMappingKeys = array_keys($this->subtypeCompilers);
 
         $expectedDescription = $builder->concat(
             'one of ',
@@ -87,19 +86,9 @@ class MapDiscriminatedObject implements GenericMapperCompiler
             ]),
         );
 
-        $statements[] = $builder->if($builder->not($isDiscriminatorValid), [
-            $builder->throw(
-                $builder->staticCall(
-                    $builder->importClass(MappingFailedException::class),
-                    'incorrectValue',
-                    [$discriminatorRawValue, $discriminatorPath, $expectedDescription],
-                ),
-            ),
-        ]);
-
         $subtypeMatchArms = [];
 
-        foreach ($this->subtypeMapping as $key => $subtype) {
+        foreach ($this->subtypeCompilers as $key => $subtype) {
             $mapperProviderMethodCall = $builder->methodCall($provider, 'get', [
                 $builder->classConstFetch($builder->importClass($subtype), 'class'),
             ]);
@@ -113,9 +102,10 @@ class MapDiscriminatedObject implements GenericMapperCompiler
         $subtypeMatchArms[] = $builder->matchArm(
             null,
             $builder->throwExpr(
-                $builder->new(
-                    $builder->importClass(LogicException::class),
-                    ['Impossible case detected. Please report this as a bug.'],
+                $builder->staticCall(
+                    $builder->importClass(MappingFailedException::class),
+                    'incorrectValue',
+                    [$discriminatorRawValue, $discriminatorPath, $expectedDescription],
                 ),
             ),
         );

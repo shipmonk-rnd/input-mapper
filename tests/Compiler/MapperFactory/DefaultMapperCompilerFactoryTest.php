@@ -182,7 +182,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             new MapDiscriminatedObject(
                 className: AnimalInput::class,
                 discriminatorFieldName: 'type',
-                subtypeMapping: [
+                subtypeCompilers: [
                     AnimalType::Cat->value => AnimalCatInput::class,
                     AnimalType::Dog->value => AnimalDogInput::class,
                 ],

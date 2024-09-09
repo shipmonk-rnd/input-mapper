@@ -2,14 +2,12 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data;
 
-use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_key_exists;
 use function implode;
-use function in_array;
 use function is_array;
 use function is_string;
 
@@ -38,13 +36,9 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
             throw MappingFailedException::missingKey($path, 'type');
         }
 
-        if (!in_array($data['type'], ['childOne'], true)) {
-            throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne']));
-        }
-
         return match ($this->mapType($data['type'], [...$path, 'type'])) {
             'childOne' => $this->provider->get(HierarchicalWithEnumChildInput::class)->map($data, $path),
-            default => throw new LogicException('Impossible case detected. Please report this as a bug.'),
+            default => throw MappingFailedException::incorrectValue($data['type'], [...$path, 'type'], 'one of ' . implode(', ', ['childOne'])),
         };
     }
 
@@ -52,12 +46,18 @@ class HierarchicalWithEnumParentInputMapper implements Mapper
      * @param  list<string|int> $path
      * @throws MappingFailedException
      */
-    private function mapType(mixed $data, array $path = []): string
+    private function mapType(mixed $data, array $path = []): ?string
     {
-        if (!is_string($data)) {
-            throw MappingFailedException::incorrectType($data, $path, 'string');
+        if ($data === null) {
+            $mapped = null;
+        } else {
+            if (!is_string($data)) {
+                throw MappingFailedException::incorrectType($data, $path, 'string');
+            }
+
+            $mapped = $data;
         }
 
-        return $data;
+        return $mapped;
     }
 }
