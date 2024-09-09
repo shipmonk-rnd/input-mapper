@@ -34,7 +34,7 @@ class MapDiscriminatedObject implements GenericMapperCompiler
      */
     public function __construct(
         public readonly string $className,
-        public readonly string $discriminatorFieldName,
+        public readonly string $discriminatorKeyName,
         public readonly array $subtypeCompilers,
         public readonly array $genericParameters = [],
     )
@@ -61,9 +61,9 @@ class MapDiscriminatedObject implements GenericMapperCompiler
             ]),
         ];
 
-        $discriminatorFieldNameValue = $builder->val($this->discriminatorFieldName);
+        $discriminatorKeyAsValue = $builder->val($this->discriminatorKeyName);
 
-        $isDiscriminatorPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$discriminatorFieldNameValue, $value]);
+        $isDiscriminatorPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$discriminatorKeyAsValue, $value]);
         $isDiscriminatorMissing = $builder->not($isDiscriminatorPresent);
 
         $statements[] = $builder->if($isDiscriminatorMissing, [
@@ -71,13 +71,13 @@ class MapDiscriminatedObject implements GenericMapperCompiler
                 $builder->staticCall(
                     $builder->importClass(MappingFailedException::class),
                     'missingKey',
-                    [$path, $discriminatorFieldNameValue],
+                    [$path, $discriminatorKeyAsValue],
                 ),
             ),
         ]);
 
-        $discriminatorRawValue = $builder->arrayDimFetch($value, $discriminatorFieldNameValue);
-        $discriminatorPath = $builder->arrayImmutableAppend($path, $discriminatorFieldNameValue);
+        $discriminatorRawValue = $builder->arrayDimFetch($value, $discriminatorKeyAsValue);
+        $discriminatorPath = $builder->arrayImmutableAppend($path, $discriminatorKeyAsValue);
 
         $validMappingKeys = array_keys($this->subtypeCompilers);
 
