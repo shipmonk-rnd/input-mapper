@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Exception;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
 
@@ -22,6 +23,24 @@ class CannotCompileMapperException extends LogicException
 
         $reason = "its input type '{$mapperInputType}' is not super type of '{$inputType}'";
         return new self("Cannot compile mapper {$mapperCompilerClass}, because {$reason}", 0, $previous);
+    }
+
+    /**
+     * @template T of object
+     * @param MapDiscriminatedObject<T> $mapperCompiler
+     */
+    public static function withIncompatibleSubtypeMapper(
+        MapDiscriminatedObject $mapperCompiler,
+        MapperCompiler $subtypeMapperCompiler,
+        ?Throwable $previous = null
+    ): self
+    {
+        $mapperOutputType = $mapperCompiler->getOutputType();
+        $subtypeMapperCompilerClass = $subtypeMapperCompiler::class;
+        $subtypeMapperOutputType = $subtypeMapperCompiler->getOutputType();
+
+        $reason = "its output type '{$subtypeMapperOutputType}' is not subtype of '{$mapperOutputType}'";
+        return new self("Cannot compile mapper {$subtypeMapperCompilerClass} as subtype (#[Discriminator]) mapper, because {$reason}", 0, $previous);
     }
 
     public static function withIncompatibleValidator(

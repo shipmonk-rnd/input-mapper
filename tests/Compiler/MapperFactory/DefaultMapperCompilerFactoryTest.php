@@ -21,6 +21,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
@@ -41,6 +42,10 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalCatInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalDogInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalInput;
+use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalType;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInputWithDefaultValues;
 use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarFilterInput;
@@ -167,6 +172,19 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                     'color' => new DelegateMapperCompiler(EqualsFilterInput::class, [
                         new DelegateMapperCompiler(ColorEnum::class),
                     ]),
+                ],
+            ),
+        ];
+
+        yield 'AnimalInput' => [
+            AnimalInput::class,
+            [],
+            new MapDiscriminatedObject(
+                className: AnimalInput::class,
+                discriminatorKeyName: 'type',
+                subtypeCompilers: [
+                    AnimalType::Cat->value => new DelegateMapperCompiler(AnimalCatInput::class),
+                    AnimalType::Dog->value => new DelegateMapperCompiler(AnimalDogInput::class),
                 ],
             ),
         ];

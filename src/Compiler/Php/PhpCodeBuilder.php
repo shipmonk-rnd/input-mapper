@@ -24,8 +24,11 @@ use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Instanceof_;
+use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Expr\Throw_ as ThrowExpr_;
+use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
@@ -217,6 +220,22 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
+     * @param list<MatchArm> $arms
+     */
+    public function match(Expr $cond, array $arms = []): Match_
+    {
+        return new Match_($cond, $arms);
+    }
+
+    public function matchArm(?Expr $cond, Expr $body): MatchArm
+    {
+        return new MatchArm(
+            $cond !== null ? [$cond] : null,
+            $body,
+        );
+    }
+
+    /**
      * @param list<Stmt> $statements
      */
     public function foreach(Expr $expr, Expr $value, Expr $key, array $statements): Foreach_
@@ -258,6 +277,11 @@ class PhpCodeBuilder extends BuilderFactory
     public function throw(Expr $expr): Throw_
     {
         return new Throw_($expr);
+    }
+
+    public function throwExpr(Expr $expr): ThrowExpr_
+    {
+        return new ThrowExpr_($expr);
     }
 
     public function assign(Expr $var, Expr $expr): Expression

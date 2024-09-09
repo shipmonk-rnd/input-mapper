@@ -37,7 +37,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\AllowExtraKeys;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\SourceKey;
@@ -63,6 +65,7 @@ use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
 use function array_fill_keys;
+use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -281,6 +284,12 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             }
         }
 
+        $classReflection = new ReflectionClass($inputClassName);
+
+        foreach ($classReflection->getAttributes(Discriminator::class) as $discriminatorAttribute) {
+            return $this->createDiscriminatorObjectMapping($inputClassName, $discriminatorAttribute->newInstance());
+        }
+
         return $this->createObjectMappingByConstructorInvocation($inputClassName, $options);
     }
 
@@ -325,6 +334,30 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         $allowExtraKeys = count($classReflection->getAttributes(AllowExtraKeys::class)) > 0;
         return new MapObject($classReflection->getName(), $constructorParameterMapperCompilers, $allowExtraKeys, $genericParameters);
+    }
+
+    /**
+     * @param class-string $inputClassName
+     */
+    public function createDiscriminatorObjectMapping(
+        string $inputClassName,
+        Discriminator $discriminatorAttribute,
+    ): MapperCompiler
+    {
+        $inputType = new IdentifierTypeNode($inputClassName);
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
+
+        $subtypeMappers = array_map(
+            static fn (string $subtypeClassName): MapperCompiler => new DelegateMapperCompiler($subtypeClassName),
+            $discriminatorAttribute->mapping,
+        );
+
+        return new MapDiscriminatedObject(
+            $inputClassName,
+            $discriminatorAttribute->key,
+            $subtypeMappers,
+            $genericParameters,
+        );
     }
 
     /**
