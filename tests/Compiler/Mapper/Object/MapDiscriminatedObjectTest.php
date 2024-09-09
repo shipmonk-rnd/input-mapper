@@ -2,6 +2,7 @@
 
 namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
 
+use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
@@ -11,6 +12,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
@@ -19,6 +21,7 @@ use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInpu
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumChildInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumParentInput;
 use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumType;
+use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
 
 class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 {
@@ -134,6 +137,24 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, got "c"',
             static fn() => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
+        );
+    }
+
+    public function testCompileWithSubtypesFromDifferentHierarchies(): void
+    {
+        $mapperCompiler = new MapDiscriminatedObject(
+            HierarchicalParentInput::class,
+            'type',
+            [
+                'childOne' => new DelegateMapperCompiler(HierarchicalChildOneInput::class),
+                'childTwo' => new DelegateMapperCompiler(MovieInput::class),
+            ],
+        );
+
+        self::assertException(
+            CannotCompileMapperException::class,
+            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput\' is not super type of \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
+            fn(): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }
 
