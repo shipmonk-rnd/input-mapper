@@ -12,10 +12,10 @@
     },
     "require-dev": {
         "editorconfig-checker/editorconfig-checker": "^10.6.0",
-        "ergebnis/composer-normalize": "^2.43.0",
-        "phpstan/phpstan": "^1.12.0",
+        "ergebnis/composer-normalize": "^2.44.0",
+        "phpstan/phpstan": "^1.12.5",
         "phpstan/phpstan-phpunit": "^1.4.0",
-        "phpstan/phpstan-strict-rules": "^1.6.0",
+        "phpstan/phpstan-strict-rules": "^1.6.1",
         "phpunit/phpunit": "^10.5",
         "shipmonk/composer-dependency-analyser": "^1.7",
         "shipmonk/name-collision-detector": "^2.1.1",
