@@ -1,5 +1,4 @@
 includes:
-    - phar://phpstan.phar/conf/config.levelmax.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
     - ./vendor/phpstan/phpstan-phpunit/extension.neon
     - ./vendor/phpstan/phpstan-phpunit/rules.neon
@@ -7,6 +6,7 @@ includes:
     - ./vendor/shipmonk/phpstan-rules/rules.neon
 
 parameters:
+    level: 9
     paths:
         - src
         - tests
