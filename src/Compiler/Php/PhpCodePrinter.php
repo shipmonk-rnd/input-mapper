@@ -12,6 +12,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\PrettyPrinter\Standard;
+use function addcslashes;
 use function count;
 
 /**
@@ -20,12 +21,9 @@ use function count;
 class PhpCodePrinter extends Standard
 {
 
-    /**
-     * @param array<string, mixed> $options
-     */
-    public function __construct(array $options = [])
+    public function __construct()
     {
-        parent::__construct($options + ['shortArraySyntax' => true]);
+        parent::__construct(['shortArraySyntax' => true]);
     }
 
     /**
@@ -118,7 +116,12 @@ class PhpCodePrinter extends Standard
             return 'new ' . $this->pClassCommon($node->class, $argsFormatted);
         }
 
-        return 'new ' . $this->pNewVariable($node->class) . $argsFormatted;
+        return 'new ' . $this->pDereferenceLhs($node->class) . $argsFormatted;
+    }
+
+    protected function pSingleQuotedString(string $string): string
+    {
+        return '\'' . addcslashes($string, '\'\\') . '\'';
     }
 
 }
