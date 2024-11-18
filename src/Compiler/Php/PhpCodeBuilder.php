@@ -27,7 +27,7 @@ use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
-use PhpParser\Node\Expr\Throw_ as ThrowExpr_;
+use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -44,7 +44,6 @@ use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -113,7 +112,7 @@ class PhpCodeBuilder extends BuilderFactory
     private array $variables = [];
 
     /**
-     * @param array<?ArrayItem> $items
+     * @param array<ArrayItem> $items
      */
     public function array(array $items): Array_
     {
@@ -269,19 +268,19 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param array<int|string, scalar|array<mixed>|Expr|Arg|null> $args
      */
-    public function throwNew(string $className, array $args): Throw_
+    public function throwNew(string $className, array $args): Stmt
     {
         return $this->throw($this->new($className, $args));
     }
 
-    public function throw(Expr $expr): Throw_
+    public function throw(Expr $expr): Stmt
     {
-        return new Throw_($expr);
+        return new Expression($this->throwExpr($expr));
     }
 
-    public function throwExpr(Expr $expr): ThrowExpr_
+    public function throwExpr(Expr $expr): Throw_
     {
-        return new ThrowExpr_($expr);
+        return new Throw_($expr);
     }
 
     public function assign(Expr $var, Expr $expr): Expression

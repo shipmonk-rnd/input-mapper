@@ -8,7 +8,6 @@ use DateTimeInterface;
 use DateTimeZone;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Throw_;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
@@ -101,7 +100,7 @@ class AssertDateTimeRange implements ValidatorCompiler
         Expr $value,
         Expr $path,
         PhpCodeBuilder $builder,
-    ): Throw_
+    ): Stmt
     {
         if ($this->timezone !== null) {
             $boundaryValue .= " (in {$this->timezone} timezone)";
