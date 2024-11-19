@@ -1,6 +1,6 @@
 # ShipMonk Input Mapper
 
-High performance input mapper for PHP with support for generics, array shapes and nullable types. For each input class, a mapper is generated at runtime and cached on disk. The mapper is generated only once and then reused on subsequent requests. The generated mapper is highly optimized for performance and it is designed to be human readable. You can see [example of generated mappers in the tests directory](tests/Compiler/Mapper/Object/Data/PersonMapper.php).
+High performance input mapper for PHP with support for generics, array shapes and nullable types. For each input class, a mapper is generated at runtime and cached on disk. The mapper is generated only once and then reused on subsequent requests. The generated mapper is highly optimized for performance and it is designed to be human readable. You can see [example of generated mappers in the tests directory](tests/Compiler/Mapper/Object/Data/MovieMapper.php).
 
 
 ## Installation:
