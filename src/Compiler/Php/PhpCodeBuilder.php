@@ -528,7 +528,7 @@ class PhpCodeBuilder extends BuilderFactory
             $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
             $mapperConstructorBuilder->addParam($innerMappersParameter);
 
-            $innerMappersType = new ArrayShapeNode(Arrays::map(
+            $innerMappersType = ArrayShapeNode::createSealed(Arrays::map(
                 $mapperCompiler->getGenericParameters(),
                 static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
                     return new ArrayShapeItemNode(

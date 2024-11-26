@@ -23,6 +23,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -279,7 +280,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{int, string}' => [
-            new ArrayShapeNode([
+            ArrayShapeNode::createSealed([
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('int')),
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('string')),
             ]),
@@ -397,7 +398,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         ];
 
         yield 'array{int, string}' => [
-            new ArrayShapeNode([
+            ArrayShapeNode::createSealed([
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('int')),
                 new ArrayShapeItemNode(keyName: null, optional: false, valueType: new IdentifierTypeNode('string')),
             ]),
@@ -1609,9 +1610,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 
     private function parseType(string $type): TypeNode
     {
-        $lexer = new Lexer();
-        $constExprParser = new ConstExprParser(unescapeStrings: true);
-        $typeParser = new TypeParser($constExprParser);
+        $config = new ParserConfig([]);
+        $lexer = new Lexer($config);
+        $constExprParser = new ConstExprParser($config);
+        $typeParser = new TypeParser($config, $constExprParser);
 
         $tokens = new TokenIterator($lexer->tokenize($type));
         $typeNode = $typeParser->parse($tokens);

@@ -5,7 +5,6 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Array;
 use Attribute;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
-use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -102,13 +101,15 @@ class MapArrayShape implements MapperCompiler
 
         foreach ($this->items as $mapping) {
             $items[] = new ArrayShapeItemNode(
-                new ConstExprStringNode($mapping->key),
+                new IdentifierTypeNode($mapping->key),
                 $mapping->optional,
                 $mapping->mapper->getOutputType(),
             );
         }
 
-        return new ArrayShapeNode($items, $this->sealed, ArrayShapeNode::KIND_ARRAY);
+        return $this->sealed
+            ? ArrayShapeNode::createSealed($items)
+            : ArrayShapeNode::createUnsealed($items, null);
     }
 
     /**
