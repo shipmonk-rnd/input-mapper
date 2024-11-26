@@ -9,6 +9,7 @@ use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ArrayItem;
+use PhpParser\Node\DeclareItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -35,7 +36,6 @@ use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
-use PhpParser\Node\Stmt\DeclareDeclare;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Expression;
@@ -638,7 +638,7 @@ class PhpCodeBuilder extends BuilderFactory
         }
 
         return [
-            new Declare_([new DeclareDeclare('strict_types', $this->val(1))]),
+            new Declare_([new DeclareItem('strict_types', $this->val(1))]),
             new Nop(),
             ...$statements,
         ];
