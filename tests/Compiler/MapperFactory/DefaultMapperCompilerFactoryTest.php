@@ -11,6 +11,7 @@ use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
@@ -71,10 +72,11 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
     #[DataProvider('provideCreateOkData')]
     public function testCreateOk(string $type, array $options, MapperCompiler $expectedMapperCompiler): void
     {
-        $phpDocLexer = new Lexer();
-        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocTypeParser = new TypeParser($phpDocExprParser);
-        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
+        $config = new ParserConfig([]);
+        $phpDocLexer = new Lexer($config);
+        $phpDocConstExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
+        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
         $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
 
         $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
@@ -435,10 +437,11 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
     #[DataProvider('provideCreateErrorData')]
     public function testCreateError(string $type, array $options, ?string $expectedMessage = null): void
     {
-        $phpDocLexer = new Lexer();
-        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocTypeParser = new TypeParser($phpDocExprParser);
-        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
+        $config = new ParserConfig([]);
+        $phpDocLexer = new Lexer($config);
+        $phpDocConstExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
+        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
         $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
 
         $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
@@ -510,10 +513,11 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 
     public function testCreateWithCustomFactory(): void
     {
-        $phpDocLexer = new Lexer();
-        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocTypeParser = new TypeParser($phpDocExprParser);
-        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
+        $config = new ParserConfig([]);
+        $phpDocLexer = new Lexer($config);
+        $phpDocConstExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
+        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
 
         $carMapperCompiler = new MapObject(CarInput::class, [
             'id' => new MapInt(),
