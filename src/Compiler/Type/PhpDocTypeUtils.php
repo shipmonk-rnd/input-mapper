@@ -39,6 +39,7 @@ use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
@@ -179,7 +180,7 @@ class PhpDocTypeUtils
                 );
             }
 
-            return new ArrayShapeNode($items);
+            return ArrayShapeNode::createSealed($items);
         }
 
         if (is_object($value)) {
@@ -947,10 +948,11 @@ class PhpDocTypeUtils
 
     private static function parsePhpDoc(string $phpDoc): PhpDocNode
     {
-        $phpDocLexer = new Lexer();
-        $phpDocTypeParser = new TypeParser();
-        $phpDocConstExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocParser = new PhpDocParser($phpDocTypeParser, $phpDocConstExprParser);
+        $config = new ParserConfig([]);
+        $phpDocLexer = new Lexer($config);
+        $phpDocConstExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
+        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
         $phpDocTokens = $phpDocLexer->tokenize($phpDoc);
 
         return $phpDocParser->parse(new TokenIterator($phpDocTokens));
@@ -1065,7 +1067,7 @@ class PhpDocTypeUtils
 
                 } elseif ($item->keyName instanceof IdentifierTypeNode) {
                     $newItems[] = new ArrayShapeItemNode(
-                        keyName: new ConstExprStringNode($item->keyName->name),
+                        keyName: new ConstExprStringNode($item->keyName->name, ConstExprStringNode::SINGLE_QUOTED),
                         optional: $item->optional,
                         valueType: $item->valueType,
                     );
@@ -1075,7 +1077,9 @@ class PhpDocTypeUtils
                 }
             }
 
-            return new ArrayShapeNode($newItems, $type->sealed, $type->kind);
+            return $type->sealed
+                ? ArrayShapeNode::createSealed($newItems, $type->kind)
+                : ArrayShapeNode::createUnsealed($newItems, null, $type->kind);
         }
 
         if ($type instanceof GenericTypeNode) {

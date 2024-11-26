@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 
 class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvider
 {
@@ -19,20 +20,26 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
 
     protected function create(): MapperCompilerFactory
     {
-        return new DefaultMapperCompilerFactory($this->createPhpDocLexer(), $this->createPhpDocParser());
+        $config = $this->createParserConfig();
+        return new DefaultMapperCompilerFactory($this->createPhpDocLexer($config), $this->createPhpDocParser($config));
     }
 
-    protected function createPhpDocLexer(): Lexer
+    protected function createPhpDocLexer(ParserConfig $config): Lexer
     {
-        return new Lexer();
+        return new Lexer($config);
     }
 
-    protected function createPhpDocParser(): PhpDocParser
+    protected function createParserConfig(): ParserConfig
     {
-        $phpDocExprParser = new ConstExprParser(unescapeStrings: true);
-        $phpDocTypeParser = new TypeParser($phpDocExprParser);
+        return new ParserConfig([]);
+    }
 
-        return new PhpDocParser($phpDocTypeParser, $phpDocExprParser);
+    protected function createPhpDocParser(ParserConfig $config): PhpDocParser
+    {
+        $phpDocExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocExprParser);
+
+        return new PhpDocParser($config, $phpDocTypeParser, $phpDocExprParser);
     }
 
 }
