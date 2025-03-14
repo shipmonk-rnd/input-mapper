@@ -18,6 +18,7 @@
         "phpstan/phpstan-strict-rules": "^2.0.0",
         "phpunit/phpunit": "^10.5",
         "shipmonk/composer-dependency-analyser": "^1.8.1",
+        "shipmonk/dead-code-detector": "0.9.2",
         "shipmonk/name-collision-detector": "^2.1.1",
         "shipmonk/phpstan-rules": "^4.0.0",
         "slevomat/coding-standard": "dev-master"
@@ -29,6 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "ShipMonkDev\\": "src-dev/",
             "ShipMonkTests\\InputMapper\\": "tests/"
         }
     },

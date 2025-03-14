@@ -4,6 +4,7 @@ includes:
     - ./vendor/phpstan/phpstan-phpunit/rules.neon
     - ./vendor/phpstan/phpstan-strict-rules/rules.neon
     - ./vendor/shipmonk/phpstan-rules/rules.neon
+    - ./vendor/shipmonk/dead-code-detector/rules.neon
 
 parameters:
     level: 9
@@ -47,3 +48,16 @@ parameters:
             message: "#^Method ShipMonkTests\\\\InputMapper\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorWithMultipleValidatorsMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
             count: 1
             path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
+        -
+            message: '#\:\:__construct$#'
+            identifier: shipmonk.deadMethod
+            path: tests/**/*.php
+        -
+            identifier: shipmonk.deadMethod
+            path: src/Compiler/Php/PhpCodeBuilder.php # consider utility class
+
+services:
+    -
+        class: ShipMonkDev\PHPStan\IgnoreDeadInterfaceUsageProvider
+        tags:
+            - shipmonk.deadCode.memberUsageProvider
