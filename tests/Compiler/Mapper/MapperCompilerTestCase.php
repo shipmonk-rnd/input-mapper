@@ -11,6 +11,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonkTests\InputMapper\InputMapperTestCase;
 use function assert;
 use function class_exists;
+use function is_a;
 use function str_replace;
 use function strrpos;
 use function strtr;
@@ -59,10 +60,8 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
             },
         );
 
-        $mapper = new $mapperClassName($mapperProvider, $innerMappers);
-        assert($mapper instanceof Mapper);
-
-        return $mapper;
+        assert(is_a($mapperClassName, Mapper::class, true));
+        return new $mapperClassName($mapperProvider, $innerMappers);
     }
 
     private function toShortClassName(string $className): string
