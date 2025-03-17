@@ -623,8 +623,8 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 
         $expectedTypeNode = $this->parseType($expected);
         $expectedTypeNodeReversed = $expectedReversed !== null ? $this->parseType($expectedReversed) : $expectedTypeNode;
-        self::assertEquals($expectedTypeNode->__toString(), PhpDocTypeUtils::intersect(...$typesNodes)->__toString());
-        self::assertEquals($expectedTypeNodeReversed->__toString(), PhpDocTypeUtils::intersect(...array_reverse($typesNodes))->__toString());
+        self::assertSame($expectedTypeNode->__toString(), PhpDocTypeUtils::intersect(...$typesNodes)->__toString());
+        self::assertSame($expectedTypeNodeReversed->__toString(), PhpDocTypeUtils::intersect(...array_reverse($typesNodes))->__toString());
     }
 
     /**

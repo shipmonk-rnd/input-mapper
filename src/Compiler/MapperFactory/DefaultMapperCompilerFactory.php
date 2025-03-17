@@ -81,7 +81,6 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
     final public const GENERIC_PARAMETERS = 'genericParameters';
-    final public const DEFAULT_VALUE = 'defaultValue';
 
     /**
      * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
