@@ -391,6 +391,10 @@ class PhpCodeBuilder extends BuilderFactory
         $this->methods[$method->name->name] = $method;
     }
 
+    /**
+     * @template T
+     * @return ($className is class-string<T> ? class-string<T> : string)
+     */
     public function importClass(string $className): string
     {
         $lastBackslashOffset = strrpos($className, '\\');
