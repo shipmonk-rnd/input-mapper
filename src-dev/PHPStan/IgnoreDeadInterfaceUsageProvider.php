@@ -4,13 +4,18 @@ namespace ShipMonkDev\PHPStan;
 
 use ReflectionMethod;
 use ShipMonk\PHPStan\DeadCode\Provider\ReflectionBasedMemberUsageProvider;
+use ShipMonk\PHPStan\DeadCode\Provider\VirtualUsageData;
 
 class IgnoreDeadInterfaceUsageProvider extends ReflectionBasedMemberUsageProvider
 {
 
-    public function shouldMarkMethodAsUsed(ReflectionMethod $method): bool
+    public function shouldMarkMethodAsUsed(ReflectionMethod $method): ?VirtualUsageData
     {
-        return $method->getDeclaringClass()->isInterface() || $method->isAbstract();
+        if ($method->getDeclaringClass()->isInterface() || $method->isAbstract()) {
+            return VirtualUsageData::withNote('interface methods kept for unification');
+        }
+
+        return null;
     }
 
 }
