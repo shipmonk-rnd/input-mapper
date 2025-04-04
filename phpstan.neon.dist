@@ -48,10 +48,7 @@ parameters:
             message: "#^Method ShipMonkTests\\\\InputMapper\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorWithMultipleValidatorsMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
             count: 1
             path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
-        -
-            message: '#\:\:__construct$#'
-            identifier: shipmonk.deadMethod
-            path: tests/**/*.php
+
         -
             identifier: shipmonk.deadMethod
             path: src/Compiler/Php/PhpCodeBuilder.php # consider utility class
