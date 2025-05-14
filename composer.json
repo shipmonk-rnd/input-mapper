@@ -11,17 +11,17 @@
         "phpstan/phpdoc-parser": "^2.0.0"
     },
     "require-dev": {
-        "editorconfig-checker/editorconfig-checker": "^10.6.0",
-        "ergebnis/composer-normalize": "^2.44.0",
-        "phpstan/phpstan": "^2.0.1",
-        "phpstan/phpstan-phpunit": "^2.0.0",
-        "phpstan/phpstan-strict-rules": "^2.0.0",
+        "editorconfig-checker/editorconfig-checker": "^10.7.0",
+        "ergebnis/composer-normalize": "^2.47.0",
+        "phpstan/phpstan": "^2.1.15",
+        "phpstan/phpstan-phpunit": "^2.0.6",
+        "phpstan/phpstan-strict-rules": "^2.0.4",
         "phpunit/phpunit": "^10.5",
-        "shipmonk/composer-dependency-analyser": "^1.8.1",
+        "shipmonk/composer-dependency-analyser": "^1.8.3",
         "shipmonk/dead-code-detector": "^0.11.0",
         "shipmonk/name-collision-detector": "^2.1.1",
-        "shipmonk/phpstan-rules": "^4.0.0",
-        "slevomat/coding-standard": "dev-master"
+        "shipmonk/phpstan-rules": "^4.1.2",
+        "slevomat/coding-standard": "8.16.0"
     },
     "autoload": {
         "psr-4": {
