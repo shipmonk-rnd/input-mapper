@@ -53,6 +53,14 @@ parameters:
             identifier: shipmonk.deadMethod
             path: src/Compiler/Php/PhpCodeBuilder.php # consider utility class
 
+        -
+            identifier: method.internalClass
+            path: tests/*
+
+        -
+            identifier: new.internalClass
+            path: tests/*
+
 services:
     -
         class: ShipMonkDev\PHPStan\IgnoreDeadInterfaceUsageProvider
