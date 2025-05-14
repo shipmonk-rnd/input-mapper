@@ -49,7 +49,6 @@
             <property name="maxPadding" value="1"/>
         </properties>
     </rule>
-    <!-- Removed deprecated Generic.Functions.CallTimePassByReference sniff -->
     <rule ref="Generic.Functions.OpeningFunctionBraceBsdAllman"/>
     <rule ref="Generic.NamingConventions.ConstructorName"/>
     <rule ref="Generic.PHP.BacktickOperator"/>
