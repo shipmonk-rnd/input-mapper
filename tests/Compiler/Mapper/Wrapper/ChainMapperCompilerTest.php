@@ -25,7 +25,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected int, got "1"',
-            static fn() => $mapper->map('1'),
+            static fn () => $mapper->map('1'),
         );
     }
 
@@ -36,7 +36,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data\MapToDouble, because its input type \'int\' is not super type of \'string\'',
-            fn() => $this->compileMapper('DoubleIntIncompatible', $mapperCompiler),
+            fn () => $this->compileMapper('DoubleIntIncompatible', $mapperCompiler),
         );
     }
 

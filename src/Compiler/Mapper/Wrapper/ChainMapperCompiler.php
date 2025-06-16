@@ -24,7 +24,11 @@ class ChainMapperCompiler implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $statements = [];
         $mappedVariableName = $builder->uniqVariableName('mapped');

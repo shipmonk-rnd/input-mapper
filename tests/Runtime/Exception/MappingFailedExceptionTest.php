@@ -19,7 +19,11 @@ class MappingFailedExceptionTest extends InputMapperTestCase
      * @param list<string|int> $path
      */
     #[DataProvider('provideMessagesData')]
-    public function testMessages(MappingFailedException $exception, string $expectedMessage, array $path): void
+    public function testMessages(
+        MappingFailedException $exception,
+        string $expectedMessage,
+        array $path,
+    ): void
     {
         self::assertSame($expectedMessage, $exception->getMessage());
         self::assertSame($path, $exception->getPath());

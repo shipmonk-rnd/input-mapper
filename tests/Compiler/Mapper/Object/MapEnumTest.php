@@ -22,7 +22,7 @@ class MapEnumTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected one of H, D, C, S, got "X"',
-            static fn() => $mapper->map('X'),
+            static fn () => $mapper->map('X'),
         );
     }
 

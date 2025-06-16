@@ -27,12 +27,20 @@ class MapDefaultValue implements UndefinedAwareMapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         return $this->mapperCompiler->compile($value, $path, $builder);
     }
 
-    public function compileUndefined(Expr $path, Expr $key, PhpCodeBuilder $builder): CompiledExpr
+    public function compileUndefined(
+        Expr $path,
+        Expr $key,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         if ($this->defaultValue === null || is_scalar($this->defaultValue) || is_array($this->defaultValue)) {
             return new CompiledExpr($builder->val($this->defaultValue));

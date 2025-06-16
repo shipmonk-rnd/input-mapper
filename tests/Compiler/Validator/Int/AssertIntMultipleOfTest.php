@@ -25,13 +25,13 @@ class AssertIntMultipleOfTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 1',
-            static fn() => $validator->map(1),
+            static fn () => $validator->map(1),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 123',
-            static fn() => $validator->map(123),
+            static fn () => $validator->map(123),
         );
     }
 

@@ -19,7 +19,10 @@ class PhpCodeBuilderTest extends InputMapperTestCase
      * @param list<class-string> $expectedClassImports
      */
     #[DataProvider('provideImportTypeData')]
-    public function testImportType(TypeNode $type, array $expectedClassImports): void
+    public function testImportType(
+        TypeNode $type,
+        array $expectedClassImports,
+    ): void
     {
         $builder = new PhpCodeBuilder();
         $builder->importType($type);

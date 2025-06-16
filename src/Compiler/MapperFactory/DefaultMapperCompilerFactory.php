@@ -83,7 +83,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     final public const GENERIC_PARAMETERS = 'genericParameters';
 
     /**
-     * @param  array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
+     * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
      */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
@@ -96,19 +96,26 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
+     * @param class-string<T> $className
+     * @param callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
+     *
      * @template T of object
-     * @param  class-string<T>                                                 $className
-     * @param  callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
      */
-    public function setMapperCompilerFactory(string $className, callable $factory): void
+    public function setMapperCompilerFactory(
+        string $className,
+        callable $factory,
+    ): void
     {
         $this->mapperCompilerFactories[$className] = $factory; // @phpstan-ignore-line
     }
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
-    public function create(TypeNode $type, array $options = []): MapperCompiler
+    public function create(
+        TypeNode $type,
+        array $options = [],
+    ): MapperCompiler
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
@@ -228,18 +235,24 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
-    protected function createInner(TypeNode $type, array $options): MapperCompiler
+    protected function createInner(
+        TypeNode $type,
+        array $options,
+    ): MapperCompiler
     {
         $options[self::DELEGATE_OBJECT_MAPPING] ??= true;
         return $this->create($type, $options);
     }
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
-    protected function createFromGenericType(GenericTypeNode $type, array $options): MapperCompiler
+    protected function createFromGenericType(
+        GenericTypeNode $type,
+        array $options,
+    ): MapperCompiler
     {
         if (!class_exists($type->type->name) && !interface_exists($type->type->name)) {
             throw CannotCreateMapperCompilerException::fromType($type, 'there is no class or interface with this name');
@@ -262,10 +275,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  class-string         $inputClassName
-     * @param  array<string, mixed> $options
+     * @param class-string $inputClassName
+     * @param array<string, mixed> $options
      */
-    protected function createObjectMapperCompiler(string $inputClassName, array $options): MapperCompiler
+    protected function createObjectMapperCompiler(
+        string $inputClassName,
+        array $options,
+    ): MapperCompiler
     {
         $classParents = class_parents($inputClassName);
         $classImplements = class_implements($inputClassName);
@@ -276,7 +292,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
 
-        foreach ($classLikeNames as $classLikeName => $_) {
+        foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
                 $factory = $this->mapperCompilerFactories[$classLikeName];
                 return $factory($inputClassName, $options);
@@ -293,8 +309,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  class-string         $inputClassName
-     * @param  array<string, mixed> $options
+     * @param class-string $inputClassName
+     * @param array<string, mixed> $options
      */
     protected function createObjectMappingByConstructorInvocation(
         string $inputClassName,
@@ -360,10 +376,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  list<string> $genericParameterNames
+     * @param list<string> $genericParameterNames
      * @return array<string, TypeNode>
      */
-    protected function getConstructorParameterTypes(ReflectionMethod $constructor, array $genericParameterNames): array
+    protected function getConstructorParameterTypes(
+        ReflectionMethod $constructor,
+        array $genericParameterNames,
+    ): array
     {
         $class = $constructor->getDeclaringClass();
         $parameterTypes = [];
@@ -413,7 +432,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
     protected function createParameterMapperCompiler(
         ReflectionParameter $parameterReflection,
@@ -461,7 +480,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
     protected function addValidator(
         MapperCompiler $mapperCompiler,
-        ValidatorCompiler $validatorCompiler
+        ValidatorCompiler $validatorCompiler,
     ): MapperCompiler
     {
         $validatorInputType = $validatorCompiler->getInputType();
@@ -487,10 +506,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  class-string<BackedEnum> $enumName
-     * @param  array<string, mixed>     $options
+     * @param class-string<BackedEnum> $enumName
+     * @param array<string, mixed> $options
      */
-    protected function createEnumMapperCompiler(string $enumName, array $options): MapperCompiler
+    protected function createEnumMapperCompiler(
+        string $enumName,
+        array $options,
+    ): MapperCompiler
     {
         $enumReflection = new ReflectionEnum($enumName);
         $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
@@ -501,10 +523,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param  class-string         $className
-     * @param  array<string, mixed> $options
+     * @param class-string $className
+     * @param array<string, mixed> $options
      */
-    protected function createDateTimeMapperCompiler(string $className, array $options): MapperCompiler
+    protected function createDateTimeMapperCompiler(
+        string $className,
+        array $options,
+    ): MapperCompiler
     {
         if ($className === DateTimeInterface::class || $className === DateTimeImmutable::class) {
             return new MapDateTimeImmutable();
@@ -513,7 +538,11 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));
     }
 
-    protected function resolveIntegerBoundary(TypeNode $type, TypeNode $boundaryType, string $extremeName): ?int
+    protected function resolveIntegerBoundary(
+        TypeNode $type,
+        TypeNode $boundaryType,
+        string $extremeName,
+    ): ?int
     {
         if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
             return (int) $boundaryType->constExpr->value;

@@ -67,10 +67,14 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 {
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
     #[DataProvider('provideCreateOkData')]
-    public function testCreateOk(string $type, array $options, MapperCompiler $expectedMapperCompiler): void
+    public function testCreateOk(
+        string $type,
+        array $options,
+        MapperCompiler $expectedMapperCompiler,
+    ): void
     {
         $config = new ParserConfig([]);
         $phpDocLexer = new Lexer($config);
@@ -432,10 +436,14 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
     }
 
     /**
-     * @param  array<string, mixed> $options
+     * @param array<string, mixed> $options
      */
     #[DataProvider('provideCreateErrorData')]
-    public function testCreateError(string $type, array $options, ?string $expectedMessage = null): void
+    public function testCreateError(
+        string $type,
+        array $options,
+        ?string $expectedMessage = null,
+    ): void
     {
         $config = new ParserConfig([]);
         $phpDocLexer = new Lexer($config);
@@ -449,7 +457,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         self::assertException(
             CannotCreateMapperCompilerException::class,
             $expectedMessage,
-            static fn() => $mapperCompilerFactory->create($phpDocType, $options),
+            static fn () => $mapperCompilerFactory->create($phpDocType, $options),
         );
     }
 

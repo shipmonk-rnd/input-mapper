@@ -21,7 +21,7 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string matching pattern #^\d+\z#, got "abc"',
-            static fn() => $validator->map('abc'),
+            static fn () => $validator->map('abc'),
         );
     }
 
@@ -34,7 +34,7 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected numeric string, got "abc"',
-            static fn() => $validator->map('abc'),
+            static fn () => $validator->map('abc'),
         );
     }
 

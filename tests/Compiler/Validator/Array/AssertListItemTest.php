@@ -29,7 +29,7 @@ class AssertListItemTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /2: Expected value greater than 0, got 0',
-            static fn() => $validator->map([1, 2, 0]),
+            static fn () => $validator->map([1, 2, 0]),
         );
     }
 
@@ -45,13 +45,13 @@ class AssertListItemTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /2: Expected value greater than 0, got 0',
-            static fn() => $validator->map([5, 10, 0]),
+            static fn () => $validator->map([5, 10, 0]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /2: Expected multiple of 5, got 3',
-            static fn() => $validator->map([5, 10, 3]),
+            static fn () => $validator->map([5, 10, 3]),
         );
     }
 

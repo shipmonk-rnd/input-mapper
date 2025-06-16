@@ -16,7 +16,7 @@ class Discriminator
      */
     public function __construct(
         public readonly string $key,
-        public readonly array $mapping
+        public readonly array $mapping,
     )
     {
     }

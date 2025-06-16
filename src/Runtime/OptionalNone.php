@@ -12,7 +12,7 @@ final class OptionalNone extends Optional
 {
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     protected function __construct(
         private readonly array $path,
@@ -40,9 +40,10 @@ final class OptionalNone extends Optional
     }
 
     /**
-     * @template D
-     * @param  D $default
+     * @param D $default
      * @return D
+     *
+     * @template D
      */
     public function getOrElse(mixed $default): mixed
     {

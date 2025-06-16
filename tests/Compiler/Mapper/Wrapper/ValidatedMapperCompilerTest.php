@@ -30,7 +30,7 @@ class ValidatedMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than 0, got 0',
-            static fn() => $mapper->map(0),
+            static fn () => $mapper->map(0),
         );
     }
 
@@ -41,7 +41,7 @@ class ValidatedMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper with validator ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl, because mapper output type \'int\' is not compatible with validator input type \'string\'',
-            fn() => $this->compileMapper('IntMapperWithIncompatibleValidator', $mapperCompiler),
+            fn () => $this->compileMapper('IntMapperWithIncompatibleValidator', $mapperCompiler),
         );
     }
 

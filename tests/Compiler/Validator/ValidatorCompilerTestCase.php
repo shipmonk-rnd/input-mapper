@@ -17,7 +17,7 @@ abstract class ValidatorCompilerTestCase extends MapperCompilerTestCase
     protected function compileValidator(
         string $name,
         MapperCompiler $mapperCompiler,
-        ValidatorCompiler $validatorCompiler
+        ValidatorCompiler $validatorCompiler,
     ): Mapper
     {
         $mapperCompiler = new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);

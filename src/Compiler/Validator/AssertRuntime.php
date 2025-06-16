@@ -14,10 +14,14 @@ abstract class AssertRuntime implements ValidatorCompiler
 {
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
+     *
      * @throws MappingFailedException
      */
-    abstract public static function assertValue(mixed $value, array $path): void;
+    abstract public static function assertValue(
+        mixed $value,
+        array $path,
+    ): void;
 
     /**
      * @return list<Stmt>

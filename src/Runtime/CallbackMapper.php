@@ -6,8 +6,9 @@ use Closure;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
- * @template-covariant  T
  * @implements Mapper<T>
+ *
+ * @template-covariant T
  */
 class CallbackMapper implements Mapper
 {
@@ -22,11 +23,15 @@ class CallbackMapper implements Mapper
     }
 
     /**
-     * @param  list<string|int>  $path
+     * @param list<string|int> $path
      * @return T
+     *
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(
+        mixed $data,
+        array $path = [],
+    ): mixed
     {
         /** @throws MappingFailedException */
         return ($this->callback)($data, $path);

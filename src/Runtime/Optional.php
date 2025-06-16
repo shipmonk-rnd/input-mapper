@@ -11,17 +11,21 @@ abstract class Optional
 {
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
-    public static function none(array $path, string $key): OptionalNone
+    public static function none(
+        array $path,
+        string $key,
+    ): OptionalNone
     {
         return new OptionalNone($path, $key);
     }
 
     /**
-     * @template R
-     * @param  R $value
+     * @param R $value
      * @return OptionalSome<R>
+     *
+     * @template R
      */
     public static function of(mixed $value): OptionalSome
     {
@@ -37,14 +41,16 @@ abstract class Optional
 
     /**
      * @return T
+     *
      * @throws MappingFailedException
      */
     abstract public function require(): mixed;
 
     /**
-     * @template D
-     * @param  D $default
+     * @param D $default
      * @return T|D
+     *
+     * @template D
      */
     abstract public function getOrElse(mixed $default): mixed;
 

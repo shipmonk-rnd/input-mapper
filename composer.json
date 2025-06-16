@@ -17,11 +17,11 @@
         "phpstan/phpstan-phpunit": "^2.0.6",
         "phpstan/phpstan-strict-rules": "^2.0.4",
         "phpunit/phpunit": "^10.5",
+        "shipmonk/coding-standard": "^0.1.1",
         "shipmonk/composer-dependency-analyser": "^1.8.3",
         "shipmonk/dead-code-detector": "^0.11.0",
         "shipmonk/name-collision-detector": "^2.1.1",
-        "shipmonk/phpstan-rules": "^4.1.2",
-        "slevomat/coding-standard": "8.16.0"
+        "shipmonk/phpstan-rules": "^4.1.2"
     },
     "autoload": {
         "psr-4": {

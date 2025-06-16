@@ -12,7 +12,10 @@ use function is_file;
 abstract class InputMapperTestCase extends TestCase
 {
 
-    protected static function assertSnapshot(string $snapshotPath, string $actual): void
+    protected static function assertSnapshot(
+        string $snapshotPath,
+        string $actual,
+    ): void
     {
         if (is_file($snapshotPath) && getenv('UPDATE_SNAPSHOTS') === false) {
             $expected = FileSystem::read($snapshotPath);
@@ -25,12 +28,18 @@ abstract class InputMapperTestCase extends TestCase
     }
 
     /**
+     * @param class-string<T> $type
+     * @param callable(): mixed $cb
+     *
      * @template T of Throwable
-     * @param  class-string<T>   $type
-     * @param  callable(): mixed $cb
+     *
      * @param-immediately-invoked-callable $cb
      */
-    protected static function assertException(string $type, ?string $message, callable $cb): void
+    protected static function assertException(
+        string $type,
+        ?string $message,
+        callable $cb,
+    ): void
     {
         try {
             $cb();

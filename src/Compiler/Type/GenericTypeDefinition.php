@@ -9,8 +9,8 @@ class GenericTypeDefinition
 
     /**
      * @param array<string, list<int | TypeNode>> $extends
-     * @param list<GenericTypeParameter>          $parameters
-     * @param array<int, list<?int>>              $parameterOffsetMapping indexed by [parameterCount]
+     * @param list<GenericTypeParameter> $parameters
+     * @param array<int, list<?int>> $parameterOffsetMapping indexed by [parameterCount]
      */
     public function __construct(
         public readonly array $extends = [],

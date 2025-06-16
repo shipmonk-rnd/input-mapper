@@ -11,10 +11,14 @@ abstract class MapRuntime implements MapperCompiler
 {
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
+     *
      * @throws MappingFailedException
      */
-    abstract public static function mapValue(mixed $value, array $path): mixed;
+    abstract public static function mapValue(
+        mixed $value,
+        array $path,
+    ): mixed;
 
     public function compile(
         Expr $value,

@@ -23,19 +23,19 @@ class MapListTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list, got "1"',
-            static fn() => $mapper->map('1'),
+            static fn () => $mapper->map('1'),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list, got null',
-            static fn() => $mapper->map(null),
+            static fn () => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /1: Expected int, got "2"',
-            static fn() => $mapper->map([1, '2']),
+            static fn () => $mapper->map([1, '2']),
         );
     }
 

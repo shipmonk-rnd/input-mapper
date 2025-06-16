@@ -107,7 +107,10 @@ class NativeTypeUtils
         };
     }
 
-    public static function isSubTypeOf(Identifier|Name $a, Identifier|Name $b): bool
+    public static function isSubTypeOf(
+        Identifier|Name $a,
+        Identifier|Name $b,
+    ): bool
     {
         if ($a instanceof Identifier && $b instanceof Identifier) {
             return strcasecmp($a->name, $b->name) === 0;

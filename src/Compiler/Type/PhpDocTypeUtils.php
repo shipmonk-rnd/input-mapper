@@ -195,7 +195,7 @@ class PhpDocTypeUtils
     }
 
     /**
-     * @param  list<GenericTypeParameter> $genericParameters
+     * @param list<GenericTypeParameter> $genericParameters
      */
     public static function toNativeType(
         TypeNode $type,
@@ -314,10 +314,14 @@ class PhpDocTypeUtils
     }
 
     /**
-     * @param  ReflectionClass<object> $context
-     * @param  list<string>            $genericParameterNames
+     * @param ReflectionClass<object> $context
+     * @param list<string> $genericParameterNames
      */
-    public static function resolve(mixed $type, ReflectionClass $context, array $genericParameterNames = []): void
+    public static function resolve(
+        mixed $type,
+        ReflectionClass $context,
+        array $genericParameterNames = [],
+    ): void
     {
         if (is_array($type)) {
             foreach ($type as $item) {
@@ -432,7 +436,10 @@ class PhpDocTypeUtils
     /**
      * Returns true if $a is subtype of $b.
      */
-    public static function isSubTypeOf(TypeNode $a, TypeNode $b): bool
+    public static function isSubTypeOf(
+        TypeNode $a,
+        TypeNode $b,
+    ): bool
     {
         // normalize types
         $a = self::normalizeType($a);
@@ -445,19 +452,19 @@ class PhpDocTypeUtils
 
         // expand complex types
         if ($a instanceof UnionTypeNode) {
-            return Arrays::every($a->types, static fn(TypeNode $inner) => self::isSubTypeOf($inner, $b));
+            return Arrays::every($a->types, static fn (TypeNode $inner) => self::isSubTypeOf($inner, $b));
         }
 
         if ($b instanceof UnionTypeNode) {
-            return Arrays::some($b->types, static fn(TypeNode $inner) => self::isSubTypeOf($a, $inner));
+            return Arrays::some($b->types, static fn (TypeNode $inner) => self::isSubTypeOf($a, $inner));
         }
 
         if ($a instanceof IntersectionTypeNode) {
-            return Arrays::every($a->types, static fn(TypeNode $inner) => self::isSubTypeOf($inner, $b));
+            return Arrays::every($a->types, static fn (TypeNode $inner) => self::isSubTypeOf($inner, $b));
         }
 
         if ($b instanceof IntersectionTypeNode) {
-            return Arrays::some($b->types, static fn(TypeNode $inner) => self::isSubTypeOf($a, $inner));
+            return Arrays::some($b->types, static fn (TypeNode $inner) => self::isSubTypeOf($a, $inner));
         }
 
         if ($b instanceof IdentifierTypeNode) {
@@ -521,7 +528,7 @@ class PhpDocTypeUtils
                 },
 
                 'list' => match (true) {
-                    $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn(ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx),
+                    $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx),
                     $a instanceof IdentifierTypeNode => $a->name === 'list' || $a->name === 'non-empty-list',
                     $a instanceof GenericTypeNode => $a->type->name === 'list' || $a->type->name === 'non-empty-list',
                     default => false,
@@ -532,8 +539,8 @@ class PhpDocTypeUtils
                 'never' => $a instanceof IdentifierTypeNode && $a->name === 'never',
 
                 'non-empty-list' => match (true) {
-                    $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn(ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)
-                        && Arrays::some($a->items, static fn(ArrayShapeItemNode $item, int $idx) => !$item->optional),
+                    $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)
+                        && Arrays::some($a->items, static fn (ArrayShapeItemNode $item, int $idx) => !$item->optional),
                     $a instanceof IdentifierTypeNode => $a->name === 'non-empty-list',
                     $a instanceof GenericTypeNode => $a->type->name === 'non-empty-list',
                     default => false,
@@ -658,21 +665,25 @@ class PhpDocTypeUtils
         return false;
     }
 
-    public static function inferGenericParameter(TypeNode $type, string $typeName, int $parameter): TypeNode
+    public static function inferGenericParameter(
+        TypeNode $type,
+        string $typeName,
+        int $parameter,
+    ): TypeNode
     {
         $type = self::normalizeType($type);
 
         if ($type instanceof UnionTypeNode) {
             return self::union(...Arrays::map(
                 $type->types,
-                static fn(TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
+                static fn (TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
             ));
         }
 
         if ($type instanceof IntersectionTypeNode) {
             return self::intersect(...Arrays::map(
                 $type->types,
-                static fn(TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
+                static fn (TypeNode $type) => self::inferGenericParameter($type, $typeName, $parameter),
             ));
         }
 
@@ -686,7 +697,7 @@ class PhpDocTypeUtils
             if (count($superTypes) > 0) {
                 return self::union(...Arrays::map(
                     $superTypes,
-                    static fn(TypeNode $superType) => self::inferGenericParameter($superType, $typeName, $parameter),
+                    static fn (TypeNode $superType) => self::inferGenericParameter($superType, $typeName, $parameter),
                 ));
             }
         }
@@ -694,7 +705,10 @@ class PhpDocTypeUtils
         throw new LogicException("Unable to infer generic parameter, {$type} is not subtype of {$typeName}");
     }
 
-    private static function downCast(GenericTypeNode $type, string $targetTypeName): GenericTypeNode
+    private static function downCast(
+        GenericTypeNode $type,
+        string $targetTypeName,
+    ): GenericTypeNode
     {
         $path = self::findDownCastPath($type->type->name, $targetTypeName);
 
@@ -708,7 +722,10 @@ class PhpDocTypeUtils
     /**
      * @return list<string>|null
      */
-    private static function findDownCastPath(string $sourceTypeName, string $targetTypeName): ?array
+    private static function findDownCastPath(
+        string $sourceTypeName,
+        string $targetTypeName,
+    ): ?array
     {
         if ($sourceTypeName === $targetTypeName) {
             return [];
@@ -716,7 +733,7 @@ class PhpDocTypeUtils
 
         $targetTypeDef = self::getGenericTypeDefinition(new IdentifierTypeNode($targetTypeName));
 
-        foreach ($targetTypeDef->extends ?? [] as $possibleTarget => $_) {
+        foreach ($targetTypeDef->extends ?? [] as $possibleTarget => $value) {
             $innerPath = self::findDownCastPath($sourceTypeName, $possibleTarget);
 
             if ($innerPath !== null) {
@@ -728,9 +745,12 @@ class PhpDocTypeUtils
     }
 
     /**
-     * @param  list<string> $path
+     * @param list<string> $path
      */
-    private static function downCastOverPath(GenericTypeNode $type, array $path): GenericTypeNode
+    private static function downCastOverPath(
+        GenericTypeNode $type,
+        array $path,
+    ): GenericTypeNode
     {
         if (count($path) === 0) {
             return $type;
@@ -756,7 +776,10 @@ class PhpDocTypeUtils
         return self::downCastOverPath(new GenericTypeNode(new IdentifierTypeNode($step), $targetTypeParameters), $path);
     }
 
-    private static function isSubTypeOfGeneric(GenericTypeNode $a, GenericTypeNode $b): bool
+    private static function isSubTypeOfGeneric(
+        GenericTypeNode $a,
+        GenericTypeNode $b,
+    ): bool
     {
         if (strcasecmp($a->type->name, $b->type->name) === 0) {
             $typeDef = self::getGenericTypeDefinition($a->type);
@@ -785,13 +808,16 @@ class PhpDocTypeUtils
         $typeDef = self::getGenericTypeDefinition($type->type);
 
         return Arrays::map($typeDef->extends, static function (array $mapping, string $superTypeName) use ($type): GenericTypeNode {
-            return new GenericTypeNode(new IdentifierTypeNode($superTypeName), Arrays::map($mapping, static function (TypeNode | int $typeOrIndex) use ($type): TypeNode {
+            return new GenericTypeNode(new IdentifierTypeNode($superTypeName), Arrays::map($mapping, static function (TypeNode|int $typeOrIndex) use ($type): TypeNode {
                 return $typeOrIndex instanceof TypeNode ? $typeOrIndex : self::getGenericTypeParameter($type, $typeOrIndex);
             }));
         });
     }
 
-    private static function getGenericTypeParameter(GenericTypeNode $type, int $index): TypeNode
+    private static function getGenericTypeParameter(
+        GenericTypeNode $type,
+        int $index,
+    ): TypeNode
     {
         $typeDef = self::getGenericTypeDefinition($type->type);
 
@@ -960,9 +986,9 @@ class PhpDocTypeUtils
 
     private static function convertArrayShapeToGenericType(ArrayShapeNode $type): GenericTypeNode
     {
-        $valueType = new UnionTypeNode(Arrays::map($type->items, static fn(ArrayShapeItemNode $item) => $item->valueType));
+        $valueType = new UnionTypeNode(Arrays::map($type->items, static fn (ArrayShapeItemNode $item) => $item->valueType));
 
-        if (Arrays::every($type->items, static fn(ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)) {
+        if (Arrays::every($type->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)) {
             return new GenericTypeNode(new IdentifierTypeNode('list'), [$valueType]);
         }
 
@@ -1102,7 +1128,11 @@ class PhpDocTypeUtils
         return $type;
     }
 
-    private static function resolveIntegerBoundary(TypeNode $boundaryType, string $extremeName, int $extremeValue): int
+    private static function resolveIntegerBoundary(
+        TypeNode $boundaryType,
+        string $extremeName,
+        int $extremeValue,
+    ): int
     {
         if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
             return (int) $boundaryType->constExpr->value;

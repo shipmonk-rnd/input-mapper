@@ -18,7 +18,12 @@ class AssertUniqueItems implements ValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, TypeNode $type, Expr $path, PhpCodeBuilder $builder): array
+    public function compile(
+        Expr $value,
+        TypeNode $type,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         [$indexVariableName, $itemVariableName, $innerLoopIndexVariableName] = $builder->uniqVariableNames(
             'index',

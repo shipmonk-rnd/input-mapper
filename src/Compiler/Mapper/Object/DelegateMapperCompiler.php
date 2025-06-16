@@ -28,7 +28,11 @@ class DelegateMapperCompiler implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $compilerMapper = $this->compileMapperExpr($builder);
         $mapper = $compilerMapper->expr;
@@ -73,7 +77,11 @@ class DelegateMapperCompiler implements MapperCompiler
         return $innerMappers;
     }
 
-    private function compileInnerMapper(MapperCompiler $innerMapperCompiler, int $key, PhpCodeBuilder $builder): Expr
+    private function compileInnerMapper(
+        MapperCompiler $innerMapperCompiler,
+        int $key,
+        PhpCodeBuilder $builder,
+    ): Expr
     {
         if ($innerMapperCompiler instanceof self && count($innerMapperCompiler->innerMapperCompilers) === 0) {
             $provider = $builder->propertyFetch($builder->var('this'), 'provider');

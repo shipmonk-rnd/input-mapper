@@ -20,7 +20,7 @@ class AssertUrlTest extends ValidatorCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper with validator ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl, because mapper output type \'int\' is not compatible with validator input type \'string\'',
-            fn() => $this->compileValidator('UrlValidatorWithIncompatibleMapperType', $mapperCompiler, $validatorCompiler),
+            fn () => $this->compileValidator('UrlValidatorWithIncompatibleMapperType', $mapperCompiler, $validatorCompiler),
         );
     }
 
@@ -35,7 +35,7 @@ class AssertUrlTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected valid URL, got "abc"',
-            static fn() => $validator->map('abc'),
+            static fn () => $validator->map('abc'),
         );
     }
 

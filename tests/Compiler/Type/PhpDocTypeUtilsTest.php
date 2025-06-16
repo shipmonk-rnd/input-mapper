@@ -40,7 +40,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 {
 
     #[DataProvider('provideIsKeywordData')]
-    public function testIsKeyword(string $name, bool $expected): void
+    public function testIsKeyword(
+        string $name,
+        bool $expected,
+    ): void
     {
         self::assertSame($expected, PhpDocTypeUtils::isKeyword(new IdentifierTypeNode($name)));
     }
@@ -101,12 +104,12 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ?int $intNullable,
             int|float $intOrFloat,
             int|float|null $intOrFloatNullable,
-            Traversable & Countable $intersection,
+            Traversable&Countable $intersection,
         ): void {
         };
 
         $parameters = (new ReflectionFunction($function))->getParameters();
-        $parameterTypes = array_map(static fn(ReflectionParameter $parameter
+        $parameterTypes = array_map(static fn (ReflectionParameter $parameter,
         ) => $parameter->getType() ?? throw new LogicException(), $parameters);
 
         self::assertEquals(
@@ -143,7 +146,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     #[DataProvider('provideFromValueData')]
-    public function testFromValue(mixed $value, string $expectedType): void
+    public function testFromValue(
+        mixed $value,
+        string $expectedType,
+    ): void
     {
         self::assertEquals(
             $this->parseType($expectedType),
@@ -170,7 +176,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @param  list<GenericTypeParameter> $genericParameters
+     * @param list<GenericTypeParameter> $genericParameters
      */
     #[DataProvider('provideToNativeTypeData')]
     public function testToNativeType(
@@ -353,7 +359,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     #[DataProvider('provideIsNullableData')]
-    public function testIsNullable(TypeNode $type, bool $expectedIsNullable): void
+    public function testIsNullable(
+        TypeNode $type,
+        bool $expectedIsNullable,
+    ): void
     {
         self::assertSame($expectedIsNullable, PhpDocTypeUtils::isNullable($type));
     }
@@ -438,7 +447,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     #[DataProvider('provideMakeNullableData')]
-    public function testMakeNullable(TypeNode $type, TypeNode $expectedType): void
+    public function testMakeNullable(
+        TypeNode $type,
+        TypeNode $expectedType,
+    ): void
     {
         self::assertEquals($expectedType, PhpDocTypeUtils::makeNullable($type));
     }
@@ -487,8 +499,8 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @param  ReflectionClass<object> $context
-     * @param  list<string>            $genericParameterNames
+     * @param ReflectionClass<object> $context
+     * @param list<string> $genericParameterNames
      */
     #[DataProvider('provideResolveData')]
     public function testResolve(
@@ -503,7 +515,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @return iterable<string, array{TypeNode, ReflectionClass<object>, list<string>, string}>
+     * @return iterable<string, array{TypeNode, ReflectionClass<PhpDocTypeUtilsTest>, list<string>, string}>
      */
     public static function provideResolveData(): iterable
     {
@@ -556,7 +568,10 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
      * @param list<string> $types
      */
     #[DataProvider('provideUnionData')]
-    public function testUnion(array $types, string $expected): void
+    public function testUnion(
+        array $types,
+        string $expected,
+    ): void
     {
         $typesNodes = [];
 
@@ -613,7 +628,11 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
      * @param list<string> $types
      */
     #[DataProvider('provideIntersectData')]
-    public function testIntersect(array $types, string $expected, ?string $expectedReversed = null): void
+    public function testIntersect(
+        array $types,
+        string $expected,
+        ?string $expectedReversed = null,
+    ): void
     {
         $typesNodes = [];
 
@@ -706,7 +725,11 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     #[DataProvider('provideIsSubTypeOfData')]
-    public function testIsSubTypeOf(string $a, string $b, bool $expected): void
+    public function testIsSubTypeOf(
+        string $a,
+        string $b,
+        bool $expected,
+    ): void
     {
         $typeNodeA = $this->parseType($a);
         $typeNodeB = $this->parseType($b);
@@ -1544,7 +1567,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         string $type,
         string $genericTypeName,
         int $parameter,
-        string $expectedResult
+        string $expectedResult,
     ): void
     {
         self::assertEquals(

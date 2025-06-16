@@ -30,9 +30,9 @@ class MapObject implements GenericMapperCompiler
 {
 
     /**
-     * @param  class-string<T>               $className
-     * @param  array<string, MapperCompiler> $constructorArgsMapperCompilers
-     * @param  list<GenericTypeParameter>    $genericParameters
+     * @param class-string<T> $className
+     * @param array<string, MapperCompiler> $constructorArgsMapperCompilers
+     * @param list<GenericTypeParameter> $genericParameters
      */
     public function __construct(
         public readonly string $className,
@@ -43,7 +43,11 @@ class MapObject implements GenericMapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $statements = [
             $builder->if($builder->not($builder->funcCall($builder->importFunction('is_array'), [$value])), [
@@ -145,7 +149,11 @@ class MapObject implements GenericMapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function checkForExtraKeys(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function checkForExtraKeys(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         $statements = [];
 

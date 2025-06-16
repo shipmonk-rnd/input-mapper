@@ -54,12 +54,16 @@ class MapperProvider
     }
 
     /**
-     * @template T of object
-     * @param  class-string<T>     $inputClassName
-     * @param  list<Mapper<mixed>> $innerMappers
+     * @param class-string<T> $inputClassName
+     * @param list<Mapper<mixed>> $innerMappers
      * @return Mapper<T>
+     *
+     * @template T of object
      */
-    public function get(string $inputClassName, array $innerMappers = []): Mapper
+    public function get(
+        string $inputClassName,
+        array $innerMappers = [],
+    ): Mapper
     {
         $key = $inputClassName;
 
@@ -73,11 +77,15 @@ class MapperProvider
     }
 
     /**
+     * @param class-string<T> $inputClassName
+     * @param callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $mapperFactory
+     *
      * @template T of object
-     * @param  class-string<T>                                                 $inputClassName
-     * @param  callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $mapperFactory
      */
-    public function registerFactory(string $inputClassName, callable $mapperFactory): void
+    public function registerFactory(
+        string $inputClassName,
+        callable $mapperFactory,
+    ): void
     {
         if (isset($this->mappers[$inputClassName])) {
             throw new LogicException("Mapper for '$inputClassName' already created.");
@@ -87,12 +95,16 @@ class MapperProvider
     }
 
     /**
-     * @template T of object
-     * @param  class-string<T>     $inputClassName
-     * @param  list<Mapper<mixed>> $innerMappers
+     * @param class-string<T> $inputClassName
+     * @param list<Mapper<mixed>> $innerMappers
      * @return Mapper<T>
+     *
+     * @template T of object
      */
-    private function create(string $inputClassName, array $innerMappers): Mapper
+    private function create(
+        string $inputClassName,
+        array $innerMappers,
+    ): Mapper
     {
         $classParents = class_parents($inputClassName);
         $classImplements = class_implements($inputClassName);
@@ -103,7 +115,7 @@ class MapperProvider
 
         $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
 
-        foreach ($classLikeNames as $classLikeName => $_) {
+        foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($this->mapperFactories[$classLikeName])) {
                 /** @var callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $factory */
                 $factory = $this->mapperFactories[$classLikeName];
@@ -121,11 +133,15 @@ class MapperProvider
     }
 
     /**
-     * @template T of object
-     * @param class-string<T>         $inputClassName
+     * @param class-string<T> $inputClassName
      * @param class-string<Mapper<T>> $mapperClassName
+     *
+     * @template T of object
      */
-    private function load(string $inputClassName, string $mapperClassName): void
+    private function load(
+        string $inputClassName,
+        string $mapperClassName,
+    ): void
     {
         $path = $this->getMapperPath($mapperClassName);
 
@@ -164,11 +180,15 @@ class MapperProvider
     }
 
     /**
-     * @template T of object
-     * @param class-string<T>         $inputClassName
+     * @param class-string<T> $inputClassName
      * @param class-string<Mapper<T>> $mapperClassName
+     *
+     * @template T of object
      */
-    private function compile(string $inputClassName, string $mapperClassName): string
+    private function compile(
+        string $inputClassName,
+        string $mapperClassName,
+    ): string
     {
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
         $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName));
@@ -180,9 +200,10 @@ class MapperProvider
     }
 
     /**
-     * @template T of object
-     * @param  class-string<T> $inputClassName
+     * @param class-string<T> $inputClassName
      * @return class-string<Mapper<T>>
+     *
+     * @template T of object
      */
     private function getMapperClass(string $inputClassName): string
     {

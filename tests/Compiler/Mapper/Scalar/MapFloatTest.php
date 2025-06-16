@@ -23,61 +23,61 @@ class MapFloatTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float, got null',
-            static fn() => $mapper->map(null),
+            static fn () => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float, got "a"',
-            static fn() => $mapper->map('a'),
+            static fn () => $mapper->map('a'),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float, got array',
-            static fn() => $mapper->map([]),
+            static fn () => $mapper->map([]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float, got INF',
-            static fn() => $mapper->map(+INF),
+            static fn () => $mapper->map(+INF),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float, got -INF',
-            static fn() => $mapper->map(-INF),
+            static fn () => $mapper->map(-INF),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float, got NAN',
-            static fn() => $mapper->map(NAN),
+            static fn () => $mapper->map(NAN),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float, got NAN',
-            static fn() => $mapper->map(NAN),
+            static fn () => $mapper->map(NAN),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got 9223372036854775807',
-            static fn() => $mapper->map(9_223_372_036_854_775_807),
+            static fn () => $mapper->map(9_223_372_036_854_775_807),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got 9007199254740992',
-            static fn() => $mapper->map(+9_007_199_254_740_992),
+            static fn () => $mapper->map(+9_007_199_254_740_992),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected float or int with value that can be losslessly converted to float, got -9007199254740992',
-            static fn() => $mapper->map(-9_007_199_254_740_992),
+            static fn () => $mapper->map(-9_007_199_254_740_992),
         );
     }
 
@@ -95,7 +95,7 @@ class MapFloatTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float or INF, got NAN',
-            static fn() => $mapper->map(NAN),
+            static fn () => $mapper->map(NAN),
         );
     }
 
@@ -112,13 +112,13 @@ class MapFloatTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float or NAN, got INF',
-            static fn() => $mapper->map(+INF),
+            static fn () => $mapper->map(+INF),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected finite float or NAN, got -INF',
-            static fn() => $mapper->map(-INF),
+            static fn () => $mapper->map(-INF),
         );
     }
 

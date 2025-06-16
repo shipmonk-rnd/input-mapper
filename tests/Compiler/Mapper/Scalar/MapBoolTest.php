@@ -20,19 +20,19 @@ class MapBoolTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected bool, got null',
-            static fn() => $mapper->map(null),
+            static fn () => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected bool, got 1',
-            static fn() => $mapper->map(1),
+            static fn () => $mapper->map(1),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected bool, got array',
-            static fn() => $mapper->map([]),
+            static fn () => $mapper->map([]),
         );
     }
 

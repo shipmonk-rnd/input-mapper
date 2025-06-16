@@ -66,25 +66,25 @@ class MapObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected array, got null',
-            static fn() => $movieInputMapper->map(null),
+            static fn () => $movieInputMapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected array, got 123',
-            static fn() => $movieInputMapper->map(123),
+            static fn () => $movieInputMapper->map(123),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Unrecognized key "extra"',
-            static fn() => $movieInputMapper->map($movieInputArray + ['extra' => 1]),
+            static fn () => $movieInputMapper->map($movieInputArray + ['extra' => 1]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /year: Expected int, got "X"',
-            static fn() => $movieInputMapper->map(['year' => 'X'] + $movieInputArray),
+            static fn () => $movieInputMapper->map(['year' => 'X'] + $movieInputArray),
         );
     }
 

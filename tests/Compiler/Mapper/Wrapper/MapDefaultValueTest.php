@@ -27,7 +27,7 @@ class MapDefaultValueTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected int, got "1"',
-            static fn() => $mapper->map('1'),
+            static fn () => $mapper->map('1'),
         );
     }
 

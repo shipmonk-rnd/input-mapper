@@ -12,7 +12,10 @@ class GenericTypeParameterTest extends InputMapperTestCase
 {
 
     #[DataProvider('provideToPhpDocLineData')]
-    public function testToPhpDocLine(GenericTypeParameter $parameter, string $expected): void
+    public function testToPhpDocLine(
+        GenericTypeParameter $parameter,
+        string $expected,
+    ): void
     {
         self::assertSame($expected, $parameter->toPhpDocLine());
     }
