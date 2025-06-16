@@ -41,7 +41,11 @@ class MapDiscriminatedObject implements GenericMapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         foreach ($this->subtypeCompilers as $subtypeCompiler) {
             if (!PhpDocTypeUtils::isSubTypeOf($subtypeCompiler->getOutputType(), $this->getOutputType())) {

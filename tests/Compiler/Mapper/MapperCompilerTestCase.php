@@ -22,8 +22,8 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 {
 
     /**
-     * @param  array<class-string, MapperCompiler> $providedMapperCompilers
-     * @param  list<Mapper<mixed>>                 $innerMappers
+     * @param array<class-string, MapperCompiler> $providedMapperCompilers
+     * @param list<Mapper<mixed>> $innerMappers
      * @return Mapper<mixed>
      */
     protected function compileMapper(

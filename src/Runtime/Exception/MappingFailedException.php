@@ -32,9 +32,13 @@ class MappingFailedException extends RuntimeException
     private const MAX_STRING_LENGTH = 40;
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
-    private function __construct(private readonly array $path, string $reason, ?Throwable $previous = null)
+    private function __construct(
+        private readonly array $path,
+        string $reason,
+        ?Throwable $previous = null,
+    )
     {
         $jsonPointer = self::toJsonPointer($path);
         parent::__construct("Failed to map data at path {$jsonPointer}: {$reason}", $previous);
@@ -49,13 +53,13 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     public static function incorrectType(
         mixed $data,
         array $path,
         string $expectedType,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $describedValue = self::describeValue($data);
@@ -64,13 +68,13 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     public static function incorrectValue(
         mixed $data,
         array $path,
         string $expectedValueDescription,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $describedValue = self::describeValue($data);
@@ -79,13 +83,13 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     public static function duplicateValue(
         mixed $data,
         array $path,
         string $expectedValueDescription,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $describedValue = self::describeValue($data);
@@ -94,12 +98,12 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     public static function missingKey(
         array $path,
         string $missingKey,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $missingKeyDescription = self::describeValue($missingKey);
@@ -108,13 +112,13 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int>           $path
-     * @param  non-empty-list<string|int> $extraKeys
+     * @param list<string|int> $path
+     * @param non-empty-list<string|int> $extraKeys
      */
     public static function extraKeys(
         array $path,
         array $extraKeys,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $keyLabel = count($extraKeys) > 1 ? 'keys' : 'key';
@@ -123,7 +127,7 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  non-empty-list<string> $items
+     * @param non-empty-list<string> $items
      */
     private static function humanImplode(array $items): string
     {
@@ -133,7 +137,7 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      */
     private static function toJsonPointer(array $path): string
     {

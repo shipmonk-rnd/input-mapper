@@ -29,7 +29,11 @@ class ValidatedMapperCompiler implements MapperCompiler
     /**
      * @throws CannotCompileMapperException
      */
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $mapper = $this->mapperCompiler->compile($value, $path, $builder);
         $mapperOutputType = $this->mapperCompiler->getOutputType();

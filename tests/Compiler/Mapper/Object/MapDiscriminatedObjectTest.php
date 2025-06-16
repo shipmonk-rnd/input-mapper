@@ -56,31 +56,31 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected array, got null',
-            static fn() => $parentInputMapper->map(null),
+            static fn () => $parentInputMapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected array, got 123',
-            static fn() => $parentInputMapper->map(123),
+            static fn () => $parentInputMapper->map(123),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Unrecognized key "extra"',
-            static fn() => $parentInputMapper->map($childOneInputArray + ['extra' => 1]),
+            static fn () => $parentInputMapper->map($childOneInputArray + ['extra' => 1]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, childTwo, got null',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, childTwo, got "c"',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
         );
 
         $childOneInputWithoutType = $childOneInputArray;
@@ -89,7 +89,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Missing required key "type"',
-            static fn() => $parentInputMapper->map($childOneInputWithoutType),
+            static fn () => $parentInputMapper->map($childOneInputWithoutType),
         );
 
         $childTwoInputObject = new HierarchicalChildTwoInput(
@@ -132,13 +132,13 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, got null',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, got "c"',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
         );
     }
 
@@ -164,13 +164,13 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /$type: Expected one of childOne, got null',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, '$type' => null]),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, '$type' => null]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /$type: Expected one of childOne, got "c"',
-            static fn() => $parentInputMapper->map([...$childOneInputArray, '$type' => 'c']),
+            static fn () => $parentInputMapper->map([...$childOneInputArray, '$type' => 'c']),
         );
     }
 
@@ -188,7 +188,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
-            fn(): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
+            fn (): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }
 

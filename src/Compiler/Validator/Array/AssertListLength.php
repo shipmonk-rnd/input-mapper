@@ -38,7 +38,12 @@ class AssertListLength implements NarrowingValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, TypeNode $type, Expr $path, PhpCodeBuilder $builder): array
+    public function compile(
+        Expr $value,
+        TypeNode $type,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         $statements = [];
         $length = $builder->funcCall($builder->importFunction('count'), [$value]);

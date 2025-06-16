@@ -24,7 +24,7 @@ class AssertRuntimeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 7, got 1',
-            static fn() => $validator->map(1),
+            static fn () => $validator->map(1),
         );
     }
 

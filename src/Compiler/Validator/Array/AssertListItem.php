@@ -20,7 +20,7 @@ class AssertListItem implements NarrowingValidatorCompiler
 {
 
     /**
-     * @param  list<ValidatorCompiler> $validators
+     * @param list<ValidatorCompiler> $validators
      */
     public function __construct(
         public readonly array $validators,
@@ -31,7 +31,12 @@ class AssertListItem implements NarrowingValidatorCompiler
     /**
      * @return list<Stmt>
      */
-    public function compile(Expr $value, TypeNode $type, Expr $path, PhpCodeBuilder $builder): array
+    public function compile(
+        Expr $value,
+        TypeNode $type,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         [$itemVariableName, $indexVariableName] = $builder->uniqVariableNames('item', 'index');
         $foreachBody = [];
@@ -63,7 +68,7 @@ class AssertListItem implements NarrowingValidatorCompiler
     public function getInputType(): TypeNode
     {
         $validatorInputTypes = array_map(
-            static fn(ValidatorCompiler $validator) => $validator->getInputType(),
+            static fn (ValidatorCompiler $validator) => $validator->getInputType(),
             $this->validators,
         );
 

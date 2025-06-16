@@ -27,13 +27,13 @@ class AssertFloatMultipleOfTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 0.01, got 1.234',
-            static fn() => $validator->map(1.234),
+            static fn () => $validator->map(1.234),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 0.01, got 1.23000000004',
-            static fn() => $validator->map(1.230_000_000_04),
+            static fn () => $validator->map(1.230_000_000_04),
         );
     }
 
@@ -52,13 +52,13 @@ class AssertFloatMultipleOfTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 1.0',
-            static fn() => $validator->map(1.0),
+            static fn () => $validator->map(1.0),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 1.234',
-            static fn() => $validator->map(1.234),
+            static fn () => $validator->map(1.234),
         );
     }
 

@@ -35,7 +35,11 @@ class MapDateTimeImmutable implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $mappedVariableName = $builder->uniqVariableName('mapped');
         $timezoneVariableName = $builder->uniqVariableName('timezone');

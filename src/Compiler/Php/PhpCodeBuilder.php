@@ -119,12 +119,18 @@ class PhpCodeBuilder extends BuilderFactory
         return new Array_($items, ['kind' => Array_::KIND_SHORT]);
     }
 
-    public function arrayItem(Expr $value, ?Expr $key): ArrayItem
+    public function arrayItem(
+        Expr $value,
+        ?Expr $key,
+    ): ArrayItem
     {
         return new ArrayItem($value, $key);
     }
 
-    public function arrayImmutableAppend(Expr $path, Expr $item): Expr
+    public function arrayImmutableAppend(
+        Expr $path,
+        Expr $item,
+    ): Expr
     {
         if ($path instanceof Array_) {
             return $this->array([...$path->items, new ArrayItem($this->val($item))]);
@@ -133,7 +139,10 @@ class PhpCodeBuilder extends BuilderFactory
         return $this->array([new ArrayItem($path, unpack: true), new ArrayItem($this->val($item))]);
     }
 
-    public function arrayDimFetch(Expr $var, ?Expr $dim = null): ArrayDimFetch
+    public function arrayDimFetch(
+        Expr $var,
+        ?Expr $dim = null,
+    ): ArrayDimFetch
     {
         return new ArrayDimFetch($var, $dim);
     }
@@ -143,56 +152,87 @@ class PhpCodeBuilder extends BuilderFactory
         return new BooleanNot($expr);
     }
 
-    public function and(Expr $operand, Expr ...$rest): Expr
+    public function and(
+        Expr $operand,
+        Expr ...$rest,
+    ): Expr
     {
         return count($rest) === 0
             ? $operand
             : new BooleanAnd($this->and($operand, ...array_slice($rest, 0, -1)), array_slice($rest, -1)[0]);
     }
 
-    public function or(Expr $operand, Expr ...$rest): Expr
+    public function or(
+        Expr $operand,
+        Expr ...$rest,
+    ): Expr
     {
         return count($rest) === 0
             ? $operand
             : new BooleanOr($this->or($operand, ...array_slice($rest, 0, -1)), array_slice($rest, -1)[0]);
     }
 
-    public function same(Expr $left, Expr $right): Identical
+    public function same(
+        Expr $left,
+        Expr $right,
+    ): Identical
     {
         return new Identical($left, $right);
     }
 
-    public function notSame(Expr $left, Expr $right): NotIdentical
+    public function notSame(
+        Expr $left,
+        Expr $right,
+    ): NotIdentical
     {
         return new NotIdentical($left, $right);
     }
 
-    public function lt(Expr $left, Expr $right): Smaller
+    public function lt(
+        Expr $left,
+        Expr $right,
+    ): Smaller
     {
         return new Smaller($left, $right);
     }
 
-    public function lte(Expr $left, Expr $right): SmallerOrEqual
+    public function lte(
+        Expr $left,
+        Expr $right,
+    ): SmallerOrEqual
     {
         return new SmallerOrEqual($left, $right);
     }
 
-    public function gt(Expr $left, Expr $right): Greater
+    public function gt(
+        Expr $left,
+        Expr $right,
+    ): Greater
     {
         return new Greater($left, $right);
     }
 
-    public function gte(Expr $left, Expr $right): GreaterOrEqual
+    public function gte(
+        Expr $left,
+        Expr $right,
+    ): GreaterOrEqual
     {
         return new GreaterOrEqual($left, $right);
     }
 
-    public function instanceOf(Expr $left, string $right): Instanceof_
+    public function instanceOf(
+        Expr $left,
+        string $right,
+    ): Instanceof_
     {
         return new Instanceof_($left, new Name($right));
     }
 
-    public function ternary(Expr $cond, Expr $ifTrue, Expr $else): Ternary
+    public function ternary(
+        Expr $cond,
+        Expr $ifTrue,
+        Expr $else,
+    ): Ternary
     {
         return new Ternary($cond, $ifTrue, $else);
     }
@@ -201,7 +241,11 @@ class PhpCodeBuilder extends BuilderFactory
      * @param list<Stmt> $then
      * @param list<Stmt>|null $else
      */
-    public function if(Expr $if, array $then, ?array $else = null): If_
+    public function if(
+        Expr $if,
+        array $then,
+        ?array $else = null,
+    ): If_
     {
         $elseIfClauses = [];
         $elseClause = null;
@@ -221,12 +265,18 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param list<MatchArm> $arms
      */
-    public function match(Expr $cond, array $arms = []): Match_
+    public function match(
+        Expr $cond,
+        array $arms = [],
+    ): Match_
     {
         return new Match_($cond, $arms);
     }
 
-    public function matchArm(?Expr $cond, Expr $body): MatchArm
+    public function matchArm(
+        ?Expr $cond,
+        Expr $body,
+    ): MatchArm
     {
         return new MatchArm(
             $cond !== null ? [$cond] : null,
@@ -237,7 +287,12 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param list<Stmt> $statements
      */
-    public function foreach(Expr $expr, Expr $value, Expr $key, array $statements): Foreach_
+    public function foreach(
+        Expr $expr,
+        Expr $value,
+        Expr $key,
+        array $statements,
+    ): Foreach_
     {
         return new Foreach_($expr, $value, ['stmts' => $statements, 'keyVar' => $key]);
     }
@@ -245,7 +300,12 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param list<Stmt> $statements
      */
-    public function for(Expr $init, Expr $cond, Expr $loop, array $statements): For_
+    public function for(
+        Expr $init,
+        Expr $cond,
+        Expr $loop,
+        array $statements,
+    ): For_
     {
         return new For_([
             'init' => [$init],
@@ -260,7 +320,10 @@ class PhpCodeBuilder extends BuilderFactory
         return new PreInc($var, []);
     }
 
-    public function plus(Expr $var, Expr $value): Plus
+    public function plus(
+        Expr $var,
+        Expr $value,
+    ): Plus
     {
         return new Plus($var, $value);
     }
@@ -268,7 +331,10 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param array<int|string, scalar|array<mixed>|Expr|Arg|null> $args
      */
-    public function throwNew(string $className, array $args): Stmt
+    public function throwNew(
+        string $className,
+        array $args,
+    ): Stmt
     {
         return $this->throw($this->new($className, $args));
     }
@@ -283,12 +349,18 @@ class PhpCodeBuilder extends BuilderFactory
         return new Throw_($expr);
     }
 
-    public function assign(Expr $var, Expr $expr): Expression
+    public function assign(
+        Expr $var,
+        Expr $expr,
+    ): Expression
     {
         return new Expression(new Assign($var, $expr));
     }
 
-    public function assignExpr(Expr $var, Expr $expr): Assign
+    public function assignExpr(
+        Expr $var,
+        Expr $expr,
+    ): Assign
     {
         return new Assign($var, $expr);
     }
@@ -298,7 +370,10 @@ class PhpCodeBuilder extends BuilderFactory
         return new Return_($expr);
     }
 
-    public function uniqConstantName(string $name, mixed $value): string
+    public function uniqConstantName(
+        string $name,
+        mixed $value,
+    ): string
     {
         $i = 1;
         $uniqueName = $name;
@@ -356,9 +431,10 @@ class PhpCodeBuilder extends BuilderFactory
     }
 
     /**
-     * @template T
      * @param callable(): T $cb
      * @return T
+     *
+     * @template T
      */
     public function withVariableScope(callable $cb): mixed
     {
@@ -373,7 +449,10 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @param Expr|bool|int|float|string|array<mixed>|null $value
      */
-    public function addConstant(string $name, Expr|bool|null|int|float|string|array $value): void
+    public function addConstant(
+        string $name,
+        Expr|bool|int|float|string|array|null $value,
+    ): void
     {
         if (isset($this->constants[$name]) && $this->constants[$name] !== $value) {
             throw new LogicException('Constant already exists with different value');
@@ -460,7 +539,7 @@ class PhpCodeBuilder extends BuilderFactory
      */
     public function phpDoc(array $lines): string
     {
-        $lines = array_filter($lines, static fn(?string $line): bool => $line !== null);
+        $lines = array_filter($lines, static fn (?string $line): bool => $line !== null);
 
         if (count($lines) === 0) {
             return '';
@@ -469,7 +548,10 @@ class PhpCodeBuilder extends BuilderFactory
         return "/**\n * " . implode("\n * ", $lines) . "\n */";
     }
 
-    public function mapperMethod(string $methodName, MapperCompiler $mapperCompiler): Method
+    public function mapperMethod(
+        string $methodName,
+        MapperCompiler $mapperCompiler,
+    ): Method
     {
         $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
             [$dataVarName, $pathVarName] = $this->uniqVariableNames('data', 'path');
@@ -549,7 +631,10 @@ class PhpCodeBuilder extends BuilderFactory
             ->getNode();
     }
 
-    public function mapperClass(string $shortClassName, MapperCompiler $mapperCompiler): Class_
+    public function mapperClass(
+        string $shortClassName,
+        MapperCompiler $mapperCompiler,
+    ): Class_
     {
         $mapperConstructor = $this->mapperClassConstructor($mapperCompiler);
 
@@ -583,7 +668,7 @@ class PhpCodeBuilder extends BuilderFactory
 
         $constants = Arrays::map(
             $this->constants,
-            function (Expr|bool|null|int|float|string|array $value, string $name): ClassConst {
+            function (Expr|bool|int|float|string|array|null $value, string $name): ClassConst {
                 return $this->classConst($name, $value)
                     ->makePrivate()
                     ->getNode();
@@ -602,7 +687,10 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @return list<Stmt>
      */
-    public function mapperFile(string $mapperClassName, MapperCompiler $mapperCompiler): array
+    public function mapperFile(
+        string $mapperClassName,
+        MapperCompiler $mapperCompiler,
+    ): array
     {
         $pos = strrpos($mapperClassName, '\\');
         $namespaceName = $pos === false ? '' : substr($mapperClassName, 0, $pos);
@@ -622,7 +710,10 @@ class PhpCodeBuilder extends BuilderFactory
      * @param list<Stmt> $statements
      * @return list<Stmt>
      */
-    public function file(string $namespaceName, array $statements): array
+    public function file(
+        string $namespaceName,
+        array $statements,
+    ): array
     {
         $statements = [
             ...$this->getImports($namespaceName),

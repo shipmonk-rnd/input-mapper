@@ -17,7 +17,7 @@ class MapEnum implements MapperCompiler
 {
 
     /**
-     * @param  class-string<BackedEnum> $enumName
+     * @param class-string<BackedEnum> $enumName
      */
     public function __construct(
         public readonly string $enumName,
@@ -26,7 +26,11 @@ class MapEnum implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $backingValueMapper = $this->backingValueMapperCompiler->compile($value, $path, $builder);
         $statements = $backingValueMapper->statements;

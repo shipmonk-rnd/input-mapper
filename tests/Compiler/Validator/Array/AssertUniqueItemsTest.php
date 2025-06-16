@@ -23,7 +23,7 @@ class AssertUniqueItemsTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with unique items, got 1 multiple times',
-            static fn() => $validator->map([1, 2, 1]),
+            static fn () => $validator->map([1, 2, 1]),
         );
     }
 
@@ -38,7 +38,7 @@ class AssertUniqueItemsTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with unique items, got "def" multiple times',
-            static fn() => $validator->map(['abc', 'def', 'def', 'fgq']),
+            static fn () => $validator->map(['abc', 'def', 'def', 'fgq']),
         );
     }
 

@@ -24,19 +24,19 @@ class MapDateTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string, got 123',
-            static fn() => $mapper->map(123),
+            static fn () => $mapper->map(123),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string, got null',
-            static fn() => $mapper->map(null),
+            static fn () => $mapper->map(null),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected date string in Y-m-d format, got "1985-04-12T23:20:50Z"',
-            static fn() => $mapper->map('1985-04-12T23:20:50Z'),
+            static fn () => $mapper->map('1985-04-12T23:20:50Z'),
         );
     }
 

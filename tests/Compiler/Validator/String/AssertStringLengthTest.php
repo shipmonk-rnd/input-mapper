@@ -33,7 +33,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with at least 5 characters, got "abcd"',
-            static fn() => $validator->map('abcd'),
+            static fn () => $validator->map('abcd'),
         );
     }
 
@@ -49,7 +49,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with at most 5 characters, got "abcdef"',
-            static fn() => $validator->map('abcdef'),
+            static fn () => $validator->map('abcdef'),
         );
     }
 
@@ -66,13 +66,13 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with at least 1 characters, got ""',
-            static fn() => $validator->map(''),
+            static fn () => $validator->map(''),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with at most 5 characters, got "abcdef"',
-            static fn() => $validator->map('abcdef'),
+            static fn () => $validator->map('abcdef'),
         );
     }
 
@@ -87,7 +87,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected string with exactly 5 characters, got ""',
-            static fn() => $validator->map(''),
+            static fn () => $validator->map(''),
         );
     }
 
@@ -96,7 +96,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             LogicException::class,
             'Cannot use "exact" and "min" or "max" at the same time',
-            static fn() => new AssertStringLength(exact: 5, min: 1),
+            static fn () => new AssertStringLength(exact: 5, min: 1),
         );
     }
 

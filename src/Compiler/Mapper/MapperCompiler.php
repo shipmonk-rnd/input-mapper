@@ -14,7 +14,11 @@ interface MapperCompiler
     /**
      * @throws CannotCompileMapperException
      */
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr;
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr;
 
     public function getInputType(): TypeNode;
 

@@ -15,7 +15,7 @@ class CannotCompileMapperException extends LogicException
     public static function withIncompatibleMapper(
         MapperCompiler $mapperCompiler,
         TypeNode $inputType,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $mapperCompilerClass = $mapperCompiler::class;
@@ -26,13 +26,14 @@ class CannotCompileMapperException extends LogicException
     }
 
     /**
-     * @template T of object
      * @param MapDiscriminatedObject<T> $mapperCompiler
+     *
+     * @template T of object
      */
     public static function withIncompatibleSubtypeMapper(
         MapDiscriminatedObject $mapperCompiler,
         MapperCompiler $subtypeMapperCompiler,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $mapperOutputType = $mapperCompiler->getOutputType();
@@ -46,7 +47,7 @@ class CannotCompileMapperException extends LogicException
     public static function withIncompatibleValidator(
         ValidatorCompiler $validatorCompiler,
         MapperCompiler $mapperCompiler,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $validatorCompilerClass = $validatorCompiler::class;

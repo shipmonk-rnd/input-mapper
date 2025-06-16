@@ -35,7 +35,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 5, got 4',
-            static fn() => $validator->map(4),
+            static fn () => $validator->map(4),
         );
     }
 
@@ -50,7 +50,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than 5, got 5',
-            static fn() => $validator->map(5),
+            static fn () => $validator->map(5),
         );
     }
 
@@ -66,7 +66,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 5, got 6',
-            static fn() => $validator->map(6),
+            static fn () => $validator->map(6),
         );
     }
 
@@ -81,7 +81,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than 5, got 5',
-            static fn() => $validator->map(5),
+            static fn () => $validator->map(5),
         );
     }
 
@@ -98,18 +98,21 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 5, got 4',
-            static fn() => $validator->map(4),
+            static fn () => $validator->map(4),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 10, got 11',
-            static fn() => $validator->map(11),
+            static fn () => $validator->map(11),
         );
     }
 
     #[DataProvider('provideGetNarrowedInputTypeData')]
-    public function testGetNarrowedInputType(AssertIntRange $validatorCompiler, string $expectedNarrowedType): void
+    public function testGetNarrowedInputType(
+        AssertIntRange $validatorCompiler,
+        string $expectedNarrowedType,
+    ): void
     {
         self::assertSame($expectedNarrowedType, $validatorCompiler->getNarrowedInputType()->__toString());
     }

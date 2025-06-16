@@ -24,7 +24,11 @@ class MapArray implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         [$keyVariableName, $valueVariableName, $mappedVariableName] = $builder->uniqVariableNames('key', 'value', 'mapped');
 

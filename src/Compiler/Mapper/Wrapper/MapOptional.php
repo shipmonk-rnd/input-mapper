@@ -25,14 +25,22 @@ class MapOptional implements UndefinedAwareMapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $mapper = $this->mapperCompiler->compile($value, $path, $builder);
         $mapped = $builder->staticCall($builder->importClass(Optional::class), 'of', [$mapper->expr]);
         return new CompiledExpr($mapped, $mapper->statements);
     }
 
-    public function compileUndefined(Expr $path, Expr $key, PhpCodeBuilder $builder): CompiledExpr
+    public function compileUndefined(
+        Expr $path,
+        Expr $key,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $mapped = $builder->staticCall($builder->importClass(Optional::class), 'none', [$path, $key]);
         return new CompiledExpr($mapped);

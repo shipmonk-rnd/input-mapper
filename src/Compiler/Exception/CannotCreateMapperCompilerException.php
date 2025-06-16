@@ -13,7 +13,11 @@ use Throwable;
 class CannotCreateMapperCompilerException extends LogicException
 {
 
-    public static function fromType(TypeNode $type, ?string $reason = null, ?Throwable $previous = null): self
+    public static function fromType(
+        TypeNode $type,
+        ?string $reason = null,
+        ?Throwable $previous = null,
+    ): self
     {
         $reason = $reason !== null ? ", because {$reason}" : '';
         return new self("Cannot create mapper for type {$type}{$reason}", 0, $previous);
@@ -23,7 +27,7 @@ class CannotCreateMapperCompilerException extends LogicException
         MapperCompiler $mapperCompiler,
         ReflectionParameter $parameter,
         TypeNode $parameterType,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $mapperCompilerClass = $mapperCompiler::class;
@@ -42,7 +46,7 @@ class CannotCreateMapperCompilerException extends LogicException
         UndefinedAwareMapperCompiler $mapperCompiler,
         ReflectionParameter $parameter,
         TypeNode $parameterType,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $mapperCompilerClass = $mapperCompiler::class;
@@ -60,7 +64,7 @@ class CannotCreateMapperCompilerException extends LogicException
     public static function withIncompatibleValidator(
         ValidatorCompiler $validatorCompiler,
         MapperCompiler $mapperCompiler,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
     ): self
     {
         $validatorCompilerClass = $validatorCompiler::class;

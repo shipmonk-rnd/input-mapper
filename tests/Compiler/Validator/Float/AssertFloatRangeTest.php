@@ -33,7 +33,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 5, got 4.0',
-            static fn() => $validator->map(4.0),
+            static fn () => $validator->map(4.0),
         );
     }
 
@@ -48,7 +48,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than 5, got 5.0',
-            static fn() => $validator->map(5.0),
+            static fn () => $validator->map(5.0),
         );
     }
 
@@ -64,7 +64,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 5, got 6.0',
-            static fn() => $validator->map(6.0),
+            static fn () => $validator->map(6.0),
         );
     }
 
@@ -79,7 +79,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than 5, got 5.0',
-            static fn() => $validator->map(5.0),
+            static fn () => $validator->map(5.0),
         );
     }
 
@@ -96,13 +96,13 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 5, got 4.0',
-            static fn() => $validator->map(4.0),
+            static fn () => $validator->map(4.0),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 10, got 11.0',
-            static fn() => $validator->map(11.0),
+            static fn () => $validator->map(11.0),
         );
     }
 

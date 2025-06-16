@@ -35,7 +35,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with at least 2 items, got array',
-            static fn() => $validator->map(['a']),
+            static fn () => $validator->map(['a']),
         );
     }
 
@@ -51,7 +51,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with at most 5 items, got array',
-            static fn() => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
+            static fn () => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
         );
     }
 
@@ -68,13 +68,13 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with at least 1 items, got array',
-            static fn() => $validator->map([]),
+            static fn () => $validator->map([]),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with at most 5 items, got array',
-            static fn() => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
+            static fn () => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
         );
     }
 
@@ -89,7 +89,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected list with exactly 5 items, got array',
-            static fn() => $validator->map([]),
+            static fn () => $validator->map([]),
         );
     }
 
@@ -98,7 +98,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         self::assertException(
             LogicException::class,
             'Cannot use "exact" and "min" or "max" at the same time',
-            static fn() => new AssertListLength(exact: 5, min: 1),
+            static fn () => new AssertListLength(exact: 5, min: 1),
         );
     }
 

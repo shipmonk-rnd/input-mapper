@@ -65,7 +65,10 @@ class PhpCodePrinter extends Standard
     /**
      * @param array<Node> $nodes
      */
-    protected function pStmts(array $nodes, bool $indent = true): string
+    protected function pStmts(
+        array $nodes,
+        bool $indent = true,
+    ): string
     {
         if ($indent) {
             $this->indent();

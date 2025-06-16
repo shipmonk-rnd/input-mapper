@@ -3,14 +3,15 @@
 namespace ShipMonk\InputMapper\Runtime;
 
 /**
- * @template-covariant T
  * @extends Optional<T>
+ *
+ * @template-covariant T
  */
 final class OptionalSome extends Optional
 {
 
     /**
-     * @param  T $value
+     * @param T $value
      */
     protected function __construct(
         private readonly mixed $value,
@@ -40,9 +41,10 @@ final class OptionalSome extends Optional
     }
 
     /**
-     * @template D
-     * @param  D $default
+     * @param D $default
      * @return T
+     *
+     * @template D
      */
     public function getOrElse(mixed $default): mixed
     {

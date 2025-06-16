@@ -33,7 +33,11 @@ class MapFloat implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $mappedVariableName = $builder->uniqVariableName('mapped');
 
@@ -84,7 +88,11 @@ class MapFloat implements MapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function createFiniteCheckStatements(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function createFiniteCheckStatements(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         if (!$this->allowInfinity && !$this->allowNan) {
             $finiteCheck = $builder->not($builder->funcCall($builder->importFunction('is_finite'), [$value]));
@@ -118,7 +126,11 @@ class MapFloat implements MapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function createSafeIntCheckStatements(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function createSafeIntCheckStatements(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         $minSafeIntConstName = $builder->uniqConstantName('MIN_SAFE_INTEGER', self::MIN_SAFE_INTEGER);
         $maxSafeIntConstName = $builder->uniqConstantName('MAX_SAFE_INTEGER', self::MAX_SAFE_INTEGER);

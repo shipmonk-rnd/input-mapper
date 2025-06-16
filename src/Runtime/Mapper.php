@@ -5,16 +5,20 @@ namespace ShipMonk\InputMapper\Runtime;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
- * @template-covariant  T
+ * @template-covariant T
  */
 interface Mapper
 {
 
     /**
-     * @param  list<string|int> $path
+     * @param list<string|int> $path
      * @return T
+     *
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed;
+    public function map(
+        mixed $data,
+        array $path = [],
+    ): mixed;
 
 }

@@ -32,7 +32,11 @@ class MapArrayShape implements MapperCompiler
     {
     }
 
-    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
     {
         $statements = [];
         $mappedVariableName = $builder->uniqVariableName('mapped');
@@ -115,7 +119,11 @@ class MapArrayShape implements MapperCompiler
     /**
      * @return list<Stmt>
      */
-    private function checkForExtraKeys(Expr $value, Expr $path, PhpCodeBuilder $builder): array
+    private function checkForExtraKeys(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): array
     {
         $statements = [];
 

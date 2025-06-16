@@ -35,7 +35,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04 (UTC)',
-            static fn() => $validator->map('2000-01-04'),
+            static fn () => $validator->map('2000-01-04'),
         );
     }
 
@@ -50,7 +50,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than 2000-01-05, got 2000-01-05 (UTC)',
-            static fn() => $validator->map('2000-01-05'),
+            static fn () => $validator->map('2000-01-05'),
         );
     }
 
@@ -66,7 +66,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 2000-01-05, got 2000-01-06 (UTC)',
-            static fn() => $validator->map('2000-01-06'),
+            static fn () => $validator->map('2000-01-06'),
         );
     }
 
@@ -81,7 +81,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than 2000-01-05, got 2000-01-05 (UTC)',
-            static fn() => $validator->map('2000-01-05'),
+            static fn () => $validator->map('2000-01-05'),
         );
     }
 
@@ -98,13 +98,13 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-05, got 2000-01-04 (UTC)',
-            static fn() => $validator->map('2000-01-04'),
+            static fn () => $validator->map('2000-01-04'),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value less than or equal to 2000-01-10, got 2000-01-11 (UTC)',
-            static fn() => $validator->map('2000-01-11'),
+            static fn () => $validator->map('2000-01-11'),
         );
     }
 
@@ -122,13 +122,13 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-01T00:00:05Z, got 2000-01-01T00:00:04+00:00',
-            static fn() => $validator->map('2000-01-01T00:00:04Z'),
+            static fn () => $validator->map('2000-01-01T00:00:04Z'),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-01T00:00:05Z, got 2000-01-01T02:00:04+02:00',
-            static fn() => $validator->map('2000-01-01T02:00:04+02:00'),
+            static fn () => $validator->map('2000-01-01T02:00:04+02:00'),
         );
     }
 
@@ -144,7 +144,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to now, got %s',
-            static fn() => $validator->map((new DateTimeImmutable('-1 minute'))->format(DateTimeInterface::RFC3339)),
+            static fn () => $validator->map((new DateTimeImmutable('-1 minute'))->format(DateTimeInterface::RFC3339)),
         );
     }
 
@@ -160,7 +160,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-05 (in America/New_York timezone), got 2000-01-04 (America/New_York)',
-            static fn() => $validator->map('2000-01-04'),
+            static fn () => $validator->map('2000-01-04'),
         );
     }
 
