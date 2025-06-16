@@ -503,7 +503,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @return iterable<string, array{TypeNode, ReflectionClass<object>, list<string>, string}>
+     * @return iterable<string, array{TypeNode, ReflectionClass<PhpDocTypeUtilsTest>, list<string>, string}>
      */
     public static function provideResolveData(): iterable
     {
