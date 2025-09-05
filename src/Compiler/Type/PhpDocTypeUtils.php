@@ -540,7 +540,7 @@ class PhpDocTypeUtils
 
                 'non-empty-list' => match (true) {
                     $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)
-                        && Arrays::some($a->items, static fn (ArrayShapeItemNode $item, int $idx) => !$item->optional),
+                        && Arrays::some($a->items, static fn (ArrayShapeItemNode $item) => !$item->optional),
                     $a instanceof IdentifierTypeNode => $a->name === 'non-empty-list',
                     $a instanceof GenericTypeNode => $a->type->name === 'non-empty-list',
                     default => false,

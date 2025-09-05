@@ -36,6 +36,7 @@ class OptionalNoneTest extends InputMapperTestCase
             },
         );
 
+        // @phpstan-ignore deadCode.unreachable (false positive)
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /foo: Missing required key "bar"',
