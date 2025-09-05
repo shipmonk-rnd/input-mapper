@@ -36,6 +36,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
+use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
@@ -151,11 +152,17 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 BrandInputWithDefaultValues::class,
                 [
                     'name' => new MapDefaultValue(
-                        new MapString(),
+                        new ValidatedMapperCompiler(
+                            new MapString(),
+                            [new AssertStringLength(min: 5)],
+                        ),
                         'ShipMonk',
                     ),
                     'foundedIn' => new MapDefaultValue(
-                        new MapNullable(new MapInt()),
+                        new MapNullable(new ValidatedMapperCompiler(
+                            new MapInt(),
+                            [new AssertInt32()],
+                        )),
                         null,
                     ),
                     'founders' => new MapDefaultValue(

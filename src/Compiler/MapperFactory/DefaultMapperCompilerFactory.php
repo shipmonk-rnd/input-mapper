@@ -486,20 +486,20 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $validatorInputType = $validatorCompiler->getInputType();
         $mapperOutputType = $mapperCompiler->getOutputType();
 
-        if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
-            return new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);
-        }
-
         if ($mapperCompiler instanceof MapDefaultValue) {
             return new MapDefaultValue($this->addValidator($mapperCompiler->mapperCompiler, $validatorCompiler), $mapperCompiler->defaultValue);
+        }
+
+        if ($mapperCompiler instanceof MapOptional) {
+            return new MapOptional($this->addValidator($mapperCompiler->mapperCompiler, $validatorCompiler));
         }
 
         if ($mapperCompiler instanceof MapNullable) {
             return new MapNullable($this->addValidator($mapperCompiler->innerMapperCompiler, $validatorCompiler));
         }
 
-        if ($mapperCompiler instanceof MapOptional) {
-            return new MapOptional($this->addValidator($mapperCompiler->mapperCompiler, $validatorCompiler));
+        if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
+            return new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);
         }
 
         throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $mapperCompiler);
