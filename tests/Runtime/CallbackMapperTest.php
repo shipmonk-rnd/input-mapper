@@ -18,7 +18,7 @@ class CallbackMapperTest extends InputMapperTestCase
 
     public function testMapThrowsException(): void
     {
-        $mapper = new CallbackMapper(static function (mixed $data, array $path): never {
+        $mapper = new CallbackMapper(static function (): never {
             throw MappingFailedException::incorrectValue('123', [], 'int');
         });
 

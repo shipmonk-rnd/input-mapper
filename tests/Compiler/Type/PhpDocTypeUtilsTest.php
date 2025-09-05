@@ -99,7 +99,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
 
     public function testFromReflectionType(): void
     {
-        $function = static function (
+        $function = static function ( // @phpstan-ignore shipmonk.unusedParameter, shipmonk.unusedParameter, shipmonk.unusedParameter, shipmonk.unusedParameter, shipmonk.unusedParameter
             int $int,
             ?int $intNullable,
             int|float $intOrFloat,
@@ -109,8 +109,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         };
 
         $parameters = (new ReflectionFunction($function))->getParameters();
-        $parameterTypes = array_map(static fn (ReflectionParameter $parameter,
-        ) => $parameter->getType() ?? throw new LogicException(), $parameters);
+        $parameterTypes = array_map(static fn (ReflectionParameter $parameter) => $parameter->getType() ?? throw new LogicException(), $parameters);
 
         self::assertEquals(
             new IdentifierTypeNode('int'),
