@@ -498,7 +498,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
     }
 
     /**
-     * @param ReflectionClass<object> $context
+     * @param ReflectionClass<*> $context
      * @param list<string> $genericParameterNames
      */
     #[DataProvider('provideResolveData')]
