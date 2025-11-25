@@ -314,7 +314,7 @@ class PhpDocTypeUtils
     }
 
     /**
-     * @param ReflectionClass<*> $context
+     * @param ReflectionClass<covariant object> $context
      * @param list<string> $genericParameterNames
      */
     public static function resolve(
