@@ -13,7 +13,6 @@ use function implode;
 use function is_bool;
 use function is_finite;
 use function is_float;
-use function is_infinite;
 use function is_int;
 use function is_nan;
 use function is_string;
@@ -161,7 +160,7 @@ class MappingFailedException extends RuntimeException
                 return 'NAN';
             }
 
-            return is_infinite($value) && $value > 0 ? 'INF' : '-INF';
+            return $value > 0 ? 'INF' : '-INF';
         }
 
         if (is_string($value)) {
