@@ -13,7 +13,9 @@ use function implode;
 use function is_bool;
 use function is_finite;
 use function is_float;
+use function is_infinite;
 use function is_int;
+use function is_nan;
 use function is_string;
 use function json_encode;
 use function mb_strlen;
@@ -151,9 +153,15 @@ class MappingFailedException extends RuntimeException
         }
 
         if (is_float($value)) {
-            return is_finite($value)
-                ? json_encode($value, self::JSON_ENCODE_OPTIONS)
-                : (string) $value;
+            if (is_finite($value)) {
+                return json_encode($value, self::JSON_ENCODE_OPTIONS);
+            }
+
+            if (is_nan($value)) {
+                return 'NAN';
+            }
+
+            return is_infinite($value) && $value > 0 ? 'INF' : '-INF';
         }
 
         if (is_string($value)) {
