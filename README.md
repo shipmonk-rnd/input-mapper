@@ -50,6 +50,7 @@ Input Mapper comes with some built-in validators:
 * string validators:
   * `AssertStringLength`
   * `AssertStringMatches`
+  * `AssertStringNonEmpty`
   * `AssertUrl`
 * list validators:
   * `AssertListItem`
