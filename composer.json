@@ -12,16 +12,16 @@
     },
     "require-dev": {
         "editorconfig-checker/editorconfig-checker": "^10.7.0",
-        "ergebnis/composer-normalize": "^2.47.0",
+        "ergebnis/composer-normalize": "^2.48.2",
         "phpstan/phpstan": "^2.1.32",
-        "phpstan/phpstan-phpunit": "^2.0.6",
-        "phpstan/phpstan-strict-rules": "^2.0.4",
-        "phpunit/phpunit": "^10.5.57",
+        "phpstan/phpstan-phpunit": "^2.0.8",
+        "phpstan/phpstan-strict-rules": "^2.0.7",
+        "phpunit/phpunit": "^10.5.59",
         "shipmonk/coding-standard": "^0.2.0",
-        "shipmonk/composer-dependency-analyser": "^1.8.3",
-        "shipmonk/dead-code-detector": "^0.11.0",
+        "shipmonk/composer-dependency-analyser": "^1.8.4",
+        "shipmonk/dead-code-detector": "^0.14.0",
         "shipmonk/name-collision-detector": "^2.1.1",
-        "shipmonk/phpstan-rules": "^4.1.2"
+        "shipmonk/phpstan-rules": "^4.3.0"
     },
     "autoload": {
         "psr-4": {
