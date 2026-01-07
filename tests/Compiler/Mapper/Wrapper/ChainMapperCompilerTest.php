@@ -1,14 +1,14 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data\MapToDouble;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\MapToDouble;
 
 class ChainMapperCompilerTest extends MapperCompilerTestCase
 {
@@ -35,7 +35,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
 
         self::assertException(
             CannotCompileMapperException::class,
-            'Cannot compile mapper ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data\MapToDouble, because its input type \'int\' is not super type of \'string\'',
+            'Cannot compile mapper ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\MapToDouble, because its input type \'int\' is not super type of \'string\'',
             fn () => $this->compileMapper('DoubleIntIncompatible', $mapperCompiler),
         );
     }

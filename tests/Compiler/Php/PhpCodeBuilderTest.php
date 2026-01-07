@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Php;
+namespace ShipMonk\InputMapperTests\Compiler\Php;
 
 use BackedEnum;
 use DateTimeImmutable;
@@ -16,7 +16,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class PhpCodeBuilderTest extends InputMapperTestCase
 {

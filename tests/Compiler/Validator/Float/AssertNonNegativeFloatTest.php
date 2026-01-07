@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Float;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertNonNegativeFloat;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertNonNegativeFloatTest extends ValidatorCompilerTestCase
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Object;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Object;
 
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -8,7 +8,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDate;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Validator\Object\AssertDateTimeRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 {

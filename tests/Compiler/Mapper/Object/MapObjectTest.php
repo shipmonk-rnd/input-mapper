@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -12,10 +12,10 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\CollectionInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\PersonInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 
 class MapObjectTest extends MapperCompilerTestCase
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Type;
+namespace ShipMonk\InputMapperTests\Compiler\Type;
 
 use Countable;
 use DateTimeImmutable;
@@ -31,7 +31,7 @@ use ReflectionFunction;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 use Traversable;
 use function array_map;
 use function array_reverse;
@@ -542,7 +542,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ]),
             new ReflectionClass(self::class),
             [],
-            '(ShipMonkTests\\InputMapper\\Compiler\\Type\\PhpDocTypeUtilsTest | string)',
+            '(ShipMonk\\InputMapperTests\\Compiler\\Type\\PhpDocTypeUtilsTest | string)',
         ];
 
         yield 'T' => [

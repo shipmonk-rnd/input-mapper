@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -14,16 +14,16 @@ use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalChildTwoInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumChildInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumParentInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithEnumType;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldChildInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldParentInput;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildTwoInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithEnumChildInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithEnumParentInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithEnumType;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldChildInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldParentInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput;
 
 class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 {
@@ -187,7 +187,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
         self::assertException(
             CannotCompileMapperException::class,
-            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
+            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
             fn (): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }

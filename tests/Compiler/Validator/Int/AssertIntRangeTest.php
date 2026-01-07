@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Int;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 

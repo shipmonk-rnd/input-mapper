@@ -1,18 +1,18 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime;
+namespace ShipMonk\InputMapperTests\Runtime;
 
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
-use ShipMonkTests\InputMapper\Runtime\Data\DummyMapper;
-use ShipMonkTests\InputMapper\Runtime\Data\EmptyInput;
-use ShipMonkTests\InputMapper\Runtime\Data\InputInterface;
-use ShipMonkTests\InputMapper\Runtime\Data\InterfaceImplementationInput;
-use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNotNullInput;
-use ShipMonkTests\InputMapper\Runtime\Data\Optional\OptionalNullableInput;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
+use ShipMonk\InputMapperTests\Runtime\Data\DummyMapper;
+use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
+use ShipMonk\InputMapperTests\Runtime\Data\InputInterface;
+use ShipMonk\InputMapperTests\Runtime\Data\InterfaceImplementationInput;
+use ShipMonk\InputMapperTests\Runtime\Data\Optional\OptionalNotNullInput;
+use ShipMonk\InputMapperTests\Runtime\Data\Optional\OptionalNullableInput;
 use function sys_get_temp_dir;
 
 class MapperProviderTest extends InputMapperTestCase

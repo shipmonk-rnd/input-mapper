@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Int;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertIntMultipleOfTest extends ValidatorCompilerTestCase
 {

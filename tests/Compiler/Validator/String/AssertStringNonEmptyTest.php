@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\String;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertStringNonEmptyTest extends ValidatorCompilerTestCase
 {

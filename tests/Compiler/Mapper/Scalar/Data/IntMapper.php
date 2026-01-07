@@ -1,6 +1,6 @@
 <?php declare (strict_types=1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar\Data;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;

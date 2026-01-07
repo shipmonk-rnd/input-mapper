@@ -1,6 +1,6 @@
 <?php declare (strict_types=1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Float\Data;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Float\Data;
 
 use Nette\Utils\Floats;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;

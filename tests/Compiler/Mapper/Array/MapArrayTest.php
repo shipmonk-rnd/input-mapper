@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Array;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapArrayTest extends MapperCompilerTestCase
 {

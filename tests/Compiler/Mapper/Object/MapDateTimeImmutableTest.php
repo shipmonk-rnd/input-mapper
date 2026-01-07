@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapDateTimeImmutableTest extends MapperCompilerTestCase
 {

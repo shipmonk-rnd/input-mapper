@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator;
+namespace ShipMonk\InputMapperTests\Compiler\Validator;
 
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 abstract class ValidatorCompilerTestCase extends MapperCompilerTestCase
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Array;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
@@ -8,7 +8,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertListLengthTest extends ValidatorCompilerTestCase
 {

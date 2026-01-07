@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper;
 
 use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -8,7 +8,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 use function assert;
 use function class_exists;
 use function is_a;
@@ -39,7 +39,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
         $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
 
-        $mapperDir = strtr(str_replace('ShipMonkTests\InputMapper', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
+        $mapperDir = strtr(str_replace('ShipMonk\InputMapperTests', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
         $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
 
         $builder = new PhpCodeBuilder();

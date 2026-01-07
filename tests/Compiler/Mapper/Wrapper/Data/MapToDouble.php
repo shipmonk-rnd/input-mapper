@@ -1,6 +1,6 @@
 <?php declare (strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
@@ -9,9 +9,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
 use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data\Semaphore;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\Semaphore;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
 
 class MapDefaultValueTest extends MapperCompilerTestCase
 {
