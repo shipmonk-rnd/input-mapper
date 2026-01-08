@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkDev\PHPStan;
+namespace ShipMonk\InputMapperDev\PHPStan;
 
 use ReflectionMethod;
 use ShipMonk\PHPStan\DeadCode\Provider\ReflectionBasedMemberUsageProvider;

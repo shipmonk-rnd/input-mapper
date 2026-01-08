@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Data;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Data;
 
 use ShipMonk\InputMapper\Compiler\Validator\AssertRuntime;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;

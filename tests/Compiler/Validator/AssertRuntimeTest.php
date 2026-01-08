@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator;
+namespace ShipMonk\InputMapperTests\Compiler\Validator;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\Data\AssertMultipleOfSeven;
+use ShipMonk\InputMapperTests\Compiler\Validator\Data\AssertMultipleOfSeven;
 
 class AssertRuntimeTest extends ValidatorCompilerTestCase
 {

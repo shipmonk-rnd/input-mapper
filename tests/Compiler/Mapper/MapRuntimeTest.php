@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper;
 
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Data\MapMultiplyBySeven;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Data\MapMultiplyBySeven;
 
 class MapRuntimeTest extends MapperCompilerTestCase
 {

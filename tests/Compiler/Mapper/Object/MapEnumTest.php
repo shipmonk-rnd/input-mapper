@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
-use ShipMonkTests\InputMapper\Compiler\Mapper\Object\Data\SuitEnum;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 
 class MapEnumTest extends MapperCompilerTestCase
 {

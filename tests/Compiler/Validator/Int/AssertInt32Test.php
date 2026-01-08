@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Int;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertInt32Test extends ValidatorCompilerTestCase
 {

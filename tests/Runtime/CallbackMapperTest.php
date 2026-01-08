@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime;
+namespace ShipMonk\InputMapperTests\Runtime;
 
 use ShipMonk\InputMapper\Runtime\CallbackMapper;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class CallbackMapperTest extends InputMapperTestCase
 {

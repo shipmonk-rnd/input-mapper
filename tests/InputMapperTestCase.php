@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper;
+namespace ShipMonk\InputMapperTests;
 
 use Nette\Utils\FileSystem;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;

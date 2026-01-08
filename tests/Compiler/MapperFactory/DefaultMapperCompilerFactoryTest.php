@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\MapperFactory;
+namespace ShipMonk\InputMapperTests\Compiler\MapperFactory;
 
 use DateTime;
 use DateTimeImmutable;
@@ -44,25 +44,25 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalCatInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalDogInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\AnimalType;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\BrandInputWithDefaultValues;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarFilterInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\CarInputWithVarTags;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\ColorEnum;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\EnumFilterInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\EqualsFilterInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InFilterInput;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithDate;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
-use ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalCatInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalDogInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalType;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\BrandInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\BrandInputWithDefaultValues;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarInputWithVarTags;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\ColorEnum;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EnumFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithoutConstructor;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 {
@@ -482,19 +482,19 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'InputWithoutConstructor' => [
             InputWithoutConstructor::class,
             [],
-            'Cannot create mapper for type ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithoutConstructor, because class has no constructor',
+            'Cannot create mapper for type ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithoutConstructor, because class has no constructor',
         ];
 
         yield 'InputWithPrivateConstructor' => [
             InputWithPrivateConstructor::class,
             [],
-            'Cannot create mapper for type ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithPrivateConstructor, because class has a non-public constructor',
+            'Cannot create mapper for type ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstructor, because class has a non-public constructor',
         ];
 
         yield 'InputWithIncompatibleMapperCompiler' => [
             InputWithIncompatibleMapperCompiler::class,
             [],
-            'Cannot use mapper ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString for parameter $id of method ShipMonkTests\InputMapper\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
+            'Cannot use mapper ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString for parameter $id of method ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
         ];
 
         yield 'DateTime' => [
@@ -522,7 +522,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'EnumFilterInput<int>' => [
             EnumFilterInput::class . '<int>',
             [],
-            'Cannot create mapper for type ShipMonkTests\\InputMapper\\Compiler\\MapperFactory\\Data\\EnumFilterInput<int>, because type int is not a subtype of BackedEnum',
+            'Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\EnumFilterInput<int>, because type int is not a subtype of BackedEnum',
         ];
     }
 

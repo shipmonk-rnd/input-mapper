@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime;
+namespace ShipMonk\InputMapperTests\Runtime;
 
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class OptionalSomeTest extends InputMapperTestCase
 {

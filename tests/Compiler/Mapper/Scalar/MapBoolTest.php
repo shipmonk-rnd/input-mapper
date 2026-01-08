@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Scalar;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapBoolTest extends MapperCompilerTestCase
 {

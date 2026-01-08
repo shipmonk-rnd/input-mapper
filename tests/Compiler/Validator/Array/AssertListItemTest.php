@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Validator\Array;
+namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -12,7 +12,7 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonkTests\InputMapper\Compiler\Validator\ValidatorCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
 class AssertListItemTest extends ValidatorCompilerTestCase
 {

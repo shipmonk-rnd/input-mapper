@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Compiler\Mapper\Mixed;
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Mixed;
 
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
-use ShipMonkTests\InputMapper\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapMixedTest extends MapperCompilerTestCase
 {

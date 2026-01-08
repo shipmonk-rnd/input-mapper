@@ -1,11 +1,11 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime;
+namespace ShipMonk\InputMapperTests\Runtime;
 
 use LogicException;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonkTests\InputMapper\InputMapperTestCase;
+use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class OptionalNoneTest extends InputMapperTestCase
 {

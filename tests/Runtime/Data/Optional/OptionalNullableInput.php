@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonkTests\InputMapper\Runtime\Data\Optional;
+namespace ShipMonk\InputMapperTests\Runtime\Data\Optional;
 
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Runtime\Optional;
