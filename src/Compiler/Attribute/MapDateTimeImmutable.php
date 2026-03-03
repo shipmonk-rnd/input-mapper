@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
 use DateTimeImmutable;

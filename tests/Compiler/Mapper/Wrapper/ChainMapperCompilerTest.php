@@ -2,10 +2,10 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
+use ShipMonk\InputMapper\Compiler\Attribute\ChainMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\MapToDouble;

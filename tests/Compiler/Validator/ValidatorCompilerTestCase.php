@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator;
 
+use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;

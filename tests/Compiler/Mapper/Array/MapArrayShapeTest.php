@@ -2,10 +2,10 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
+use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 

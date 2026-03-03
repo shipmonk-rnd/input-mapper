@@ -13,26 +13,26 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
+use ShipMonk\InputMapper\Compiler\Attribute\MapArray;
+use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
+use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDefaultValue;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\ArrayShapeItemMapping;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
@@ -503,7 +503,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'InputWithIncompatibleMapperCompiler' => [
             InputWithIncompatibleMapperCompiler::class,
             [],
-            'Cannot use mapper ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString for parameter $id of method ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
+            'Cannot use mapper ShipMonk\InputMapper\Compiler\Attribute\MapString for parameter $id of method ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
         ];
 
         yield 'DateTime' => [

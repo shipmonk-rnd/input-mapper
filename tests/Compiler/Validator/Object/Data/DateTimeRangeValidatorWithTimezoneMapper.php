@@ -4,7 +4,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Object\Data;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;

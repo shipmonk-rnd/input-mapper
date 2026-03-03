@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 

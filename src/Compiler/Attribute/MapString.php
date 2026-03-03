@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonk\InputMapper\Compiler\Mapper\Scalar;
+namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
 use PhpParser\Node\Expr;
@@ -12,7 +12,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapBool implements MapperCompiler
+class MapString implements MapperCompiler
 {
 
     public function compile(
@@ -22,12 +22,12 @@ class MapBool implements MapperCompiler
     ): CompiledExpr
     {
         $statements = [
-            $builder->if($builder->not($builder->funcCall($builder->importFunction('is_bool'), [$value])), [
+            $builder->if($builder->not($builder->funcCall($builder->importFunction('is_string'), [$value])), [
                 $builder->throw(
                     $builder->staticCall(
                         $builder->importClass(MappingFailedException::class),
                         'incorrectType',
-                        [$value, $path, $builder->val('bool')],
+                        [$value, $path, $builder->val('string')],
                     ),
                 ),
             ]),
@@ -43,7 +43,7 @@ class MapBool implements MapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode('bool');
+        return new IdentifierTypeNode('string');
     }
 
 }

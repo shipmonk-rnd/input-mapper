@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

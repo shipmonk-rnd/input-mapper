@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ChainMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Attribute\ChainMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;

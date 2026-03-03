@@ -3,9 +3,9 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use LogicException;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

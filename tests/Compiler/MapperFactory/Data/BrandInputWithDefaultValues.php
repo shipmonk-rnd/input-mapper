@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\MapperFactory\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Optional;
+use ShipMonk\InputMapper\Compiler\Attribute\Optional;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 

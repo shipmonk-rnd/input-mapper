@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\Data\AssertMultipleOfSeven;
 

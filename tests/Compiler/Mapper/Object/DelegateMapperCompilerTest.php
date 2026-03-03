@@ -2,14 +2,14 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;

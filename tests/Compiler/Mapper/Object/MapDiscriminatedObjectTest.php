@@ -2,15 +2,15 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\Optional;

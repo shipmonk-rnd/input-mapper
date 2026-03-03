@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
+use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

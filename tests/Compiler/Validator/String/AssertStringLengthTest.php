@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
 use LogicException;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

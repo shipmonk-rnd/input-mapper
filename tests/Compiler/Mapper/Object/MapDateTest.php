@@ -3,8 +3,8 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use DateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDate;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;

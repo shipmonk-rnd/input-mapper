@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;

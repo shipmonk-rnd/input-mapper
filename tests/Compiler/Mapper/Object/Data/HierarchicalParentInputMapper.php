@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;

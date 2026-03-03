@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;

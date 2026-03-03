@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapBool;
+use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 

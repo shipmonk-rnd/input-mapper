@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
+use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use const INF;

@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Mixed\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;

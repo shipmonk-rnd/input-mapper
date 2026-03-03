@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Object;
 
 use DateTimeImmutable;
 use DateTimeInterface;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDate;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Validator\Object\AssertDateTimeRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

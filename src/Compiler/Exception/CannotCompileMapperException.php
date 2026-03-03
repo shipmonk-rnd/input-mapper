@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapper\Compiler\Exception;
 
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
 

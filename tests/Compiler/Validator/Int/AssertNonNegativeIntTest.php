@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 

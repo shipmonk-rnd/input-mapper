@@ -2,12 +2,12 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDefaultValue;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\Semaphore;

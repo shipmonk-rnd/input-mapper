@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\MapperFactory\Data;
 
 use DateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
 
 class InputWithDate
 {

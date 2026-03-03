@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapList;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListItem;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;

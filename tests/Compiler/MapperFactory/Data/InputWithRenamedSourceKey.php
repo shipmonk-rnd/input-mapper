@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\MapperFactory\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\SourceKey;
+use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 
 class InputWithRenamedSourceKey
 {

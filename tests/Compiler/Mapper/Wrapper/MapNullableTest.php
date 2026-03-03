@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
