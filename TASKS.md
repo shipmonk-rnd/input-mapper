@@ -368,6 +368,84 @@ Generate `if ($data->prop->isDefined())` checks for `Optional<T>` properties.
 
 ---
 
+## Phase 7B: Introduce `MapperCompilerProvider` for Bidirectional Attribute Composition
+
+Wrapper and collection attributes (`MapList`, `MapArray`, `MapArrayShape`, `MapNullable`) currently accept raw `MapperCompiler` instances as inner compilers. This is broken when the attribute implements both `InputMapperCompilerProvider` and `OutputMapperCompilerProvider`, because the same direction-specific `MapperCompiler` (e.g. `IntInputMapperCompiler`) gets used for both directions. This phase fixes the design by introducing a combined provider interface.
+
+### 7B.1 Create `MapperCompilerProvider` interface
+
+Create `src/Compiler/Attribute/MapperCompilerProvider.php`:
+```php
+interface MapperCompilerProvider extends InputMapperCompilerProvider, OutputMapperCompilerProvider {}
+```
+
+### 7B.2 Make leaf (scalar) attributes implement `MapperCompilerProvider`
+
+These attributes have no inner compilers and already implement both provider interfaces. Just change them to implement the combined `MapperCompilerProvider` instead:
+- `MapInt`
+- `MapString`
+- `MapBool`
+- `MapFloat`
+- `MapMixed`
+
+### 7B.3 Refactor wrapper/collection attributes to accept `MapperCompilerProvider`
+
+For each attribute that takes inner `MapperCompiler` and implements both provider interfaces, change the constructor parameter type from `MapperCompiler` to `MapperCompilerProvider` and extract the correct compiler per direction:
+
+**`MapNullable`** (bug from Phase 6):
+- Constructor: `MapperCompilerProvider $innerMapperCompilerProvider`
+- `getInputMapperCompiler()`: `new NullableInputMapperCompiler($this->innerMapperCompilerProvider->getInputMapperCompiler())`
+- `getOutputMapperCompiler()`: `new NullableOutputMapperCompiler($this->innerMapperCompilerProvider->getOutputMapperCompiler())`
+
+**`MapList`**:
+- Constructor: `MapperCompilerProvider $itemMapperCompilerProvider`
+- `getInputMapperCompiler()`: `new ListInputMapperCompiler($this->itemMapperCompilerProvider->getInputMapperCompiler())`
+- `getOutputMapperCompiler()`: `new ListOutputMapperCompiler($this->itemMapperCompilerProvider->getOutputMapperCompiler())`
+
+**`MapArray`**:
+- Constructor: `MapperCompilerProvider $keyMapperCompilerProvider`, `MapperCompilerProvider $valueMapperCompilerProvider`
+- Extract input/output compilers from each provider in the respective methods
+
+**`MapArrayShape`**:
+- Constructor still takes `list<ArrayShapeItemMapping>`, but `ArrayShapeItemMapping::$mapper` changes from `MapperCompiler` to `MapperCompilerProvider`
+- `getInputMapperCompiler()`: maps items to `ArrayShapeItemMapping`-compatible input compilers for `ArrayShapeInputMapperCompiler`
+- `getOutputMapperCompiler()`: maps items to output compilers for `ArrayShapeOutputMapperCompiler`
+
+### 7B.4 Adapt `ArrayShapeItemMapping` and compiler classes
+
+`ArrayShapeItemMapping` (attribute-level DTO) changes `$mapper` type from `MapperCompiler` to `MapperCompilerProvider`.
+
+Since `ArrayShapeInputMapperCompiler` and `ArrayShapeOutputMapperCompiler` need raw `MapperCompiler` instances:
+- Change their constructors to accept `array<array{string, MapperCompiler, bool}>` or a separate internal item type
+- Or keep accepting `ArrayShapeItemMapping` but have the attribute map provider → compiler before constructing them
+
+The cleanest approach: keep `ArrayShapeItemMapping` with `MapperCompilerProvider` (it lives in the Attribute namespace) and have the input/output compilers accept their own constructor format. The `MapArrayShape` attribute does the provider→compiler extraction when creating each compiler.
+
+### 7B.5 Make `MapOptional` bidirectional
+
+`MapOptional` currently only implements `InputMapperCompilerProvider`. With the new provider pattern:
+- Change constructor from `MapperCompiler $mapperCompiler` to `MapperCompilerProvider $mapperCompilerProvider`
+- Implement `MapperCompilerProvider`
+- `getOutputMapperCompiler()`: `new OptionalOutputMapperCompiler($this->mapperCompilerProvider->getOutputMapperCompiler())`
+
+### 7B.6 Leave direction-specific attributes unchanged
+
+These remain input-only (no output equivalent makes sense):
+- `MapDefaultValue` — default values are an input concern
+- `ValidatedMapperCompiler` — validation is an input concern
+- `ChainMapperCompiler` — currently input-only
+- `MapEnum` — has `$backingValueMapperCompiler` which is input-specific; output enum handling is just `$data->value` (no inner compiler needed)
+
+### 7B.7 Update all internal references and tests
+
+- Update `DefaultInputMapperCompilerFactory` and `DefaultOutputMapperCompilerFactory` where they construct attributes or use provider methods
+- Update all test files that construct these attributes with raw `MapperCompiler` instances — they now need `MapperCompilerProvider` wrappers
+- Regenerate snapshot files if generated code changes
+
+### 7B.8 Run full test suite and PHPStan — must pass
+
+---
+
 ## Phase 8: Special Type Output Compilers
 
 ### 8.1 Create `EnumOutputMapperCompiler`
@@ -533,6 +611,8 @@ Phase 5 (scalar output + object compiler + factory + e2e test)       │
 Phase 6 (wrappers)  Phase 7 (collections)  Phase 8 (enum/datetime)  │
 └───┬───────────────┴──────────────────┘                             │
     ↓                                                                │
+Phase 7B (MapperCompilerProvider for bidirectional attributes)       │
+    ↓                                                                │
 Phase 9 (delegate + generics) ←──────────────────────────────────────┘
     ↓
 Phase 10 (discriminated objects)
@@ -545,3 +625,4 @@ Phase 13 (unified provider — optional)
 ```
 
 Phases 6, 7, 8 can be done in parallel since they are independent of each other.
+Phase 7B depends on 6, 7 (fixes design issue in wrapper/collection attributes).
