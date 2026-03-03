@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
+use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;

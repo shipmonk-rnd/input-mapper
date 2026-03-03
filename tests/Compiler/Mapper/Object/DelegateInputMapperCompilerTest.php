@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
@@ -9,7 +10,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;

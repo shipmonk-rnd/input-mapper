@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
@@ -14,7 +15,6 @@ use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 
 class DelegateOutputMapperCompilerTest extends OutputMapperCompilerTestCase
 {
