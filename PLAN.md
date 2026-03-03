@@ -10,20 +10,21 @@ Since this is a major change, **BC breaks are acceptable** as long as a migratio
 
 ## 1. Naming & Packaging Strategy
 
-### 1.1. Library rename
+### 1.1. Keep existing package name and namespace
 
-The library is currently named `shipmonk/input-mapper`. With bidirectional support, the name should become direction-neutral:
+The library keeps its current name and namespace for now:
 
-- **Package**: `shipmonk/input-mapper` → `shipmonk/mapper` (or keep as-is with expanded scope)
-- **Root namespace**: `ShipMonk\InputMapper` → `ShipMonk\Mapper`
-- **Decision needed**: Whether to rename now or keep the existing name. The plan below assumes a rename to `ShipMonk\Mapper` for clarity, but the architecture works either way.
+- **Package**: `shipmonk/input-mapper` (unchanged)
+- **Root namespace**: `ShipMonk\InputMapper` (unchanged)
+
+This avoids a disruptive namespace rename. The name "input-mapper" becomes a historical artifact, but the namespace is stable.
 
 ### 1.2. Terminology
 
 | Concept | Current name | Proposed name |
 |---------|-------------|---------------|
-| `mixed → T` | "mapping" / "input mapping" | **"input mapping"** or **"deserialization"** |
-| `T → mixed` | (new) | **"output mapping"** or **"serialization"** |
+| `mixed → T` | "mapping" / "input mapping" | **"input mapping"** |
+| `T → mixed` | (new) | **"output mapping"** |
 | Runtime interface (`mixed → T`) | `Mapper<T>` | `InputMapper<T>` |
 | Runtime interface (`T → mixed`) | (new) | `OutputMapper<T>` |
 | Compile-time interface (both directions) | `MapperCompiler` | `MapperCompiler` (unchanged — single unified interface) |
@@ -46,8 +47,8 @@ interface MapperCompiler {
 
 This interface is **already general enough** for both directions:
 
-- **Input direction** (e.g. `MapInt`): `getInputType() → mixed`, `getOutputType() → int`. The `compile()` method validates and converts.
-- **Output direction** (e.g. `NormalizeEnum`): `getInputType() → MyEnum`, `getOutputType() → string`. The `compile()` method reads the backing value.
+- **Input direction** (e.g. `IntInputMapperCompiler`): `getInputType() → mixed`, `getOutputType() → int`. The `compile()` method validates and converts.
+- **Output direction** (e.g. `EnumOutputMapperCompiler`): `getInputType() → MyEnum`, `getOutputType() → string`. The `compile()` method reads the backing value.
 
 The semantics of `getInputType()` and `getOutputType()` naturally flip — input compilers go from `mixed` to a specific type, output compilers go from a specific type to a JSON-compatible type. But the interface contract is identical. **There is no need for a separate `OutputMapperCompiler` interface.**
 
@@ -98,10 +99,14 @@ class MapDateTimeImmutable implements InputMapperCompilerProvider, OutputMapperC
 
 This cleanly separates **configuration** (the attribute) from **code generation** (the `MapperCompiler` implementations).
 
-### 2.3. Three-layer architecture (both directions)
+### 2.3. Attributes move to `src/Compiler/Attribute/` (BC break)
+
+All attributes currently scattered under `src/Compiler/Mapper/{Array,Object,Scalar,Wrapper}/` move to a dedicated `src/Compiler/Attribute/` directory. This separates the configuration layer (attributes) from the code generation layer (compiler implementations).
+
+### 2.4. Three-layer architecture (both directions)
 
 ```
-Attributes (on user classes, implement InputMapperCompilerProvider / OutputMapperCompilerProvider)
+Attributes (src/Compiler/Attribute/, implement InputMapperCompilerProvider / OutputMapperCompilerProvider)
     ↓ reflection
 Compiler layer (MapperCompiler tree → PhpCodeBuilder → PHP AST → generated class)
     ↓ includes
@@ -141,20 +146,20 @@ These components are already direction-agnostic:
 interface OutputMapper
 {
     /**
-     * @param T $object
+     * @param T $data
      * @param list<string|int> $path
      * @return mixed  // in practice: scalar|array|null (JSON-encodable)
      *
      * @throws MappingFailedException
      */
-    public function normalize(
-        mixed $object,
+    public function map(
+        mixed $data,
         array $path = [],
     ): mixed;
 }
 ```
 
-Note: `T` is **contravariant** here (an `OutputMapper<Animal>` can serialize any `Dog`).
+Note: `T` is **contravariant** here (an `OutputMapper<Animal>` can serialize any `Dog`). The method is named `map()` to match the generic nature of the interface — while object-to-JSON is the primary target, the interface supports any `T → mixed` transformation.
 
 ### 4.2. `OutputMapperProvider`
 
@@ -213,8 +218,8 @@ interface OutputMapperCompilerProvider {
 | `MapBool` | yes | yes | Input: validates `is_bool`. Output: pass-through. |
 | `MapFloat` | yes | yes | Input: validates `is_float`. Output: pass-through. |
 | `MapMixed` | yes | yes | Both: pass-through. |
-| `MapList` | yes | yes | Input: validates list + maps items. Output: iterates + normalizes items. |
-| `MapArray` | yes | yes | Input: validates array + maps k/v. Output: iterates + normalizes k/v. |
+| `MapList` | yes | yes | Input: validates list + maps items. Output: iterates + maps items. |
+| `MapArray` | yes | yes | Input: validates array + maps k/v. Output: iterates + maps k/v. |
 | `MapArrayShape` | yes | yes | Input: validates shape. Output: builds shape. |
 | `MapObject` | yes | yes | Input: validates array → constructs object. Output: reads properties → builds array. |
 | `MapEnum` | yes | yes | Input: `tryFrom()`. Output: `->value`. |
@@ -291,12 +296,12 @@ class MapInt implements InputMapperCompilerProvider, OutputMapperCompilerProvide
 
     public function getOutputMapperCompiler(): MapperCompiler
     {
-        return new ScalarPassthroughMapperCompiler('int');  // just returns $value
+        return new PassthroughMapperCompiler(new IdentifierTypeNode('int'));  // just returns $value
     }
 }
 ```
 
-Note: all scalar output compilers can share a single `ScalarPassthroughMapperCompiler` that simply returns `$value` unchanged (since scalars are already JSON-encodable).
+Note: all scalar output compilers can share a single `PassthroughMapperCompiler` that simply returns `$value` unchanged (since scalars are already JSON-encodable).
 
 ---
 
@@ -304,52 +309,67 @@ Note: all scalar output compilers can share a single `ScalarPassthroughMapperCom
 
 Each existing input `MapperCompiler` needs an output counterpart. The output versions are generally **much simpler** because they don't need validation — the input is already typed.
 
-### 6.1. Scalars
+### 6.1. Naming convention
 
-A single `ScalarPassthroughMapperCompiler` covers all scalar types:
+All compiler implementations follow the pattern `{Kind}InputMapperCompiler` and `{Kind}OutputMapperCompiler`:
+
+| Input compiler | Output compiler |
+|---------------|----------------|
+| `IntInputMapperCompiler` | `PassthroughMapperCompiler` (shared) |
+| `StringInputMapperCompiler` | `PassthroughMapperCompiler` (shared) |
+| `BoolInputMapperCompiler` | `PassthroughMapperCompiler` (shared) |
+| `FloatInputMapperCompiler` | `PassthroughMapperCompiler` (shared) |
+| `ObjectInputMapperCompiler` | `ObjectOutputMapperCompiler` |
+| `EnumInputMapperCompiler` | `EnumOutputMapperCompiler` |
+| `DateTimeImmutableInputMapperCompiler` | `DateTimeImmutableOutputMapperCompiler` |
+| `DiscriminatedObjectInputMapperCompiler` | `DiscriminatedObjectOutputMapperCompiler` |
+| `ListInputMapperCompiler` | `ListOutputMapperCompiler` |
+| `ArrayInputMapperCompiler` | `ArrayOutputMapperCompiler` |
+| `ArrayShapeInputMapperCompiler` | `ArrayShapeOutputMapperCompiler` |
+| `NullableInputMapperCompiler` | `NullableOutputMapperCompiler` |
+| `OptionalInputMapperCompiler` | `OptionalOutputMapperCompiler` |
+| `DelegateInputMapperCompiler` | `DelegateOutputMapperCompiler` |
+
+### 6.2. `PassthroughMapperCompiler`
+
+A single reusable compiler for any type that needs no transformation:
 
 ```php
-class ScalarPassthroughMapperCompiler implements MapperCompiler
+class PassthroughMapperCompiler implements MapperCompiler
 {
-    public function __construct(public readonly string $typeName) {} // 'int', 'string', etc.
+    public function __construct(public readonly TypeNode $type) {}
 
     public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
     {
         return new CompiledExpr($value); // no statements, no validation — just pass through
     }
 
-    public function getInputType(): TypeNode { return new IdentifierTypeNode($this->typeName); }
-    public function getOutputType(): TypeNode { return new IdentifierTypeNode($this->typeName); }
+    public function getInputType(): TypeNode { return $this->type; }
+    public function getOutputType(): TypeNode { return $this->type; }
 }
 ```
 
-### 6.2. Objects
+Accepts any `TypeNode`, so it works for scalars (`int`, `string`, `bool`, `float`), `mixed`, or any other type that is already in its target form.
 
-| Output `MapperCompiler` | Behavior |
-|------------------------|----------|
-| `NormalizeObject` | Read each property, recursively normalize, build `['key' => value, ...]` array |
-| `DelegateOutputMapperCompiler` | Delegate to `$this->provider->get(ClassName::class)->normalize($value)` |
-| `NormalizeEnum` | `$value->value` (BackedEnum backing value) |
-| `NormalizeDateTimeImmutable` | `$value->format($format)` |
-| `NormalizeDiscriminatedObject` | `instanceof` checks to dispatch to the correct subtype normalizer |
+### 6.3. Objects
 
-#### `NormalizeObject` — the most important new class
+#### `ObjectOutputMapperCompiler` — the most important new class
 
-This is the inverse of `MapObject`. It implements the same `MapperCompiler` interface. Key differences from input:
+This is the inverse of `ObjectInputMapperCompiler`. It implements the same `MapperCompiler` interface. Key differences from input:
 
 - **No validation** of input shape (input is a typed object)
-- **Reads properties** instead of array keys: `$value->propertyName`
-- **Builds output array**: `['key1' => normalize($value->prop1), 'key2' => normalize($value->prop2)]`
+- **Reads public readonly promoted properties**: `$data->propertyName`
+- **Builds output array**: `['key1' => map($data->prop1), 'key2' => map($data->prop2)]`
 - **`#[SourceKey]` is respected**: if `#[SourceKey('json_key')]` is on a property, the output array key is `json_key`
 - **Optional properties**: if the property type is `Optional<T>`, the key is omitted from output when `OptionalNone`
 - **No extra-key checking** (irrelevant for output)
 
 ```php
-class NormalizeObject implements GenericMapperCompiler  // same interface as MapObject!
+class ObjectOutputMapperCompiler implements GenericMapperCompiler
 {
     public function __construct(
         public readonly string $className,
-        public readonly array $propertyMapperCompilers, // paramName => [outputKey, MapperCompiler]
+        public readonly array $propertyMapperCompilers, // propertyName => [outputKey, MapperCompiler]
         public readonly array $genericParameters = [],
     ) {}
 
@@ -358,44 +378,46 @@ class NormalizeObject implements GenericMapperCompiler  // same interface as Map
 }
 ```
 
-#### `NormalizeDiscriminatedObject`
+Only **public readonly promoted properties** are supported for now. This covers the vast majority of use cases (DTOs, value objects) and ensures symmetry with the input mapper which reads constructor parameters.
 
-Uses `instanceof` checks to determine which subtype normalizer to use:
+#### `DiscriminatedObjectOutputMapperCompiler`
+
+Uses `instanceof` checks to determine which subtype mapper to use:
 
 ```php
 // Generated code sketch:
 match (true) {
-    $value instanceof DogInput => $this->normalizeDog($value, $path),
-    $value instanceof CatInput => $this->normalizeCat($value, $path),
+    $data instanceof DogInput => $this->mapDog($data, $path),
+    $data instanceof CatInput => $this->mapCat($data, $path),
     default => throw MappingFailedException::incorrectType(...)
 };
 ```
 
-### 6.3. Collections
+### 6.4. Collections
 
 | Output `MapperCompiler` | Behavior |
 |------------------------|----------|
-| `NormalizeList` | `foreach` + normalize each item, return `list<mixed>` |
-| `NormalizeArray` | `foreach` + normalize each key and value |
-| `NormalizeArrayShape` | Build output array with known keys, normalize each value |
+| `ListOutputMapperCompiler` | `foreach` + map each item, return `list<mixed>` |
+| `ArrayOutputMapperCompiler` | `foreach` + map each key and value |
+| `ArrayShapeOutputMapperCompiler` | Build output array with known keys, map each value |
 
-### 6.4. Wrappers
+### 6.5. Wrappers
 
 | Output `MapperCompiler` | Behavior |
 |------------------------|----------|
-| `NormalizeNullable` | `$value === null ? null : normalizeInner($value)` |
-| `NormalizeOptional` | If `OptionalSome`, normalize value; if `OptionalNone`, signal "omit this key" |
+| `NullableOutputMapperCompiler` | `$data === null ? null : mapInner($data)` |
+| `OptionalOutputMapperCompiler` | If `OptionalSome`, map value; if `OptionalNone`, signal "omit this key" |
 | `ChainMapperCompiler` | Already direction-agnostic — can chain output compilers too |
 
 Note: `ChainMapperCompiler` is already reusable as-is since it just pipes `compile()` output to next input.
 
-### 6.5. Handling `Optional` on output
+### 6.6. Handling `Optional` on output
 
 When a property has type `Optional<T>`:
 - On **input**: missing key → `OptionalNone`, present key → `OptionalSome(mapped_value)`
-- On **output**: `OptionalNone` → **omit key entirely** from output array, `OptionalSome(value)` → normalize the inner value
+- On **output**: `OptionalNone` → **omit key entirely** from output array, `OptionalSome(value)` → map the inner value
 
-This means `NormalizeObject` needs to handle optional properties specially — it must generate an `if ($value->prop->isDefined())` check and conditionally include the key.
+This means `ObjectOutputMapperCompiler` needs to handle optional properties specially — it must generate an `if ($data->prop->isDefined())` check and conditionally include the key.
 
 ---
 
@@ -418,25 +440,28 @@ Two implementations: `DefaultInputMapperCompilerFactory` and `DefaultOutputMappe
 
 Mirrors `DefaultInputMapperCompilerFactory` but builds output `MapperCompiler` trees:
 
-- **Object handling**: Reads **constructor promoted properties** (same source of truth as input). For each property:
+- **Object handling**: Reads **public readonly constructor promoted properties** (same source of truth as input). For each property:
   - Determines the type from reflection + PHPDoc
   - Reads `#[SourceKey]` attribute → output key name
   - Reads `OutputMapperCompilerProvider` attributes → custom output compiler override
   - Ignores `#[Optional]` (input-only) and `ValidatorCompiler` attributes (input-only)
   - Creates the inner output `MapperCompiler` for the property type
-- **Scalar types**: Returns `ScalarPassthroughMapperCompiler`
-- **Enums**: Returns `NormalizeEnum`
-- **DateTime**: Returns `NormalizeDateTimeImmutable`
+- **Scalar types**: Returns `PassthroughMapperCompiler`
+- **Enums**: Returns `EnumOutputMapperCompiler`
+- **DateTime**: Returns `DateTimeImmutableOutputMapperCompiler`
 - **Generics**: Same approach as input — `DelegateOutputMapperCompiler` with inner mapper compilers
-- **Discriminated objects**: Reads `#[Discriminator]` attribute, creates `NormalizeDiscriminatedObject`
+- **Discriminated objects**: Reads `#[Discriminator]` attribute, creates `DiscriminatedObjectOutputMapperCompiler`
 
 ### 7.3. Property discovery strategy
 
-1. **Primary approach**: Read **constructor promoted properties** (same source of truth as input mapper). This ensures symmetry: every constructor parameter that the input mapper reads from the array, the output mapper writes back to the array.
-2. **Fallback**: If needed, also support reading all public properties (for classes not using constructor promotion).
-3. **Key mapping**: `#[SourceKey('json_key')]` on a constructor parameter means: input reads from `json_key`, output writes to `json_key`.
+Only **public readonly promoted constructor properties** are supported. This:
 
-This ensures **round-trip fidelity**: `normalize(map($data)) ≈ $data` (modulo optional fields and default values).
+1. **Ensures symmetry**: Every constructor parameter that the input mapper reads from the array, the output mapper writes back to the array.
+2. **Covers the primary use case**: DTOs and value objects with promoted properties are the standard pattern.
+3. **Keeps it simple**: No need to handle getters, non-promoted properties, or complex access patterns.
+4. **Key mapping**: `#[SourceKey('json_key')]` on a constructor parameter means: input reads from `json_key`, output writes to `json_key`.
+
+This ensures **round-trip fidelity**: `map_output(map_input($data)) ≈ $data` (modulo optional fields and default values).
 
 ---
 
@@ -461,7 +486,7 @@ class PhpCodeBuilder
 
 Both `inputMapperMethod()` and `outputMapperMethod()` accept the same `MapperCompiler` interface. The difference is in the generated class structure:
 - `inputMapperClass()` generates a class implementing `InputMapper<T>` with a `map()` public method
-- `outputMapperClass()` generates a class implementing `OutputMapper<T>` with a `normalize()` public method
+- `outputMapperClass()` generates a class implementing `OutputMapper<T>` with a `map()` public method
 
 The `mapperMethod()` helper (generating private methods for sub-compilers) can likely stay shared since it just calls `$compiler->compile()` and wraps the result in a method.
 
@@ -499,23 +524,24 @@ The `mapperMethod()` helper (generating private methods for sub-compilers) can l
 | Attribute | Purpose |
 |-----------|---------|
 | `#[OutputKey('k')]` | Override the output key name independently from `#[SourceKey]` |
-| `#[Omit]` or `#[IgnoreOnOutput]` | Skip this property during output normalization |
+| `#[Omit]` or `#[IgnoreOnOutput]` | Skip this property during output mapping |
 
 ---
 
 ## 10. Migration Plan (BC Breaks)
 
-### 10.1. Phase 1: Attribute refactoring (BC break)
+### 10.1. Phase 1: Move attributes to `src/Compiler/Attribute/` (BC break)
+
+- All attribute classes move from their current locations under `src/Compiler/Mapper/` to `src/Compiler/Attribute/`
+- Namespace changes: e.g. `ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt` → `ShipMonk\InputMapper\Compiler\Attribute\MapInt`
+- **Migration**: Find-and-replace `use` statements.
+
+### 10.2. Phase 2: Attribute refactoring (BC break)
 
 - Attributes no longer implement `MapperCompiler` directly
 - Instead they implement `InputMapperCompilerProvider` and/or `OutputMapperCompilerProvider`
-- Extract the current `compile()` logic from each attribute into a dedicated `*InputMapperCompiler` class
+- Extract the current `compile()` logic from each attribute into a dedicated `{Kind}InputMapperCompiler` class
 - **Migration**: Users with custom `MapperCompiler` attributes must split them into attribute + compiler class. Built-in attributes are migrated automatically.
-
-### 10.2. Phase 2: Rename namespace (BC break)
-
-- `ShipMonk\InputMapper\*` → `ShipMonk\Mapper\*`
-- **Migration**: Find-and-replace in `use` statements. Provide a migration guide or rector rule.
 
 ### 10.3. Phase 3: Rename core runtime interfaces (BC break)
 
@@ -528,7 +554,7 @@ The `mapperMethod()` helper (generating private methods for sub-compilers) can l
 
 ### 10.4. Phase 4: Add output mapper (no BC break from here)
 
-- Add all output `MapperCompiler` implementations (`NormalizeObject`, `NormalizeEnum`, etc.)
+- Add all output `MapperCompiler` implementations (`ObjectOutputMapperCompiler`, `EnumOutputMapperCompiler`, etc.)
 - Add `OutputMapper<T>` interface and `OutputMapperProvider`
 - Add `DefaultOutputMapperCompilerFactory`
 - Add `OutputMapperCompilerProvider` implementations to existing attributes
@@ -544,85 +570,71 @@ The `mapperMethod()` helper (generating private methods for sub-compilers) can l
 ```
 src/
   Compiler/
+    Attribute/                            # NEW location — all attributes moved here (BC break)
+      # Mapper compiler provider interfaces:
+      InputMapperCompilerProvider.php     # NEW
+      OutputMapperCompilerProvider.php    # NEW
+      # Mapping attributes (configuration only, implement provider interfaces):
+      MapInt.php                          # MOVED + REFACTORED
+      MapString.php
+      MapBool.php
+      MapFloat.php
+      MapMixed.php
+      MapList.php
+      MapArray.php
+      MapArrayShape.php
+      MapObject.php
+      MapEnum.php
+      MapDateTimeImmutable.php
+      MapDiscriminatedObject.php
+      MapNullable.php
+      MapOptional.php                     # InputMapperCompilerProvider only
+      MapDefaultValue.php                 # InputMapperCompilerProvider only
+      ValidatedMapperCompiler.php         # InputMapperCompilerProvider only
+      Optional.php                        # MOVED (not a compiler provider, consumed by factory)
+      # Metadata attributes (not compiler providers):
+      SourceKey.php                       # MOVED
+      AllowExtraKeys.php                  # MOVED
+      Discriminator.php                   # MOVED
+
     Mapper/
       MapperCompiler.php                  # UNCHANGED — unified interface for both directions
       GenericMapperCompiler.php           # UNCHANGED
       UndefinedAwareMapperCompiler.php    # UNCHANGED (input-only concept, but valid MapperCompiler)
       MapRuntime.php                      # UNCHANGED
+      PassthroughMapperCompiler.php       # NEW — accepts any TypeNode, returns $value unchanged
 
-      InputMapperCompilerProvider.php     # NEW — marker interface for attributes
-      OutputMapperCompilerProvider.php    # NEW — marker interface for attributes
-
-      Array/
-        # Attributes (configuration, implement provider interfaces):
-        MapList.php                       # REFACTORED — now implements Input+OutputMapperCompilerProvider
-        MapArray.php
-        MapArrayShape.php
-        # Input compiler implementations:
-        ListInputMapperCompiler.php       # NEW — extracted from old MapList::compile()
-        ArrayInputMapperCompiler.php
-        ArrayShapeInputMapperCompiler.php
-        # Output compiler implementations:
-        NormalizeList.php                 # NEW
-        NormalizeArray.php
-        NormalizeArrayShape.php
-
-      Mixed/
-        MapMixed.php                      # REFACTORED
-        MixedPassthroughMapperCompiler.php
-
-      Object/
-        # Attributes:
-        MapObject.php                     # REFACTORED
-        MapEnum.php                       # REFACTORED
-        MapDateTimeImmutable.php          # REFACTORED
-        MapDiscriminatedObject.php        # REFACTORED
-        SourceKey.php                     # UNCHANGED
-        AllowExtraKeys.php                # UNCHANGED
-        Discriminator.php                 # UNCHANGED
-        # Input compilers:
-        ObjectInputMapperCompiler.php     # NEW — extracted from old MapObject::compile()
-        EnumInputMapperCompiler.php
-        DateTimeImmutableInputMapperCompiler.php
-        DiscriminatedObjectInputMapperCompiler.php
-        DelegateInputMapperCompiler.php   # REFACTORED from DelegateMapperCompiler
-        # Output compilers:
-        NormalizeObject.php               # NEW
-        NormalizeEnum.php
-        NormalizeDateTimeImmutable.php
-        NormalizeDiscriminatedObject.php
-        DelegateOutputMapperCompiler.php  # NEW
-
-      Scalar/
-        # Attributes:
-        MapInt.php                        # REFACTORED
-        MapString.php
-        MapBool.php
-        MapFloat.php
-        # Input compilers:
+      Input/                              # Compiler implementations for input direction
         IntInputMapperCompiler.php        # NEW — extracted from old MapInt::compile()
         StringInputMapperCompiler.php
         BoolInputMapperCompiler.php
         FloatInputMapperCompiler.php
-        # Output compiler (shared):
-        ScalarPassthroughMapperCompiler.php  # NEW — single class for all scalar output
-
-      Wrapper/
-        # Attributes:
-        MapNullable.php                   # REFACTORED — implements both providers
-        MapOptional.php                   # REFACTORED — implements only InputMapperCompilerProvider
-        MapDefaultValue.php               # REFACTORED — implements only InputMapperCompilerProvider
-        ValidatedMapperCompiler.php       # REFACTORED — implements only InputMapperCompilerProvider
-        # Input compilers:
-        NullableInputMapperCompiler.php   # NEW — extracted
+        MixedInputMapperCompiler.php
+        ObjectInputMapperCompiler.php     # Extracted from old MapObject::compile()
+        EnumInputMapperCompiler.php
+        DateTimeImmutableInputMapperCompiler.php
+        DiscriminatedObjectInputMapperCompiler.php
+        DelegateInputMapperCompiler.php   # REFACTORED from DelegateMapperCompiler
+        ListInputMapperCompiler.php
+        ArrayInputMapperCompiler.php
+        ArrayShapeInputMapperCompiler.php
+        NullableInputMapperCompiler.php
         OptionalInputMapperCompiler.php
         DefaultValueInputMapperCompiler.php
         ValidatedInputMapperCompiler.php
-        # Output compilers:
-        NormalizeNullable.php             # NEW
-        NormalizeOptional.php             # NEW
-        # Shared:
-        ChainMapperCompiler.php           # UNCHANGED — already direction-agnostic
+        ChainMapperCompiler.php           # MOVED — already direction-agnostic
+
+      Output/                             # NEW — compiler implementations for output direction
+        ObjectOutputMapperCompiler.php
+        EnumOutputMapperCompiler.php
+        DateTimeImmutableOutputMapperCompiler.php
+        DiscriminatedObjectOutputMapperCompiler.php
+        DelegateOutputMapperCompiler.php
+        ListOutputMapperCompiler.php
+        ArrayOutputMapperCompiler.php
+        ArrayShapeOutputMapperCompiler.php
+        NullableOutputMapperCompiler.php
+        OptionalOutputMapperCompiler.php
 
     MapperFactory/
       MapperCompilerFactory.php           # UNCHANGED — unified interface
@@ -666,65 +678,68 @@ src/
 
 ## 12. Implementation Order
 
-### Step 1: Attribute refactoring (BC break, no new functionality)
-- Create `InputMapperCompilerProvider` and `OutputMapperCompilerProvider` interfaces
+### Step 1: Move attributes to `src/Compiler/Attribute/` (BC break, no new functionality)
+- Move all attributes from `src/Compiler/Mapper/{Array,Object,Scalar,Wrapper,Mixed}/` to `src/Compiler/Attribute/`
+- Update namespaces and all references
+- All existing tests should still pass
+
+### Step 2: Attribute refactoring (BC break, no new functionality)
+- Create `InputMapperCompilerProvider` and `OutputMapperCompilerProvider` interfaces in `src/Compiler/Attribute/`
 - For each existing attribute that implements `MapperCompiler`:
-  - Extract `compile()`, `getInputType()`, `getOutputType()` into a new `*InputMapperCompiler` class
+  - Extract `compile()`, `getInputType()`, `getOutputType()` into a new `{Kind}InputMapperCompiler` class under `src/Compiler/Mapper/Input/`
   - Make the attribute implement `InputMapperCompilerProvider` returning the extracted compiler
   - Remove `MapperCompiler` implementation from the attribute
 - Update `DefaultMapperCompilerFactory` to discover attributes via `InputMapperCompilerProvider` instead of `MapperCompiler`
 - All existing tests should still pass (same behavior, different wiring)
 
-### Step 2: Rename (BC break, no new functionality)
-- Namespace rename `ShipMonk\InputMapper` → `ShipMonk\Mapper`
-- Runtime renames: `Mapper` → `InputMapper`, `MapperProvider` → `InputMapperProvider`, etc.
-- Factory renames: `DefaultMapperCompilerFactory` → `DefaultInputMapperCompilerFactory`, etc.
-- Provide migration guide / rector rule
+### Step 3: Rename runtime interfaces (BC break, no new functionality)
+- `Mapper` → `InputMapper`, `MapperProvider` → `InputMapperProvider`, etc.
+- `DefaultMapperCompilerFactory` → `DefaultInputMapperCompilerFactory`, etc.
 
-### Step 3: Core output runtime
-- `OutputMapper<T>` interface
+### Step 4: Core output runtime
+- `OutputMapper<T>` interface with `map()` method
 - `OutputMapperProvider` class (compilation + caching infrastructure)
 - `PhpCodeBuilder` extensions (`outputMapperMethod`, `outputMapperClass`, `outputMapperFile`)
 - `CallbackOutputMapper`
 
-### Step 4: Scalar output compilers
-- `ScalarPassthroughMapperCompiler` (covers int, string, bool, float, mixed)
+### Step 5: Scalar output + PassthroughMapperCompiler
+- `PassthroughMapperCompiler` (covers int, string, bool, float, mixed — accepts any `TypeNode`)
 - Add `OutputMapperCompilerProvider` to `MapInt`, `MapString`, `MapBool`, `MapFloat`, `MapMixed`
 - End-to-end test: compile + run an output mapper for a flat scalar-only object
 
-### Step 5: Object output compiler
-- `NormalizeObject` — the most important and complex piece
+### Step 6: Object output compiler
+- `ObjectOutputMapperCompiler` — the most important and complex piece (public readonly promoted properties only)
 - `DelegateOutputMapperCompiler` — for nested object references
 - Add `OutputMapperCompilerProvider` to `MapObject`
 
-### Step 6: Wrapper output compilers
-- `NormalizeNullable`
-- `NormalizeOptional`
+### Step 7: Wrapper output compilers
+- `NullableOutputMapperCompiler`
+- `OptionalOutputMapperCompiler`
 - Add `OutputMapperCompilerProvider` to `MapNullable`
 
-### Step 7: Collection output compilers
-- `NormalizeList`
-- `NormalizeArray`
-- `NormalizeArrayShape`
+### Step 8: Collection output compilers
+- `ListOutputMapperCompiler`
+- `ArrayOutputMapperCompiler`
+- `ArrayShapeOutputMapperCompiler`
 - Add `OutputMapperCompilerProvider` to `MapList`, `MapArray`, `MapArrayShape`
 
-### Step 8: Special type output compilers
-- `NormalizeEnum` + add `OutputMapperCompilerProvider` to `MapEnum`
-- `NormalizeDateTimeImmutable` + add `OutputMapperCompilerProvider` to `MapDateTimeImmutable`
+### Step 9: Special type output compilers
+- `EnumOutputMapperCompiler` + add `OutputMapperCompilerProvider` to `MapEnum`
+- `DateTimeImmutableOutputMapperCompiler` + add `OutputMapperCompilerProvider` to `MapDateTimeImmutable`
 
-### Step 9: Discriminated object output
-- `NormalizeDiscriminatedObject` + add `OutputMapperCompilerProvider` to `MapDiscriminatedObject`
+### Step 10: Discriminated object output
+- `DiscriminatedObjectOutputMapperCompiler` + add `OutputMapperCompilerProvider` to `MapDiscriminatedObject`
 
-### Step 10: Output compiler factory
+### Step 11: Output compiler factory
 - `DefaultOutputMapperCompilerFactory` — auto-creates output `MapperCompiler` trees from class reflection
 - `OutputMapperCompilerFactoryProvider` + `DefaultOutputMapperCompilerFactoryProvider`
 
-### Step 11: Tests
+### Step 12: Tests
 - Unit tests mirroring existing input mapper tests
-- Round-trip tests: `normalize(map($data)) === $data` for various type combinations
+- Round-trip tests: `map_output(map_input($data)) === $data` for various type combinations
 - Tests for edge cases: optional fields, discriminated objects, generics, date formats
 
-### Step 12: PHPStan extensions
+### Step 13: PHPStan extensions
 - Extend existing PHPStan rules for output mapper generics
 
 ---
@@ -744,13 +759,13 @@ class PersonInput
     ) {}
 }
 
-// Input mapping (current, renamed interface)
+// Input mapping (renamed interface)
 $inputMapper = $inputMapperProvider->get(PersonInput::class);
 $person = $inputMapper->map(['id' => 1, 'full_name' => 'John', 'email' => 'john@example.com']);
 
 // Output mapping (new)
 $outputMapper = $outputMapperProvider->get(PersonInput::class);
-$array = $outputMapper->normalize($person);
+$array = $outputMapper->map($person);
 // Result: ['id' => 1, 'full_name' => 'John', 'email' => 'john@example.com']
 $json = json_encode($array);
 ```
@@ -759,8 +774,6 @@ $json = json_encode($array);
 
 ## 14. Open Questions
 
-1. **Naming**: `normalize()` vs `serialize()` vs `toArray()` vs `map()` for the output method name?
-2. **Should the namespace rename happen?** Keeping `ShipMonk\InputMapper` avoids a BC break; adding `OutputMapper` alongside is simpler but asymmetric.
-3. **Property access strategy**: Should the output mapper only support public readonly promoted properties, or also support getters / non-promoted properties?
-4. **Naming convention for extracted compilers**: The plan uses `*InputMapperCompiler` (e.g. `IntInputMapperCompiler`). Alternatives: keep the `Map*` prefix for input (e.g. `MapIntCompiler`) and `Normalize*` for output.
-5. **Output-specific validation**: Should there be any output-side validation? (e.g., "assert this value is non-null before serializing"). Probably not needed initially.
+1. **Property access strategy (future)**: When should we add support for getters / non-promoted properties? Not needed initially, but good to design for extensibility.
+2. **Output-specific validation**: Should there be any output-side validation? (e.g., "assert this value is non-null before serializing"). Probably not needed initially.
+3. **Naming convention for extracted input compilers**: The plan uses `{Kind}InputMapperCompiler` (e.g. `IntInputMapperCompiler`). Alternatives: keep the `Map*` prefix for input (e.g. `MapIntCompiler`).
