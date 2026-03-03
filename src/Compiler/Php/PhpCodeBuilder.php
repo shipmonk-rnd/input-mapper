@@ -59,6 +59,8 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\InputMapper;
 use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\OutputMapper;
+use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 use function array_column;
 use function array_fill_keys;
 use function array_filter;
@@ -701,6 +703,161 @@ class PhpCodeBuilder extends BuilderFactory
         }
 
         $mapperClass = $this->inputMapperClass($shortClassName, $mapperCompiler)
+            ->getNode();
+
+        return $this->file($namespaceName, [$mapperClass]);
+    }
+
+    public function outputMapperMethod(
+        string $methodName,
+        MapperCompiler $mapperCompiler,
+    ): Method
+    {
+        $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
+            [$dataVarName, $pathVarName] = $this->uniqVariableNames('data', 'path');
+            return $mapperCompiler->compile($this->var($dataVarName), $this->var($pathVarName), $this);
+        });
+
+        assert($dataVarName !== null && $pathVarName !== null);
+        $inputType = $mapperCompiler->getInputType();
+        $outputType = $mapperCompiler->getOutputType();
+
+        $this->importType($inputType);
+        $this->importType($outputType);
+
+        foreach ($this->genericParameters as $genericParameter) {
+            if ($genericParameter->bound !== null) {
+                /** @var GenericTypeParameter $clonedGenericParameter */
+                $clonedGenericParameter = unserialize(serialize($genericParameter));
+                assert($clonedGenericParameter->bound !== null);
+                $this->importType($clonedGenericParameter->bound);
+            }
+        }
+
+        $inputTypeString = (string) $inputType;
+        $outputTypeString = (string) $outputType;
+
+        $phpDoc = $this->phpDoc([
+            $inputTypeString !== 'mixed' ? "@param  {$inputType} \${$dataVarName}" : null,
+            "@param  list<string|int> \${$pathVarName}",
+            $outputTypeString !== 'mixed' ? "@return {$outputType}" : null,
+            '@throws ' . $this->importClass(MappingFailedException::class),
+        ]);
+
+        return $this->method($methodName)
+            ->setDocComment($phpDoc)
+            ->addParam($this->param($dataVarName)->setType('mixed'))
+            ->addParam($this->param($pathVarName)->setType('array')->setDefault($this->array([])))
+            ->setReturnType('mixed')
+            ->addStmts($mapper->statements)
+            ->addStmt($this->return($mapper->expr));
+    }
+
+    public function outputMapperClassConstructor(MapperCompiler $mapperCompiler): ClassMethod
+    {
+        $mapperConstructorPhpDocLines = [];
+        $mapperConstructorBuilder = $this->method('__construct');
+
+        $providerParameter = $this->param('provider')->setType($this->importClass(OutputMapperProvider::class))->getNode();
+        $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+        $mapperConstructorBuilder->addParam($providerParameter);
+
+        if ($mapperCompiler instanceof GenericMapperCompiler && count($mapperCompiler->getGenericParameters()) > 0) {
+            $innerMappersParameter = $this->param('innerMappers')->setType('array')->getNode();
+            $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+            $mapperConstructorBuilder->addParam($innerMappersParameter);
+
+            $innerMappersType = ArrayShapeNode::createSealed(Arrays::map(
+                $mapperCompiler->getGenericParameters(),
+                static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
+                    return new ArrayShapeItemNode(
+                        keyName: null,
+                        valueType: new GenericTypeNode(new IdentifierTypeNode(OutputMapper::class), [new IdentifierTypeNode($genericParameter->name)]),
+                        optional: false,
+                    );
+                },
+            ));
+
+            $this->importType($innerMappersType);
+            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
+        }
+
+        return $mapperConstructorBuilder
+            ->makePublic()
+            ->setDocComment($this->phpDoc($mapperConstructorPhpDocLines))
+            ->getNode();
+    }
+
+    public function outputMapperClass(
+        string $shortClassName,
+        MapperCompiler $mapperCompiler,
+    ): Class_
+    {
+        $mapperConstructor = $this->outputMapperClassConstructor($mapperCompiler);
+
+        $mapMethod = $this->outputMapperMethod('map', $mapperCompiler)
+            ->makePublic()
+            ->getNode();
+
+        $inputType = $mapperCompiler->getInputType();
+        $this->importType($inputType);
+
+        $mapperCompilerType = $this->importClass($mapperCompiler::class);
+
+        $implementsType = new GenericTypeNode(
+            new IdentifierTypeNode($this->importClass(OutputMapper::class)),
+            [$inputType],
+        );
+
+        $phpDocLines = [
+            "Generated mapper by {@see $mapperCompilerType}. Do not edit directly.",
+            '',
+        ];
+
+        if ($mapperCompiler instanceof GenericMapperCompiler) {
+            foreach ($mapperCompiler->getGenericParameters() as $genericParameter) {
+                $phpDocLines[] = $genericParameter->toPhpDocLine();
+            }
+        }
+
+        $phpDocLines[] = "@implements {$implementsType}";
+        $phpDoc = $this->phpDoc($phpDocLines);
+
+        $constants = Arrays::map(
+            $this->constants,
+            function (Expr|bool|int|float|string|array|null $value, string $name): ClassConst {
+                return $this->classConst($name, $value)
+                    ->makePrivate()
+                    ->getNode();
+            },
+        );
+
+        return $this->class($shortClassName)
+            ->setDocComment($phpDoc)
+            ->implement($this->importClass(OutputMapper::class))
+            ->addStmts($constants)
+            ->addStmt($mapperConstructor)
+            ->addStmt($mapMethod)
+            ->addStmts(array_values($this->methods));
+    }
+
+    /**
+     * @return list<Stmt>
+     */
+    public function outputMapperFile(
+        string $mapperClassName,
+        MapperCompiler $mapperCompiler,
+    ): array
+    {
+        $pos = strrpos($mapperClassName, '\\');
+        $namespaceName = $pos === false ? '' : substr($mapperClassName, 0, $pos);
+        $shortClassName = $pos === false ? $mapperClassName : substr($mapperClassName, $pos + 1);
+
+        if ($mapperCompiler instanceof GenericMapperCompiler) {
+            $this->genericParameters = $mapperCompiler->getGenericParameters();
+        }
+
+        $mapperClass = $this->outputMapperClass($shortClassName, $mapperCompiler)
             ->getNode();
 
         return $this->file($namespaceName, [$mapperClass]);
