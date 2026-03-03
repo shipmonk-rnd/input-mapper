@@ -8,24 +8,30 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapArray implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapArray implements MapperCompilerProvider
 {
 
     public function __construct(
-        public readonly MapperCompiler $keyMapperCompiler,
-        public readonly MapperCompiler $valueMapperCompiler,
+        public readonly MapperCompilerProvider $keyMapperCompilerProvider,
+        public readonly MapperCompilerProvider $valueMapperCompilerProvider,
     )
     {
     }
 
     public function getInputMapperCompiler(): MapperCompiler
     {
-        return new ArrayInputMapperCompiler($this->keyMapperCompiler, $this->valueMapperCompiler);
+        return new ArrayInputMapperCompiler(
+            $this->keyMapperCompilerProvider->getInputMapperCompiler(),
+            $this->valueMapperCompilerProvider->getInputMapperCompiler(),
+        );
     }
 
     public function getOutputMapperCompiler(): MapperCompiler
     {
-        return new ArrayOutputMapperCompiler($this->keyMapperCompiler, $this->valueMapperCompiler);
+        return new ArrayOutputMapperCompiler(
+            $this->keyMapperCompilerProvider->getOutputMapperCompiler(),
+            $this->valueMapperCompilerProvider->getOutputMapperCompiler(),
+        );
     }
 
 }

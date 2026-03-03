@@ -8,23 +8,23 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapNullable implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapNullable implements MapperCompilerProvider
 {
 
     public function __construct(
-        public readonly MapperCompiler $innerMapperCompiler,
+        public readonly MapperCompilerProvider $innerMapperCompilerProvider,
     )
     {
     }
 
     public function getInputMapperCompiler(): MapperCompiler
     {
-        return new NullableInputMapperCompiler($this->innerMapperCompiler);
+        return new NullableInputMapperCompiler($this->innerMapperCompilerProvider->getInputMapperCompiler());
     }
 
     public function getOutputMapperCompiler(): MapperCompiler
     {
-        return new NullableOutputMapperCompiler($this->innerMapperCompiler);
+        return new NullableOutputMapperCompiler($this->innerMapperCompilerProvider->getOutputMapperCompiler());
     }
 
 }

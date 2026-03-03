@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapBool implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapBool implements MapperCompilerProvider
 {
 
     public function getInputMapperCompiler(): MapperCompiler

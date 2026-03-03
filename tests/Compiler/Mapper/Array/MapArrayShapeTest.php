@@ -2,7 +2,6 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
@@ -62,8 +61,8 @@ class MapArrayShapeTest extends MapperCompilerTestCase
     public function testCompileSealedArrayShape(): void
     {
         $items = [
-            new ArrayShapeItemMapping('a', new IntInputMapperCompiler()),
-            new ArrayShapeItemMapping('b', new StringInputMapperCompiler(), optional: true),
+            ['key' => 'a', 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
+            ['key' => 'b', 'mapper' => new StringInputMapperCompiler(), 'optional' => true],
         ];
 
         $mapperCompiler = new ArrayShapeInputMapperCompiler($items, sealed: true);

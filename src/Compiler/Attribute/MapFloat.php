@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapFloat implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapFloat implements MapperCompilerProvider
 {
 
     public function __construct(

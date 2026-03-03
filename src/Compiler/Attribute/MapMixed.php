@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapMixed implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapMixed implements MapperCompilerProvider
 {
 
     public function getInputMapperCompiler(): MapperCompiler

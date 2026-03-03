@@ -8,23 +8,23 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapList implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapList implements MapperCompilerProvider
 {
 
     public function __construct(
-        public readonly MapperCompiler $itemMapperCompiler,
+        public readonly MapperCompilerProvider $itemMapperCompilerProvider,
     )
     {
     }
 
     public function getInputMapperCompiler(): MapperCompiler
     {
-        return new ListInputMapperCompiler($this->itemMapperCompiler);
+        return new ListInputMapperCompiler($this->itemMapperCompilerProvider->getInputMapperCompiler());
     }
 
     public function getOutputMapperCompiler(): MapperCompiler
     {
-        return new ListOutputMapperCompiler($this->itemMapperCompiler);
+        return new ListOutputMapperCompiler($this->itemMapperCompilerProvider->getOutputMapperCompiler());
     }
 
 }

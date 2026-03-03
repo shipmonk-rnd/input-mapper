@@ -8,7 +8,6 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
@@ -22,7 +21,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
 {
 
     /**
-     * @param list<ArrayShapeItemMapping> $items
+     * @param list<array{key: string, mapper: MapperCompiler, optional: bool}> $items
      */
     public function __construct(
         public readonly array $items,
@@ -54,21 +53,21 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
         $statements[] = $builder->assign($builder->var($mappedVariableName), $builder->val([]));
 
         foreach ($this->items as $itemMapping) {
-            $isPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($itemMapping->key), $value]);
+            $isPresent = $builder->funcCall($builder->importFunction('array_key_exists'), [$builder->val($itemMapping['key']), $value]);
             $isMissing = $builder->not($isPresent);
 
-            $itemValue = $builder->arrayDimFetch($value, $builder->val($itemMapping->key));
-            $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping->key));
-            $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping->key));
-            $itemMapperMethod = $builder->inputMapperMethod($itemMapperMethodName, $itemMapping->mapper)->makePrivate()->getNode();
+            $itemValue = $builder->arrayDimFetch($value, $builder->val($itemMapping['key']));
+            $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping['key']));
+            $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping['key']));
+            $itemMapperMethod = $builder->inputMapperMethod($itemMapperMethodName, $itemMapping['mapper'])->makePrivate()->getNode();
             $builder->addMethod($itemMapperMethod);
 
             $itemAssignment = $builder->assign(
-                $builder->arrayDimFetch($builder->var($mappedVariableName), $builder->val($itemMapping->key)),
+                $builder->arrayDimFetch($builder->var($mappedVariableName), $builder->val($itemMapping['key'])),
                 $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemPath]),
             );
 
-            if ($itemMapping->optional) {
+            if ($itemMapping['optional']) {
                 $statements[] = $builder->if($isPresent, [$itemAssignment]);
 
             } else {
@@ -77,7 +76,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
                         $builder->staticCall(
                             $builder->importClass(MappingFailedException::class),
                             'missingKey',
-                            [$path, $builder->val($itemMapping->key)],
+                            [$path, $builder->val($itemMapping['key'])],
                         ),
                     ),
                 ]);
@@ -104,9 +103,9 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
 
         foreach ($this->items as $mapping) {
             $items[] = new ArrayShapeItemNode(
-                new IdentifierTypeNode($mapping->key),
-                $mapping->optional,
-                $mapping->mapper->getOutputType(),
+                new IdentifierTypeNode($mapping['key']),
+                $mapping['optional'],
+                $mapping['mapper']->getOutputType(),
             );
         }
 
@@ -126,7 +125,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
     {
         $statements = [];
 
-        $knownKeySet = array_fill_keys(array_map(static fn (ArrayShapeItemMapping $mapping) => $mapping->key, $this->items), true);
+        $knownKeySet = array_fill_keys(array_map(static fn (array $mapping) => $mapping['key'], $this->items), true);
         $knownKeysVariableName = $builder->uniqVariableName('knownKeys');
         $statements[] = $builder->assign($builder->var($knownKeysVariableName), $builder->val($knownKeySet));
 

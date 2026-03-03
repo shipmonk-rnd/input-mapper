@@ -13,7 +13,6 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\BoolInputMapperCompiler;
@@ -431,8 +430,8 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new ArrayShapeInputMapperCompiler(
                 items: [
-                    new ArrayShapeItemMapping('foo', new StringInputMapperCompiler()),
-                    new ArrayShapeItemMapping('bar', new IntInputMapperCompiler()),
+                    ['key' => 'foo', 'mapper' => new StringInputMapperCompiler(), 'optional' => false],
+                    ['key' => 'bar', 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
                 ],
                 sealed: true,
             ),
@@ -443,8 +442,8 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new ArrayShapeInputMapperCompiler(
                 items: [
-                    new ArrayShapeItemMapping('foo', new StringInputMapperCompiler()),
-                    new ArrayShapeItemMapping('bar', new IntInputMapperCompiler()),
+                    ['key' => 'foo', 'mapper' => new StringInputMapperCompiler(), 'optional' => false],
+                    ['key' => 'bar', 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
                 ],
                 sealed: false,
             ),

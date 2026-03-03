@@ -10,7 +10,6 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
@@ -139,8 +138,8 @@ class DefaultOutputMapperCompilerFactoryTest extends InputMapperTestCase
             'array{a: int, b?: string}',
             [],
             new ArrayShapeOutputMapperCompiler([
-                new ArrayShapeItemMapping('a', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
-                new ArrayShapeItemMapping('b', new PassthroughMapperCompiler(new IdentifierTypeNode('string')), optional: true),
+                ['key' => 'a', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('int')), 'optional' => false],
+                ['key' => 'b', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => true],
             ], sealed: true),
         ];
     }

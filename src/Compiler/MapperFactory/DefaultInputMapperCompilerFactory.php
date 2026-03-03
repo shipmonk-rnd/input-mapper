@@ -29,7 +29,6 @@ use ReflectionEnum;
 use ReflectionMethod;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Attribute\AllowExtraKeys;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 use ShipMonk\InputMapper\Compiler\Attribute\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
@@ -211,7 +210,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 };
 
-                $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
+                $items[] = ['key' => $key, 'mapper' => $this->createInner($item->valueType, $options), 'optional' => $item->optional];
             }
 
             return new ArrayShapeInputMapperCompiler($items, $type->sealed);

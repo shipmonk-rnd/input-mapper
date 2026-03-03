@@ -3,7 +3,6 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
@@ -30,8 +29,8 @@ class ArrayShapeOutputMapperCompilerTest extends OutputMapperCompilerTestCase
     public function testCompileSealedArrayShape(): void
     {
         $items = [
-            new ArrayShapeItemMapping('a', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
-            new ArrayShapeItemMapping('b', new PassthroughMapperCompiler(new IdentifierTypeNode('string')), optional: true),
+            ['key' => 'a', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('int')), 'optional' => false],
+            ['key' => 'b', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => true],
         ];
 
         $mapperCompiler = new ArrayShapeOutputMapperCompiler($items, sealed: true);
@@ -44,7 +43,7 @@ class ArrayShapeOutputMapperCompilerTest extends OutputMapperCompilerTestCase
     public function testCompileUnsealedArrayShape(): void
     {
         $items = [
-            new ArrayShapeItemMapping('a', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+            ['key' => 'a', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('int')), 'optional' => false],
         ];
 
         $mapperCompiler = new ArrayShapeOutputMapperCompiler($items, sealed: false);

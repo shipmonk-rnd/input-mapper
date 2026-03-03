@@ -21,7 +21,6 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
-use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Attribute\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
@@ -122,7 +121,7 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 };
 
-                $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
+                $items[] = ['key' => $key, 'mapper' => $this->createInner($item->valueType, $options), 'optional' => $item->optional];
             }
 
             return new ArrayShapeOutputMapperCompiler($items, $type->sealed);
