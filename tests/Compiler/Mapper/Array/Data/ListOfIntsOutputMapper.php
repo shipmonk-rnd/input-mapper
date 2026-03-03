@@ -1,0 +1,37 @@
+<?php declare (strict_types=1);
+
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
+
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\OutputMapper;
+use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+
+/**
+ * Generated mapper by {@see ListOutputMapperCompiler}. Do not edit directly.
+ *
+ * @implements OutputMapper<list<int>>
+ */
+class ListOfIntsOutputMapper implements OutputMapper
+{
+    public function __construct(private readonly OutputMapperProvider $provider)
+    {
+    }
+
+    /**
+     * @param  list<int> $data
+     * @param  list<string|int> $path
+     * @return list<int>
+     * @throws MappingFailedException
+     */
+    public function map(mixed $data, array $path = []): mixed
+    {
+        $mapped = [];
+
+        foreach ($data as $index => $item) {
+            $mapped[] = $item;
+        }
+
+        return $mapped;
+    }
+}

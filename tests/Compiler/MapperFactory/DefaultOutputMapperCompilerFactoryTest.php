@@ -10,8 +10,12 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultOutputMapperCompilerFactory;
@@ -96,6 +100,48 @@ class DefaultOutputMapperCompilerFactoryTest extends InputMapperTestCase
                 'oldValue' => ['old_value', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
                 'newValue' => ['new_value', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
             ]),
+        ];
+
+        yield 'list<int>' => [
+            'list<int>',
+            [],
+            new ListOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+        ];
+
+        yield 'array<string, int>' => [
+            'array<string, int>',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('string')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'array<int>' => [
+            'array<int>',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'int[]' => [
+            'int[]',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'array{a: int, b?: string}' => [
+            'array{a: int, b?: string}',
+            [],
+            new ArrayShapeOutputMapperCompiler([
+                new ArrayShapeItemMapping('a', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+                new ArrayShapeItemMapping('b', new PassthroughMapperCompiler(new IdentifierTypeNode('string')), optional: true),
+            ], sealed: true),
         ];
     }
 

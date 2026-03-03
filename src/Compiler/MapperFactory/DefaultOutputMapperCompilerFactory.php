@@ -2,10 +2,13 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
@@ -18,10 +21,14 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
+use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Attribute\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
@@ -82,12 +89,43 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
 
         if ($type instanceof GenericTypeNode) {
             return match (strtolower($type->type->name)) {
+                'array' => match (count($type->genericTypes)) {
+                    1 => new ArrayOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')), $this->createInner($type->genericTypes[0], $options)),
+                    2 => new ArrayOutputMapperCompiler($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                },
                 strtolower(Optional::class) => match (count($type->genericTypes)) {
                     1 => new OptionalOutputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
-                default => throw CannotCreateMapperCompilerException::fromType($type),
+                default => match ($type->type->name) {
+                    'list' => match (count($type->genericTypes)) {
+                        1 => new ListOutputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
+                        default => throw CannotCreateMapperCompilerException::fromType($type),
+                    },
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                },
             };
+        }
+
+        if ($type instanceof ArrayTypeNode) {
+            return new ArrayOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')), $this->createInner($type->type, $options));
+        }
+
+        if ($type instanceof ArrayShapeNode) {
+            $items = [];
+
+            foreach ($type->items as $item) {
+                $key = match (true) {
+                    $item->keyName instanceof ConstExprStringNode => $item->keyName->value,
+                    $item->keyName instanceof IdentifierTypeNode => $item->keyName->name,
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                };
+
+                $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
+            }
+
+            return new ArrayShapeOutputMapperCompiler($items, $type->sealed);
         }
 
         if ($type instanceof UnionTypeNode) {

@@ -1,0 +1,32 @@
+<?php declare (strict_types=1);
+
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
+
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\OutputMapper;
+use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+
+/**
+ * Generated mapper by {@see ArrayShapeOutputMapperCompiler}. Do not edit directly.
+ *
+ * @implements OutputMapper<array{}>
+ */
+class EmptySealedArrayShapeOutputMapper implements OutputMapper
+{
+    public function __construct(private readonly OutputMapperProvider $provider)
+    {
+    }
+
+    /**
+     * @param  array{} $data
+     * @param  list<string|int> $path
+     * @return array{}
+     * @throws MappingFailedException
+     */
+    public function map(mixed $data, array $path = []): mixed
+    {
+        $mapped = [];
+        return $mapped;
+    }
+}
