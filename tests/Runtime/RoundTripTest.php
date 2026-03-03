@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Runtime\CallbackOutputMapper;
 use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonWithNullableAgeInput;
@@ -33,8 +34,6 @@ class RoundTripTest extends InputMapperTestCase
         $this->inputMapperProvider = new InputMapperProvider($tempDir, autoRefresh: true);
         $this->outputMapperProvider = new OutputMapperProvider($tempDir, autoRefresh: true);
     }
-
-    // Phase 11.1: Round-trip tests (array → object → array)
 
     public function testFlatScalarDto(): void
     {
@@ -149,8 +148,6 @@ class RoundTripTest extends InputMapperTestCase
         self::assertSame($data, $this->roundTrip(MovieInput::class, $data));
     }
 
-    // Phase 11.2: Edge case tests
-
     public function testEmptyObject(): void
     {
         $data = [];
@@ -193,13 +190,54 @@ class RoundTripTest extends InputMapperTestCase
         self::assertSame($data, $this->roundTrip(MovieInput::class, $data));
     }
 
+    public function testDiscriminatedObjectChildOne(): void
+    {
+        $inputData = [
+            'id' => 1,
+            'name' => 'Alice',
+            'type' => 'childOne',
+            'childOneField' => 'extra',
+            'age' => 30,
+        ];
+        // Child properties appear before inherited properties in output
+        $expectedOutput = [
+            'childOneField' => 'extra',
+            'id' => 1,
+            'name' => 'Alice',
+            'type' => 'childOne',
+            'age' => 30,
+        ];
+        self::assertSame($expectedOutput, $this->roundTrip(HierarchicalParentInput::class, $inputData));
+    }
+
+    public function testDiscriminatedObjectChildTwoWithOptionalAbsent(): void
+    {
+        $inputData = [
+            'id' => 2,
+            'name' => 'Bob',
+            'type' => 'childTwo',
+            'childTwoField' => 42,
+        ];
+        // Child properties appear before inherited properties in output
+        $expectedOutput = [
+            'childTwoField' => 42,
+            'id' => 2,
+            'name' => 'Bob',
+            'type' => 'childTwo',
+        ];
+        self::assertSame($expectedOutput, $this->roundTrip(HierarchicalParentInput::class, $inputData));
+    }
+
     /**
-     * @template T of object
      * @param class-string<T> $className
      * @param array<string, mixed> $data
-     * @return mixed
+     *
+     * @template T of object
      */
-    private function roundTrip(string $className, array $data): mixed
+    private function roundTrip(
+        string $className,
+        array $data,
+    ): mixed
     {
         $object = $this->inputMapperProvider->get($className)->map($data);
         return $this->outputMapperProvider->get($className)->map($object);

@@ -24,7 +24,7 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionParameter;
+use ReflectionProperty;
 use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 use ShipMonk\InputMapper\Compiler\Attribute\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
@@ -44,8 +44,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
-use function array_map;
 use function array_fill_keys;
+use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -247,35 +247,45 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
     {
         $inputType = new IdentifierTypeNode($inputClassName);
         $classReflection = new ReflectionClass($inputClassName);
-        $constructor = $classReflection->getConstructor();
-
-        if ($constructor === null) {
-            throw CannotCreateMapperCompilerException::fromType($inputType, 'class has no constructor');
-        }
 
         $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
         $genericParameterNames = array_column($genericParameters, 'name');
         $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
 
-        $constructorParameterTypes = $this->getConstructorParameterTypes($constructor, $genericParameterNames);
+        /** @var array<string, array<string, TypeNode>> $constructorTypesByClass */
+        $constructorTypesByClass = [];
 
         $propertyMapperCompilers = [];
 
-        foreach ($constructor->getParameters() as $parameter) {
-            if (!$parameter->isPromoted()) {
+        foreach ($classReflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isReadOnly()) {
                 continue;
             }
 
-            $propertyName = $parameter->getName();
-            $type = $constructorParameterTypes[$propertyName];
+            $propertyName = $property->getName();
+            $declaringClass = $property->getDeclaringClass();
+            $declaringClassName = $declaringClass->getName();
+
+            if (!isset($constructorTypesByClass[$declaringClassName])) {
+                $declaringConstructor = $declaringClass->getConstructor();
+
+                if ($declaringConstructor === null) {
+                    throw CannotCreateMapperCompilerException::fromType($inputType, "class {$declaringClassName} has no constructor");
+                }
+
+                $constructorTypesByClass[$declaringClassName] = $this->getConstructorParameterTypes($declaringConstructor, $genericParameterNames);
+            }
+
+            $type = $constructorTypesByClass[$declaringClassName][$propertyName]
+                ?? throw CannotCreateMapperCompilerException::fromType($inputType, "cannot determine type for property {$propertyName}");
 
             $outputKey = $propertyName;
 
-            foreach ($parameter->getAttributes(SourceKey::class) as $attribute) {
+            foreach ($property->getAttributes(SourceKey::class) as $attribute) {
                 $outputKey = $attribute->newInstance()->key;
             }
 
-            $mapperCompiler = $this->createPropertyMapperCompiler($parameter, $type, $options);
+            $mapperCompiler = $this->createPropertyMapperCompiler($property, $type, $options);
 
             $propertyMapperCompilers[$propertyName] = [$outputKey, $mapperCompiler];
         }
@@ -367,21 +377,21 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
      * @param array<string, mixed> $options
      */
     protected function createPropertyMapperCompiler(
-        ReflectionParameter $parameterReflection,
+        ReflectionProperty $propertyReflection,
         TypeNode $type,
         array $options,
     ): MapperCompiler
     {
         $mappers = [];
 
-        foreach ($parameterReflection->getAttributes(OutputMapperCompilerProvider::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+        foreach ($propertyReflection->getAttributes(OutputMapperCompilerProvider::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $mappers[] = $attribute->newInstance()->getOutputMapperCompiler();
         }
 
         return match (count($mappers)) {
             0 => $this->createInner($type, $options),
             1 => $mappers[0],
-            default => throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mappers[0], $parameterReflection, $type),
+            default => throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName()),
         };
     }
 
