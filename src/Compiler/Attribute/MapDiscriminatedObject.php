@@ -5,13 +5,15 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 
 /**
  * @template T of object
  */
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDiscriminatedObject implements InputMapperCompilerProvider
+class MapDiscriminatedObject implements InputMapperCompilerProvider, OutputMapperCompilerProvider
 {
 
     /**
@@ -31,6 +33,18 @@ class MapDiscriminatedObject implements InputMapperCompilerProvider
     public function getInputMapperCompiler(): MapperCompiler
     {
         return new DiscriminatedObjectInputMapperCompiler($this->className, $this->discriminatorKeyName, $this->subtypeCompilers, $this->genericParameters);
+    }
+
+    public function getOutputMapperCompiler(): MapperCompiler
+    {
+        $subtypeOutputCompilers = [];
+
+        foreach ($this->subtypeCompilers as $key => $subtypeCompiler) {
+            $subtypeClassName = $subtypeCompiler->getOutputType()->__toString();
+            $subtypeOutputCompilers[$key] = new DelegateOutputMapperCompiler($subtypeClassName);
+        }
+
+        return new DiscriminatedObjectOutputMapperCompiler($this->className, $this->discriminatorKeyName, $subtypeOutputCompilers, $this->genericParameters);
     }
 
 }

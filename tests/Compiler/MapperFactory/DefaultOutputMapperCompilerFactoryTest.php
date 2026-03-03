@@ -14,10 +14,15 @@ use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultOutputMapperCompilerFactory;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildTwoInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SimplePersonInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
@@ -141,6 +146,19 @@ class DefaultOutputMapperCompilerFactoryTest extends InputMapperTestCase
                 ['key' => 'a', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('int')), 'optional' => false],
                 ['key' => 'b', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => true],
             ], sealed: true),
+        ];
+
+        yield 'HierarchicalParentInput (discriminated)' => [
+            HierarchicalParentInput::class,
+            [],
+            new DiscriminatedObjectOutputMapperCompiler(
+                HierarchicalParentInput::class,
+                'type',
+                [
+                    'childOne' => new DelegateOutputMapperCompiler(HierarchicalChildOneInput::class),
+                    'childTwo' => new DelegateOutputMapperCompiler(HierarchicalChildTwoInput::class),
+                ],
+            ),
         ];
     }
 
