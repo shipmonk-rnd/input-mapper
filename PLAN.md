@@ -698,19 +698,20 @@ src/
 
 ### Step 4: Core output runtime
 - `OutputMapper<T>` interface with `map()` method
-- `OutputMapperProvider` class (compilation + caching infrastructure)
-- `PhpCodeBuilder` extensions (`outputMapperMethod`, `outputMapperClass`, `outputMapperFile`)
-- `CallbackOutputMapper`
+- `OutputMapperProvider` class (compilation + caching infrastructure, including `$innerOutputMappers` support for generics)
+- `PhpCodeBuilder` extensions (`outputMapperMethod`, `outputMapperClass`, `outputMapperFile`, `outputMapperClassConstructor` with `$innerMappers` for generics)
+- `CallbackOutputMapper` (wraps closure as `OutputMapper<T>`, needed for generic inner mappers)
 
 ### Step 5: Scalar output + PassthroughMapperCompiler
 - `PassthroughMapperCompiler` (covers int, string, bool, float, mixed — accepts any `TypeNode`)
 - Add `OutputMapperCompilerProvider` to `MapInt`, `MapString`, `MapBool`, `MapFloat`, `MapMixed`
 - End-to-end test: compile + run an output mapper for a flat scalar-only object
 
-### Step 6: Object output compiler
-- `ObjectOutputMapperCompiler` — the most important and complex piece (public readonly promoted properties only)
-- `DelegateOutputMapperCompiler` — for nested object references
+### Step 6: Object output compiler + delegation + generics
+- `ObjectOutputMapperCompiler` — implements `GenericMapperCompiler`, carries `genericParameters` (public readonly promoted properties only)
+- `DelegateOutputMapperCompiler` — for nested object references AND generic type parameter resolution (Mode 1: `$this->innerMappers[N]->map()`, Mode 2: `$this->provider->get(Class, $innerMappers)`)
 - Add `OutputMapperCompilerProvider` to `MapObject`
+- Test with non-generic objects, nested objects, and generic objects (e.g. `CollectionInput<int>`)
 
 ### Step 7: Wrapper output compilers
 - `NullableOutputMapperCompiler`
@@ -737,7 +738,13 @@ src/
 ### Step 12: Tests
 - Unit tests mirroring existing input mapper tests
 - Round-trip tests: `map_output(map_input($data)) === $data` for various type combinations
-- Tests for edge cases: optional fields, discriminated objects, generics, date formats
+- Generic-specific tests:
+  - Simple generic class: `CollectionInput<int>`, `CollectionInput<string>`
+  - Bounded generic: `@template T of BackedEnum` with `CollectionInput<SuitEnum>`
+  - Nested generics: non-generic class referencing `InFilterInput<int>`, `EqualsFilterInput<ColorEnum>`
+  - Generic class with multiple template parameters (if supported)
+  - Round-trip with generics: `map_output(map_input($data)) === $data` for `CollectionInput<int>`
+- Tests for other edge cases: optional fields, discriminated objects, date formats
 
 ### Step 13: PHPStan extensions
 - Extend existing PHPStan rules for output mapper generics
@@ -772,7 +779,249 @@ $json = json_encode($array);
 
 ---
 
-## 14. Open Questions
+## 14. Generics Support (detailed)
+
+Generics are the most complex part of the current input mapper. This section details how they work today and what changes are needed for the output direction.
+
+### 14.1. How generics work today (input direction)
+
+Given a generic class:
+
+```php
+/** @template T */
+class CollectionInput {
+    /** @param list<T> $items */
+    public function __construct(
+        public readonly array $items,
+        public readonly int $size,
+    ) {}
+}
+```
+
+The input mapping flow is:
+
+1. **Factory discovers `@template T`** via `PhpDocTypeUtils::getGenericTypeDefinition()`, producing `[GenericTypeParameter('T')]`.
+2. **Type resolution preserves `T` as-is** — when resolving `list<T>`, the `T` identifier is not resolved to a class because it's in the `$genericParameterNames` list.
+3. **Factory creates `DelegateInputMapperCompiler('T')`** for the unresolved type parameter — a delegate whose "class name" is the template parameter name `T`.
+4. **`ObjectInputMapperCompiler` carries `genericParameters`** and implements `GenericMapperCompiler`, so the generated class gets `@template T` in its PHPDoc.
+5. **`PhpCodeBuilder::mapperClassConstructor()`** detects `GenericMapperCompiler` and adds an `$innerMappers` constructor parameter typed as `array{Mapper<T>}`.
+6. **At compile time**, `DelegateInputMapperCompiler('T')::compile()` checks `$builder->getGenericParameters()`, finds `T` at offset 0, and generates `$this->innerMappers[0]->map($data, $path)`.
+7. **At runtime**, when someone needs `CollectionInput<int>`, the call chain is:
+   - Outer mapper needs `CollectionInput<int>` → creates `DelegateInputMapperCompiler('CollectionInput', [IntInputMapperCompiler()])`
+   - This delegate compiles an inner mapper for `int` as a `CallbackInputMapper`, then generates: `$this->provider->get(CollectionInput::class, [$intCallbackMapper])`
+   - `InputMapperProvider::get()` compiles (or loads cached) `CollectionMapper`, instantiates it as `new CollectionMapper($this, [$intCallbackMapper])`
+   - Inside `CollectionMapper::mapItems()`, each item is mapped via `$this->innerMappers[0]->map($item, ...)`
+
+Key insight: **The generic mapper class is compiled once** (with template parameter `T`). The **concrete type is injected at runtime** via `$innerMappers`. This is analogous to type erasure in Java — the generated code doesn't know what `T` is, it just delegates to the injected mapper.
+
+### 14.2. What changes for the output direction
+
+The generic mechanism is **almost entirely reusable** for output. The same pattern applies:
+
+1. **`ObjectOutputMapperCompiler` implements `GenericMapperCompiler`** — same as `ObjectInputMapperCompiler`. It carries `genericParameters` and the generated output mapper class gets `@template T` in its PHPDoc.
+2. **`DelegateOutputMapperCompiler('T')`** works the same way — it checks `$builder->getGenericParameters()`, finds `T` at offset 0, and generates `$this->innerMappers[0]->map($data, $path)`.
+3. **`PhpCodeBuilder::outputMapperClassConstructor()`** adds `$innerMappers` typed as `array{OutputMapper<T>}` (instead of `array{Mapper<T>}` / `array{InputMapper<T>}`).
+4. **`OutputMapperProvider::get()`** accepts `$innerOutputMappers` and passes them to the generated class constructor.
+5. **`CallbackOutputMapper`** wraps a closure as `OutputMapper<T>`, used for inner mapper expressions (mirrors `CallbackInputMapper`).
+
+The flow for `CollectionInput<int>` on the output side:
+
+1. Outer output mapper needs to serialize `CollectionInput<int>` → creates `DelegateOutputMapperCompiler('CollectionInput', [PassthroughMapperCompiler('int')])`
+2. This delegate compiles an inner output mapper for `int` as a `CallbackOutputMapper`, then generates: `$this->provider->get(CollectionInput::class, [$intCallbackOutputMapper])`
+3. `OutputMapperProvider::get()` compiles (or loads cached) `CollectionOutputMapper`, instantiates as `new CollectionOutputMapper($this, [$intCallbackOutputMapper])`
+4. Inside `CollectionOutputMapper::mapItems()`, each item is mapped via `$this->innerMappers[0]->map($item, ...)`
+
+### 14.3. Detailed component mapping for generics
+
+| Input component | Output counterpart | Changes needed |
+|----------------|-------------------|----------------|
+| `GenericMapperCompiler` interface | **Reused as-is** | `ObjectOutputMapperCompiler` and `DiscriminatedObjectOutputMapperCompiler` implement it |
+| `GenericTypeParameter` | **Reused as-is** | No changes |
+| `PhpDocTypeUtils::getGenericTypeDefinition()` | **Reused as-is** | Same template discovery |
+| `DelegateInputMapperCompiler` | `DelegateOutputMapperCompiler` | Same logic but generates `OutputMapper` references instead of `InputMapper`. Uses `OutputMapperProvider` instead of `InputMapperProvider`. Uses `CallbackOutputMapper` instead of `CallbackInputMapper`. |
+| `PhpCodeBuilder::mapperClassConstructor()` | Extended or new method | `$innerMappers` typed as `array{OutputMapper<T>}` instead of `array{InputMapper<T>}` |
+| `InputMapperProvider::get($class, $innerMappers)` | `OutputMapperProvider::get($class, $innerOutputMappers)` | Same caching strategy (class + md5 of inner mapper object IDs) |
+| `CallbackInputMapper` | `CallbackOutputMapper` | Wraps `Closure(T, list<string|int>): mixed` instead of `Closure(mixed, list<string|int>): T` |
+
+### 14.4. `DelegateOutputMapperCompiler` — the linchpin
+
+This is the output counterpart of `DelegateInputMapperCompiler`. It has two modes, identical in structure to the input version:
+
+**Mode 1: Template parameter reference** (e.g. `DelegateOutputMapperCompiler('T')`)
+- At compile time, checks `$builder->getGenericParameters()`, finds `T` at offset `N`
+- Generates: `$this->innerMappers[N]->map($data, $path)`
+- The concrete output mapper is injected at runtime
+
+**Mode 2: Concrete class reference** (e.g. `DelegateOutputMapperCompiler('CollectionInput', [PassthroughMapperCompiler('int')])`)
+- Compiles each inner mapper compiler into a `CallbackOutputMapper`
+- Generates: `$this->provider->get(CollectionInput::class, [$innerOutputMapper0])`
+- At runtime, `OutputMapperProvider` instantiates the generic output mapper with the concrete inner mappers
+
+```php
+class DelegateOutputMapperCompiler implements MapperCompiler
+{
+    public function __construct(
+        public readonly string $className,
+        public readonly array $innerMapperCompilers = [],  // list<MapperCompiler>
+    ) {}
+
+    public function compile(Expr $value, Expr $path, PhpCodeBuilder $builder): CompiledExpr
+    {
+        // Mode 1: Check if $this->className is a generic type parameter
+        foreach ($builder->getGenericParameters() as $offset => $genericParameter) {
+            if ($this->className === $genericParameter->name) {
+                $innerMappers = $builder->propertyFetch($builder->var('this'), 'innerMappers');
+                $innerMapper = $builder->arrayDimFetch($innerMappers, $builder->val($offset));
+                return new CompiledExpr(
+                    $builder->methodCall($innerMapper, 'map', [$value, $path])
+                );
+            }
+        }
+
+        // Mode 2: Delegate to OutputMapperProvider
+        $classNameExpr = $builder->classConstFetch($builder->importClass($this->className), 'class');
+        $provider = $builder->propertyFetch($builder->var('this'), 'provider');
+        $innerMappers = $this->compileInnerOutputMappers($builder);
+        // ... generate $this->provider->get(ClassName::class, $innerMappers)->map($value, $path)
+    }
+}
+```
+
+### 14.5. Generated output mapper for generic class (example)
+
+For `CollectionInput<T>`, the generated output mapper would look like:
+
+```php
+/**
+ * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
+ *
+ * @template T
+ * @implements OutputMapper<CollectionInput<T>>
+ */
+class CollectionOutputMapper implements OutputMapper
+{
+    /**
+     * @param array{OutputMapper<T>} $innerMappers
+     */
+    public function __construct(
+        private readonly OutputMapperProvider $provider,
+        private readonly array $innerMappers,
+    ) {}
+
+    /**
+     * @param  CollectionInput<T> $data
+     * @param  list<string|int> $path
+     * @return array{items: list<mixed>, size: int}
+     * @throws MappingFailedException
+     */
+    public function map(mixed $data, array $path = []): array
+    {
+        return [
+            'items' => $this->mapItems($data->items, [...$path, 'items']),
+            'size' => $data->size,
+        ];
+    }
+
+    /**
+     * @param  list<T> $data
+     * @param  list<string|int> $path
+     * @return list<mixed>
+     * @throws MappingFailedException
+     */
+    private function mapItems(array $data, array $path = []): array
+    {
+        $mapped = [];
+        foreach ($data as $index => $item) {
+            $mapped[] = $this->innerMappers[0]->map($item, [...$path, $index]);
+        }
+        return $mapped;
+    }
+}
+```
+
+### 14.6. Nested generics (e.g. `CarFilterInput`)
+
+Consider a non-generic class referencing generic classes:
+
+```php
+class CarFilterInput {
+    /** @param InFilterInput<int> $id */
+    /** @param EqualsFilterInput<ColorEnum> $color */
+    public function __construct(
+        public readonly InFilterInput $id,
+        public readonly EqualsFilterInput $color,
+    ) {}
+}
+```
+
+**Input direction** (current): The factory creates:
+- `DelegateInputMapperCompiler('InFilterInput', [IntInputMapperCompiler()])`
+- `DelegateInputMapperCompiler('EqualsFilterInput', [DelegateInputMapperCompiler('ColorEnum')])`
+
+**Output direction** (new): The factory creates:
+- `DelegateOutputMapperCompiler('InFilterInput', [PassthroughMapperCompiler('int')])`
+- `DelegateOutputMapperCompiler('EqualsFilterInput', [EnumOutputMapperCompiler('ColorEnum', ...)])`
+
+The delegate compilers handle the wiring — they compile their inner mapper compilers into `CallbackOutputMapper` instances and pass them to `OutputMapperProvider::get()`.
+
+### 14.7. Bounded generics
+
+For bounded generics like `@template T of BackedEnum`:
+
+- The bound is stored in `GenericTypeParameter::$bound` and is **reused as-is**
+- The factory validates that the concrete type satisfies the bound via `PhpDocTypeUtils::isSubTypeOf()`
+- This validation is the same for both directions — it happens at compile time in the factory
+
+### 14.8. Generic type variance considerations
+
+The current input mapper uses `@template T` (invariant) or `@template-covariant T` on generic parameters. For output mappers:
+
+- `InputMapper<T>` is covariant in `T` (produces `T`)
+- `OutputMapper<T>` is contravariant in `T` (consumes `T`)
+- The generic parameter on the *user's class* (e.g. `CollectionInput<T>`) has its own declared variance, which doesn't change
+
+In the generated output mapper class, `$innerMappers` contains `OutputMapper<T>` instances. The `@template T` annotation on the generated class should match the user class's declared variance. This is handled automatically since `GenericTypeParameter` preserves the original variance from the user's `@template` tag.
+
+### 14.9. `PhpCodeBuilder` changes for generic output mappers
+
+The existing `mapperClassConstructor()` generates:
+
+```php
+public function __construct(
+    private readonly MapperProvider $provider,    // will become InputMapperProvider
+    private readonly array $innerMappers,          // array{Mapper<T>} → array{InputMapper<T>}
+)
+```
+
+The output variant (`outputMapperClassConstructor()`) generates:
+
+```php
+public function __construct(
+    private readonly OutputMapperProvider $provider,
+    private readonly array $innerMappers,          // array{OutputMapper<T>}
+)
+```
+
+The `mapperMethod()` / `outputMapperMethod()` helper for generating private sub-methods is **shared** — it just calls `$compiler->compile()` and wraps the result. The generic parameters from `$builder->getGenericParameters()` are already set by the `*File()` method and are accessible to all compilers during compilation.
+
+### 14.10. Summary: what's new vs reused for generics
+
+**Fully reused (zero changes)**:
+- `GenericMapperCompiler` interface
+- `GenericTypeParameter`, `GenericTypeDefinition`, `GenericTypeVariance`
+- `PhpDocTypeUtils::getGenericTypeDefinition()`, `resolve()`, `isSubTypeOf()`
+- `PhpCodeBuilder::getGenericParameters()`, generic parameter tracking, `@template` PHPDoc generation
+- Bound validation logic in factories
+
+**New but structurally identical to input counterparts**:
+- `DelegateOutputMapperCompiler` — mirrors `DelegateInputMapperCompiler` (references `OutputMapperProvider` + `CallbackOutputMapper` instead of input equivalents)
+- `CallbackOutputMapper` — mirrors `CallbackInputMapper`
+- `OutputMapperProvider::get($class, $innerOutputMappers)` — same caching + instantiation pattern
+- `PhpCodeBuilder::outputMapperClassConstructor()` — same structure, different types in PHPDoc (`OutputMapper<T>` vs `InputMapper<T>`)
+
+---
+
+## 15. Open Questions
 
 1. **Property access strategy (future)**: When should we add support for getters / non-promoted properties? Not needed initially, but good to design for extensibility.
 2. **Output-specific validation**: Should there be any output-side validation? (e.g., "assert this value is non-null before serializing"). Probably not needed initially.
