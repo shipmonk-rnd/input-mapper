@@ -18,7 +18,7 @@ class CallbackOutputMapperTest extends InputMapperTestCase
     public function testMapThrowsException(): void
     {
         $mapper = new CallbackOutputMapper(static function (): never {
-            throw MappingFailedException::incorrectValue('123', [], 'int'); // @phpstan-ignore shipmonk.checkedExceptionInCallable (callback invoked lazily in map())
+            throw MappingFailedException::incorrectValue('123', [], 'int');
         });
 
         self::assertException(

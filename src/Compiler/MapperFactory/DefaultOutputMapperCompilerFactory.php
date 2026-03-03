@@ -32,6 +32,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
@@ -47,6 +48,7 @@ use function class_implements;
 use function class_parents;
 use function count;
 use function interface_exists;
+use function is_array;
 use function strtolower;
 use function substr;
 
@@ -93,6 +95,16 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
+                if (isset($options[self::DELEGATE_OBJECT_MAPPING]) && $options[self::DELEGATE_OBJECT_MAPPING] === true) {
+                    if (!class_exists($type->name) && !interface_exists($type->name)) {
+                        if (!isset($options[self::GENERIC_PARAMETERS]) || !is_array($options[self::GENERIC_PARAMETERS]) || !isset($options[self::GENERIC_PARAMETERS][$type->name])) {
+                            throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
+                        }
+                    }
+
+                    return new DelegateOutputMapperCompiler($type->name);
+                }
+
                 if (!class_exists($type->name) && !interface_exists($type->name)) {
                     throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
                 }
@@ -130,7 +142,7 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
                         1 => new ListOutputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
-                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                    default => $this->createFromGenericType($type, $options),
                 },
             };
         }
@@ -338,6 +350,34 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
             1 => $mappers[0],
             default => throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mappers[0], $parameterReflection, $type),
         };
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    protected function createFromGenericType(
+        GenericTypeNode $type,
+        array $options,
+    ): MapperCompiler
+    {
+        if (!class_exists($type->type->name) && !interface_exists($type->type->name)) {
+            throw CannotCreateMapperCompilerException::fromType($type, 'there is no class or interface with this name');
+        }
+
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($type->type)->parameters;
+        $innerMapperCompilers = [];
+
+        foreach ($type->genericTypes as $index => $genericType) {
+            $genericParameter = $genericParameters[$index] ?? throw CannotCreateMapperCompilerException::fromType($type, "generic parameter at index {$index} does not exist");
+
+            if ($genericParameter->bound !== null && !PhpDocTypeUtils::isSubTypeOf($genericType, $genericParameter->bound)) {
+                throw CannotCreateMapperCompilerException::fromType($type, "type {$genericType} is not a subtype of {$genericParameter->bound}");
+            }
+
+            $innerMapperCompilers[] = $this->createInner($genericType, $options);
+        }
+
+        return new DelegateOutputMapperCompiler($type->type->name, $innerMapperCompilers);
     }
 
     /**
