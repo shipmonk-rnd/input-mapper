@@ -566,6 +566,89 @@ Test cases:
 
 ---
 
+## Phase 11B: Fix Output Factory for Inherited Properties in Class Hierarchies
+
+`DefaultOutputMapperCompilerFactory::createObjectMappingByPropertyReading()` only discovers **promoted constructor parameters** of the declaring class. In class hierarchies where the child constructor re-declares parent parameters without `public readonly` (the standard PHP pattern), the parent's properties are invisible to the output factory.
+
+**Example:**
+
+```php
+abstract class HierarchicalParentInput {
+    public function __construct(
+        public readonly int $id,       // promoted here
+        public readonly string $name,  // promoted here
+    ) {}
+}
+
+class HierarchicalChildOneInput extends HierarchicalParentInput {
+    public function __construct(
+        int $id,                              // NOT promoted (passed to parent)
+        string $name,                         // NOT promoted (passed to parent)
+        public readonly string $childField,   // promoted
+    ) {
+        parent::__construct($id, $name);
+    }
+}
+```
+
+The output factory only finds `childField` for `HierarchicalChildOneInput`, missing `id` and `name`. This breaks discriminated object round-trips since the delegated child mappers omit parent properties.
+
+**Contrast with input factory:** `DefaultInputMapperCompilerFactory::createObjectMappingByConstructorInvocation()` reads ALL constructor parameters (promoted or not), because the input side maps source keys → constructor args. The output side reads properties → output keys, so it must find all readable properties.
+
+### 11B.1 Change property discovery to use `ReflectionClass::getProperties()`
+
+In `DefaultOutputMapperCompilerFactory::createObjectMappingByPropertyReading()`:
+
+Replace the current approach:
+```php
+foreach ($constructor->getParameters() as $parameter) {
+    if (!$parameter->isPromoted()) {
+        continue;
+    }
+    // ... reads from $parameter
+}
+```
+
+With property-based discovery:
+```php
+foreach ($classReflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+    if (!$property->isReadOnly()) {
+        continue;
+    }
+    // ... reads from $property
+}
+```
+
+This naturally includes inherited public readonly properties from all ancestor classes.
+
+### 11B.2 Adapt type resolution for property-based discovery
+
+The current code gets types from `getConstructorParameterTypes()` which reads the declaring class's constructor PHPDoc. For inherited properties, the type must be resolved from the **declaring class's constructor**, not the child's constructor.
+
+Approach:
+- For each property, find the constructor of `$property->getDeclaringClass()`
+- Read the PHPDoc `@param` tag for that parameter from the declaring constructor
+- This handles cases where the parent's constructor has `@param Optional<int> $age` but the child's constructor only has the native `Optional` type hint
+
+### 11B.3 Adapt attribute reading for property-based discovery
+
+`#[SourceKey]` and `#[OutputMapperCompilerProvider]` attributes are currently read from `ReflectionParameter`. For the property-based approach:
+
+- Read `#[SourceKey]` from `ReflectionProperty` (attributes on promoted parameters are accessible from both the parameter and the property reflection)
+- Read `#[OutputMapperCompilerProvider]` from `ReflectionProperty` as well
+- Verify that PHP's reflection correctly surfaces attributes from promoted parameters via `ReflectionProperty::getAttributes()` (it does — promoted parameter attributes are shared with the property)
+
+### 11B.4 Add round-trip tests for discriminated objects
+
+Add to `RoundTripTest`:
+- Discriminated object child one (all fields including inherited)
+- Discriminated object child two (with optional absent)
+- Verify that parent properties (`id`, `name`, `age`, `type`) appear in output alongside child-specific properties
+
+### 11B.5 Run full test suite and PHPStan — must pass
+
+---
+
 ## Phase 12: PHPStan Extensions
 
 ### 12.1 Extend existing PHPStan rules for output mapper generics
@@ -619,6 +702,8 @@ Phase 10 (discriminated objects)
     ↓
 Phase 11 (comprehensive testing)
     ↓
+Phase 11B (fix output factory for inherited properties)
+    ↓
 Phase 12 (PHPStan extensions)
     ↓
 Phase 13 (unified provider — optional)
@@ -626,3 +711,4 @@ Phase 13 (unified provider — optional)
 
 Phases 6, 7, 8 can be done in parallel since they are independent of each other.
 Phase 7B depends on 6, 7 (fixes design issue in wrapper/collection attributes).
+Phase 11B depends on 11 (fixes factory bug discovered during round-trip testing).
