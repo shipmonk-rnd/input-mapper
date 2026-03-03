@@ -7,7 +7,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 /**
  * @template-covariant T
  */
-interface Mapper
+interface InputMapper
 {
 
     /**

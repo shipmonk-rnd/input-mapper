@@ -28,7 +28,7 @@ parameters:
     shipmonkRules:
         forbidCheckedExceptionInCallable:
             allowedCheckedExceptionCallables:
-                'ShipMonk\InputMapper\Runtime\CallbackMapper::__construct': 0
+                'ShipMonk\InputMapper\Runtime\CallbackInputMapper::__construct': 0
 
     ignoreErrors:
         -

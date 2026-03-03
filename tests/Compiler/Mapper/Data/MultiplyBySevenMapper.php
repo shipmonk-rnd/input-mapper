@@ -3,17 +3,17 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Data;
 
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 
 /**
  * Generated mapper by {@see MapMultiplyBySeven}. Do not edit directly.
  *
- * @implements Mapper<int>
+ * @implements InputMapper<int>
  */
-class MultiplyBySevenMapper implements Mapper
+class MultiplyBySevenMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

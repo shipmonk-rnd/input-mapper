@@ -3,20 +3,20 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
-use ShipMonk\InputMapper\Runtime\CallbackMapper;
+use ShipMonk\InputMapper\Runtime\CallbackInputMapper;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use function is_int;
 
 /**
  * Generated mapper by {@see DelegateInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<CollectionInput<int>>
+ * @implements InputMapper<CollectionInput<int>>
  */
-class DelegateToIntCollectionMapper implements Mapper
+class DelegateToIntCollectionMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 
@@ -27,7 +27,7 @@ class DelegateToIntCollectionMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): CollectionInput
     {
-        $innerMappers = [new CallbackMapper($this->mapInner0(...))];
+        $innerMappers = [new CallbackInputMapper($this->mapInner0(...))];
         return $this->provider->get(CollectionInput::class, $innerMappers)->map($data, $path);
     }
 

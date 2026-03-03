@@ -57,8 +57,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use function array_column;
 use function array_fill_keys;
 use function array_filter;
@@ -548,7 +548,7 @@ class PhpCodeBuilder extends BuilderFactory
         return "/**\n * " . implode("\n * ", $lines) . "\n */";
     }
 
-    public function mapperMethod(
+    public function inputMapperMethod(
         string $methodName,
         MapperCompiler $mapperCompiler,
     ): Method
@@ -596,12 +596,12 @@ class PhpCodeBuilder extends BuilderFactory
             ->addStmt($this->return($mapper->expr));
     }
 
-    public function mapperClassConstructor(MapperCompiler $mapperCompiler): ClassMethod
+    public function inputMapperClassConstructor(MapperCompiler $mapperCompiler): ClassMethod
     {
         $mapperConstructorPhpDocLines = [];
         $mapperConstructorBuilder = $this->method('__construct');
 
-        $providerParameter = $this->param('provider')->setType($this->importClass(MapperProvider::class))->getNode();
+        $providerParameter = $this->param('provider')->setType($this->importClass(InputMapperProvider::class))->getNode();
         $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
         $mapperConstructorBuilder->addParam($providerParameter);
 
@@ -615,7 +615,7 @@ class PhpCodeBuilder extends BuilderFactory
                 static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
                     return new ArrayShapeItemNode(
                         keyName: null,
-                        valueType: new GenericTypeNode(new IdentifierTypeNode(Mapper::class), [new IdentifierTypeNode($genericParameter->name)]),
+                        valueType: new GenericTypeNode(new IdentifierTypeNode(InputMapper::class), [new IdentifierTypeNode($genericParameter->name)]),
                         optional: false,
                     );
                 },
@@ -631,14 +631,14 @@ class PhpCodeBuilder extends BuilderFactory
             ->getNode();
     }
 
-    public function mapperClass(
+    public function inputMapperClass(
         string $shortClassName,
         MapperCompiler $mapperCompiler,
     ): Class_
     {
-        $mapperConstructor = $this->mapperClassConstructor($mapperCompiler);
+        $mapperConstructor = $this->inputMapperClassConstructor($mapperCompiler);
 
-        $mapMethod = $this->mapperMethod('map', $mapperCompiler)
+        $mapMethod = $this->inputMapperMethod('map', $mapperCompiler)
             ->makePublic()
             ->getNode();
 
@@ -648,7 +648,7 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
         $implementsType = new GenericTypeNode(
-            new IdentifierTypeNode($this->importClass(Mapper::class)),
+            new IdentifierTypeNode($this->importClass(InputMapper::class)),
             [$outputType],
         );
 
@@ -677,7 +677,7 @@ class PhpCodeBuilder extends BuilderFactory
 
         return $this->class($shortClassName)
             ->setDocComment($phpDoc)
-            ->implement($this->importClass(Mapper::class))
+            ->implement($this->importClass(InputMapper::class))
             ->addStmts($constants)
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
@@ -687,7 +687,7 @@ class PhpCodeBuilder extends BuilderFactory
     /**
      * @return list<Stmt>
      */
-    public function mapperFile(
+    public function inputMapperFile(
         string $mapperClassName,
         MapperCompiler $mapperCompiler,
     ): array
@@ -700,7 +700,7 @@ class PhpCodeBuilder extends BuilderFactory
             $this->genericParameters = $mapperCompiler->getGenericParameters();
         }
 
-        $mapperClass = $this->mapperClass($shortClassName, $mapperCompiler)
+        $mapperClass = $this->inputMapperClass($shortClassName, $mapperCompiler)
             ->getNode();
 
         return $this->file($namespaceName, [$mapperClass]);

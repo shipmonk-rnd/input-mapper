@@ -6,8 +6,8 @@ use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use function assert;
 use function class_exists;
@@ -23,15 +23,15 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
     /**
      * @param array<class-string, MapperCompiler> $providedMapperCompilers
-     * @param list<Mapper<mixed>> $innerMappers
-     * @return Mapper<mixed>
+     * @param list<InputMapper<mixed>> $innerMappers
+     * @return InputMapper<mixed>
      */
     protected function compileMapper(
         string $name,
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers = [],
         array $innerMappers = [],
-    ): Mapper
+    ): InputMapper
     {
         $testCaseReflection = new ReflectionClass($this);
 
@@ -44,23 +44,23 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $builder = new PhpCodeBuilder();
         $printer = new PhpCodePrinter();
-        $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
+        $mapperCode = $printer->prettyPrintFile($builder->inputMapperFile($mapperClassName, $mapperCompiler));
         self::assertSnapshot($mapperPath, $mapperCode);
 
         if (!class_exists($mapperClassName, autoload: false)) {
             require $mapperPath;
         }
 
-        $mapperProvider = $this->createMock(MapperProvider::class);
+        $mapperProvider = $this->createMock(InputMapperProvider::class);
 
         $mapperProvider->expects(self::any())->method('get')->willReturnCallback(
-            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): Mapper {
-                /** @var list<Mapper<mixed>> $innerMappers */
+            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): InputMapper {
+                /** @var list<InputMapper<mixed>> $innerMappers */
                 return $this->compileMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $innerMappers);
             },
         );
 
-        assert(is_a($mapperClassName, Mapper::class, true));
+        assert(is_a($mapperClassName, InputMapper::class, true));
         return new $mapperClassName($mapperProvider, $innerMappers);
     }
 

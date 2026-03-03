@@ -78,7 +78,7 @@ use function strcasecmp;
 use function strtolower;
 use function substr;
 
-class DefaultMapperCompilerFactory implements MapperCompilerFactory
+class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
 {
 
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';

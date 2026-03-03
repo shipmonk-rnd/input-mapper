@@ -60,7 +60,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
             $itemValue = $builder->arrayDimFetch($value, $builder->val($itemMapping->key));
             $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping->key));
             $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping->key));
-            $itemMapperMethod = $builder->mapperMethod($itemMapperMethodName, $itemMapping->mapper)->makePrivate()->getNode();
+            $itemMapperMethod = $builder->inputMapperMethod($itemMapperMethodName, $itemMapping->mapper)->makePrivate()->getNode();
             $builder->addMethod($itemMapperMethod);
 
             $itemAssignment = $builder->assign(

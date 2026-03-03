@@ -4,17 +4,17 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 
 /**
  * Generated mapper by {@see DelegateInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<PersonInput>
+ * @implements InputMapper<PersonInput>
  */
-class DelegateToPersonMapper implements Mapper
+class DelegateToPersonMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

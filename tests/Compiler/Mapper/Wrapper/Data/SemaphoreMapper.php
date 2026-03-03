@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use function array_column;
 use function array_diff_key;
 use function array_key_exists;
@@ -18,11 +18,11 @@ use function is_string;
 /**
  * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<Semaphore>
+ * @implements InputMapper<Semaphore>
  */
-class SemaphoreMapper implements Mapper
+class SemaphoreMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

@@ -4,17 +4,17 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Mixed\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 
 /**
  * Generated mapper by {@see MixedInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements InputMapper<mixed>
  */
-class MixedMapper implements Mapper
+class MixedMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

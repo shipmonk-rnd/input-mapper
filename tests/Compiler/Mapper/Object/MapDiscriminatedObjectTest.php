@@ -12,7 +12,7 @@ use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\InputMapper;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
@@ -188,7 +188,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
-            fn (): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
+            fn (): InputMapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }
 

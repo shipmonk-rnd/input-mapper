@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use function array_key_exists;
 use function implode;
 use function is_array;
@@ -13,11 +13,11 @@ use function is_array;
 /**
  * Generated mapper by {@see DiscriminatedObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<HierarchicalWithEnumParentInput>
+ * @implements InputMapper<HierarchicalWithEnumParentInput>
  */
-class HierarchicalWithEnumParentInputMapper implements Mapper
+class HierarchicalWithEnumParentInputMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

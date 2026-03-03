@@ -5,8 +5,8 @@ namespace ShipMonk\InputMapper\Runtime;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use RuntimeException;
-use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultInputMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\InputMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
 use function array_map;
@@ -32,38 +32,38 @@ use function unlink;
 use const LOCK_EX;
 use const LOCK_UN;
 
-class MapperProvider
+class InputMapperProvider
 {
 
     /**
-     * @var array<string, Mapper<mixed>>
+     * @var array<string, InputMapper<mixed>>
      */
     private array $mappers = [];
 
     /**
-     * @var array<class-string, callable(never, list<Mapper<mixed>>, self): Mapper<mixed>>
+     * @var array<class-string, callable(never, list<InputMapper<mixed>>, self): InputMapper<mixed>>
      */
     private array $mapperFactories = [];
 
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
-        private readonly MapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultMapperCompilerFactoryProvider(),
+        private readonly InputMapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultInputMapperCompilerFactoryProvider(),
     )
     {
     }
 
     /**
      * @param class-string<T> $inputClassName
-     * @param list<Mapper<mixed>> $innerMappers
-     * @return Mapper<T>
+     * @param list<InputMapper<mixed>> $innerMappers
+     * @return InputMapper<T>
      *
      * @template T of object
      */
     public function get(
         string $inputClassName,
         array $innerMappers = [],
-    ): Mapper
+    ): InputMapper
     {
         $key = $inputClassName;
 
@@ -71,14 +71,14 @@ class MapperProvider
             $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $innerMappers)));
         }
 
-        /** @var Mapper<T> $mapper */
+        /** @var InputMapper<T> $mapper */
         $mapper = $this->mappers[$key] ??= $this->create($inputClassName, $innerMappers);
         return $mapper;
     }
 
     /**
      * @param class-string<T> $inputClassName
-     * @param callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $mapperFactory
+     * @param callable(class-string<T>, list<InputMapper<mixed>>, self): InputMapper<T> $mapperFactory
      *
      * @template T of object
      */
@@ -96,15 +96,15 @@ class MapperProvider
 
     /**
      * @param class-string<T> $inputClassName
-     * @param list<Mapper<mixed>> $innerMappers
-     * @return Mapper<T>
+     * @param list<InputMapper<mixed>> $innerMappers
+     * @return InputMapper<T>
      *
      * @template T of object
      */
     private function create(
         string $inputClassName,
         array $innerMappers,
-    ): Mapper
+    ): InputMapper
     {
         $classParents = class_parents($inputClassName);
         $classImplements = class_implements($inputClassName);
@@ -117,7 +117,7 @@ class MapperProvider
 
         foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($this->mapperFactories[$classLikeName])) {
-                /** @var callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $factory */
+                /** @var callable(class-string<T>, list<InputMapper<mixed>>, self): InputMapper<T> $factory */
                 $factory = $this->mapperFactories[$classLikeName];
                 return $factory($inputClassName, $innerMappers, $this);
             }
@@ -134,7 +134,7 @@ class MapperProvider
 
     /**
      * @param class-string<T> $inputClassName
-     * @param class-string<Mapper<T>> $mapperClassName
+     * @param class-string<InputMapper<T>> $mapperClassName
      *
      * @template T of object
      */
@@ -181,7 +181,7 @@ class MapperProvider
 
     /**
      * @param class-string<T> $inputClassName
-     * @param class-string<Mapper<T>> $mapperClassName
+     * @param class-string<InputMapper<T>> $mapperClassName
      *
      * @template T of object
      */
@@ -196,12 +196,12 @@ class MapperProvider
         $codeBuilder = new PhpCodeBuilder();
         $codePrinter = new PhpCodePrinter();
 
-        return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
+        return $codePrinter->prettyPrintFile($codeBuilder->inputMapperFile($mapperClassName, $mapperCompiler));
     }
 
     /**
      * @param class-string<T> $inputClassName
-     * @return class-string<Mapper<T>>
+     * @return class-string<InputMapper<T>>
      *
      * @template T of object
      */
@@ -215,7 +215,7 @@ class MapperProvider
     }
 
     /**
-     * @param class-string<Mapper<mixed>> $mapperClassName
+     * @param class-string<InputMapper<mixed>> $mapperClassName
      */
     private function getMapperPath(string $mapperClassName): string
     {

@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
-use ShipMonk\InputMapper\Runtime\MapperProvider;
+use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\InputMapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function is_int;
@@ -13,11 +13,11 @@ use function is_int;
 /**
  * Generated mapper by {@see OptionalInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<OptionalSome<int>>
+ * @implements InputMapper<OptionalSome<int>>
  */
-class OptionalIntMapper implements Mapper
+class OptionalIntMapper implements InputMapper
 {
-    public function __construct(private readonly MapperProvider $provider)
+    public function __construct(private readonly InputMapperProvider $provider)
     {
     }
 

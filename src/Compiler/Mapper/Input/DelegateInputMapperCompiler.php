@@ -12,7 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\CallbackMapper;
+use ShipMonk\InputMapper\Runtime\CallbackInputMapper;
 use function count;
 
 class DelegateInputMapperCompiler implements MapperCompiler
@@ -90,11 +90,11 @@ class DelegateInputMapperCompiler implements MapperCompiler
         }
 
         $innerMapperMethodName = $builder->uniqMethodName("mapInner{$key}");
-        $innerMapperMethod = $builder->mapperMethod($innerMapperMethodName, $innerMapperCompiler)->makePrivate()->getNode();
+        $innerMapperMethod = $builder->inputMapperMethod($innerMapperMethodName, $innerMapperCompiler)->makePrivate()->getNode();
         $builder->addMethod($innerMapperMethod);
 
         $innerMapperMethodCallback = new MethodCall($builder->var('this'), $innerMapperMethodName, [new VariadicPlaceholder()]);
-        return $builder->new($builder->importClass(CallbackMapper::class), [$innerMapperMethodCallback]);
+        return $builder->new($builder->importClass(CallbackInputMapper::class), [$innerMapperMethodCallback]);
     }
 
     private function compileMapperExpr(PhpCodeBuilder $builder): CompiledExpr

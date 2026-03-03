@@ -7,9 +7,9 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
  * @template-covariant T
- * @implements Mapper<T>
+ * @implements InputMapper<T>
  */
-class CallbackMapper implements Mapper
+class CallbackInputMapper implements InputMapper
 {
 
     /**

@@ -33,7 +33,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultInputMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
@@ -65,7 +65,7 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstr
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 
-class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
+class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
 {
 
     /**
@@ -85,7 +85,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
         $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
 
-        $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
+        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
         $mapperCompiler = $mapperCompilerFactory->create($phpDocType, $options);
 
         self::assertEquals($expectedMapperCompiler, $mapperCompiler);
@@ -122,7 +122,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 
         yield 'CarInput with forced root delegation' => [
             CarInput::class,
-            [DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => true],
+            [DefaultInputMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => true],
             new DelegateInputMapperCompiler(CarInput::class),
         ];
 
@@ -468,7 +468,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
         $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
 
-        $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
+        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
 
         self::assertException(
             CannotCreateMapperCompilerException::class,
@@ -508,7 +508,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 
         yield 'DateTime' => [
             DateTime::class,
-            [DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false],
+            [DefaultInputMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false],
         ];
 
         yield 'array<int, int, int>' => [
@@ -549,7 +549,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             'brand' => new DelegateInputMapperCompiler(BrandInput::class),
         ]);
 
-        $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
+        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
 
         $mapperCompilerFactory->setMapperCompilerFactory(CarInput::class, static function (string $inputClassName, array $options) use ($carMapperCompiler): MapperCompiler {
             self::assertSame(CarInput::class, $inputClassName);

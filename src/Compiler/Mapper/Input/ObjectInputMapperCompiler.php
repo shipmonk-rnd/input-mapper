@@ -68,7 +68,7 @@ class ObjectInputMapperCompiler implements GenericMapperCompiler
             $propertyValue = $builder->arrayDimFetch($value, $builder->val($key));
             $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($key));
             $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
-            $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $argMapperCompiler)->makePrivate()->getNode();
+            $propertyMapperMethod = $builder->inputMapperMethod($propertyMapperMethodName, $argMapperCompiler)->makePrivate()->getNode();
             $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyValue, $propertyPath]);
             $builder->addMethod($propertyMapperMethod);
 

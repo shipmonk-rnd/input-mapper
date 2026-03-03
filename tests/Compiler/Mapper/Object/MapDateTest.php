@@ -6,7 +6,7 @@ use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\InputMapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapDateTest extends MapperCompilerTestCase
@@ -16,7 +16,7 @@ class MapDateTest extends MapperCompilerTestCase
     {
         $mapperCompiler = (new MapDate())->getInputMapperCompiler();
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var InputMapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateStandalone', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000+00:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -44,7 +44,7 @@ class MapDateTest extends MapperCompilerTestCase
     {
         $mapperCompiler = new DateTimeImmutableInputMapperCompiler(['!Y-m-d'], 'date string in Y-m-d format', 'Europe/Prague');
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var InputMapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateStandaloneWithTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000+02:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
