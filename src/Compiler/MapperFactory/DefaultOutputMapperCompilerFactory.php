@@ -2,6 +2,10 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
+use BackedEnum;
+use DateTimeImmutable;
+use DateTimeInterface;
+use LogicException;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
@@ -27,6 +31,8 @@ use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
@@ -37,6 +43,8 @@ use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
 use function array_fill_keys;
 use function class_exists;
+use function class_implements;
+use function class_parents;
 use function count;
 use function interface_exists;
 use function strtolower;
@@ -48,11 +56,31 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
     final public const GENERIC_PARAMETERS = 'genericParameters';
 
+    /**
+     * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
+     */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
         protected readonly PhpDocParser $phpDocParser,
+        protected array $mapperCompilerFactories = [],
     )
     {
+        $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompiler(...));
+        $this->setMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompiler(...));
+    }
+
+    /**
+     * @param class-string<T> $className
+     * @param callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
+     *
+     * @template T of object
+     */
+    public function setMapperCompilerFactory(
+        string $className,
+        callable $factory,
+    ): void
+    {
+        $this->mapperCompilerFactories[$className] = $factory; // @phpstan-ignore-line
     }
 
     /**
@@ -168,6 +196,22 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
         array $options,
     ): MapperCompiler
     {
+        $classParents = class_parents($inputClassName);
+        $classImplements = class_implements($inputClassName);
+
+        if ($classParents === false || $classImplements === false) {
+            throw new LogicException("Unable to get class parents or implements for '$inputClassName'.");
+        }
+
+        $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
+
+        foreach ($classLikeNames as $classLikeName => $true) {
+            if (isset($this->mapperCompilerFactories[$classLikeName])) {
+                $factory = $this->mapperCompilerFactories[$classLikeName];
+                return $factory($inputClassName, $options);
+            }
+        }
+
         return $this->createObjectMappingByPropertyReading($inputClassName, $options);
     }
 
@@ -294,6 +338,34 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
             1 => $mappers[0],
             default => throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mappers[0], $parameterReflection, $type),
         };
+    }
+
+    /**
+     * @param class-string<BackedEnum> $enumName
+     * @param array<string, mixed> $options
+     */
+    protected function createEnumMapperCompiler(
+        string $enumName,
+        array $options,
+    ): MapperCompiler
+    {
+        return new EnumOutputMapperCompiler($enumName);
+    }
+
+    /**
+     * @param class-string $className
+     * @param array<string, mixed> $options
+     */
+    protected function createDateTimeMapperCompiler(
+        string $className,
+        array $options,
+    ): MapperCompiler
+    {
+        if ($className === DateTimeInterface::class || $className === DateTimeImmutable::class) {
+            return new DateTimeImmutableOutputMapperCompiler();
+        }
+
+        throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));
     }
 
     protected function parsePhpDoc(string $docComment): PhpDocNode

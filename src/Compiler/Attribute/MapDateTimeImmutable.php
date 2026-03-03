@@ -6,9 +6,10 @@ use Attribute;
 use DateTimeInterface;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDateTimeImmutable implements InputMapperCompilerProvider
+class MapDateTimeImmutable implements InputMapperCompilerProvider, OutputMapperCompilerProvider
 {
 
     /**
@@ -28,6 +29,11 @@ class MapDateTimeImmutable implements InputMapperCompilerProvider
     public function getInputMapperCompiler(): MapperCompiler
     {
         return new DateTimeImmutableInputMapperCompiler($this->format, $this->formatDescription, $this->defaultTimezone, $this->targetTimezone);
+    }
+
+    public function getOutputMapperCompiler(): MapperCompiler
+    {
+        return new DateTimeImmutableOutputMapperCompiler($this->format, $this->targetTimezone);
     }
 
 }
