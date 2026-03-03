@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\BoolInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -11,7 +11,7 @@ class MapBoolTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapBool();
+        $mapperCompiler = new BoolInputMapperCompiler();
         $mapper = $this->compileMapper('Bool', $mapperCompiler);
 
         self::assertTrue($mapper->map(true));

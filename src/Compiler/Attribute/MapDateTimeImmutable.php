@@ -3,22 +3,12 @@
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
-use DateTimeImmutable;
 use DateTimeInterface;
-use DateTimeZone;
-use PhpParser\Node\Expr;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use function count;
-use function is_array;
-use function is_string;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDateTimeImmutable implements MapperCompiler
+class MapDateTimeImmutable implements InputMapperCompilerProvider
 {
 
     /**
@@ -35,99 +25,9 @@ class MapDateTimeImmutable implements MapperCompiler
     {
     }
 
-    public function compile(
-        Expr $value,
-        Expr $path,
-        PhpCodeBuilder $builder,
-    ): CompiledExpr
+    public function getInputMapperCompiler(): MapperCompiler
     {
-        $mappedVariableName = $builder->uniqVariableName('mapped');
-        $timezoneVariableName = $builder->uniqVariableName('timezone');
-
-        if ($this->defaultTimezone === null) {
-            $timezoneArgs = [];
-            $timezoneInitStatements = [];
-
-        } else {
-            $timezoneArgs = [$builder->var($timezoneVariableName)];
-            $timezoneInitStatements = [
-                $builder->assign(
-                    $builder->var($timezoneVariableName),
-                    $builder->new($builder->importClass(DateTimeZone::class), [$this->defaultTimezone]),
-                ),
-            ];
-        }
-
-        $statements = [
-            $builder->if($builder->not($builder->funcCall($builder->importFunction('is_string'), [$value])), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectType',
-                        [$value, $path, $builder->val('string')],
-                    ),
-                ),
-            ]),
-
-            ...$timezoneInitStatements,
-
-            $builder->assign(
-                $builder->var($mappedVariableName),
-                $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
-                    is_string($this->format) ? $this->format : $this->format[0],
-                    $value,
-                    ...$timezoneArgs,
-                ]),
-            ),
-        ];
-
-        if (is_array($this->format)) {
-            for ($i = 1; $i < count($this->format); $i++) {
-                $statements[] = $builder->if($builder->same($builder->var($mappedVariableName), $builder->val(false)), [
-                    $builder->assign(
-                        $builder->var($mappedVariableName),
-                        $builder->staticCall($builder->importClass(DateTimeImmutable::class), 'createFromFormat', [
-                            $this->format[$i],
-                            $value,
-                            ...$timezoneArgs,
-                        ]),
-                    ),
-                ]);
-            }
-        }
-
-        $statements[] = $builder->if($builder->same($builder->var($mappedVariableName), $builder->val(false)), [
-            $builder->throw(
-                $builder->staticCall(
-                    $builder->importClass(MappingFailedException::class),
-                    'incorrectValue',
-                    [$value, $path, $this->formatDescription],
-                ),
-            ),
-        ]);
-
-        if ($this->targetTimezone !== null) {
-            $targetTimezone = $this->targetTimezone === $this->defaultTimezone
-                ? $builder->var($timezoneVariableName)
-                : $builder->new($builder->importClass(DateTimeZone::class), [$this->targetTimezone]);
-
-            $statements[] = $builder->assign(
-                $builder->var($mappedVariableName),
-                $builder->methodCall($builder->var($mappedVariableName), 'setTimezone', [$targetTimezone]),
-            );
-        }
-
-        return new CompiledExpr($builder->var($mappedVariableName), $statements);
-    }
-
-    public function getInputType(): TypeNode
-    {
-        return new IdentifierTypeNode('mixed');
-    }
-
-    public function getOutputType(): TypeNode
-    {
-        return new IdentifierTypeNode(DateTimeImmutable::class);
+        return new DateTimeImmutableInputMapperCompiler($this->format, $this->formatDescription, $this->defaultTimezone, $this->targetTimezone);
     }
 
 }

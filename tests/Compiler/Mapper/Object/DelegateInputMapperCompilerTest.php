@@ -2,14 +2,14 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -17,12 +17,12 @@ use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 
-class DelegateMapperCompilerTest extends MapperCompilerTestCase
+class DelegateInputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void
     {
-        $delegateMapper = $this->compileMapper('DelegateToPerson', new DelegateMapperCompiler(PersonInput::class), [
+        $delegateMapper = $this->compileMapper('DelegateToPerson', new DelegateInputMapperCompiler(PersonInput::class), [
             PersonInput::class => $this->createPersonMapperCompiler(),
         ]);
 
@@ -42,11 +42,11 @@ class DelegateMapperCompilerTest extends MapperCompilerTestCase
 
     public function testCompileWithInnerMapper(): void
     {
-        $collectionMapperCompiler = new MapObject(
+        $collectionMapperCompiler = new ObjectInputMapperCompiler(
             className: CollectionInput::class,
             constructorArgsMapperCompilers: [
-                'items' => new MapList(new DelegateMapperCompiler('T')),
-                'size' => new MapInt(),
+                'items' => new ListInputMapperCompiler(new DelegateInputMapperCompiler('T')),
+                'size' => new IntInputMapperCompiler(),
             ],
             genericParameters: [
                 new GenericTypeParameter('T'),
@@ -55,8 +55,8 @@ class DelegateMapperCompilerTest extends MapperCompilerTestCase
 
         $intCollectionDelegateMapper = $this->compileMapper(
             name: 'DelegateToIntCollection',
-            mapperCompiler: new DelegateMapperCompiler(CollectionInput::class, [
-                new MapInt(),
+            mapperCompiler: new DelegateInputMapperCompiler(CollectionInput::class, [
+                new IntInputMapperCompiler(),
             ]),
             providedMapperCompilers: [
                 CollectionInput::class => $collectionMapperCompiler,
@@ -70,12 +70,12 @@ class DelegateMapperCompilerTest extends MapperCompilerTestCase
 
         $enumCollectionDelegateMapper = $this->compileMapper(
             name: 'DelegateToEnumCollection',
-            mapperCompiler: new DelegateMapperCompiler(CollectionInput::class, [
-                new DelegateMapperCompiler(SuitEnum::class),
+            mapperCompiler: new DelegateInputMapperCompiler(CollectionInput::class, [
+                new DelegateInputMapperCompiler(SuitEnum::class),
             ]),
             providedMapperCompilers: [
                 CollectionInput::class => $collectionMapperCompiler,
-                SuitEnum::class => new MapEnum(SuitEnum::class, new MapString()),
+                SuitEnum::class => new EnumInputMapperCompiler(SuitEnum::class, new StringInputMapperCompiler()),
             ],
         );
 
@@ -87,10 +87,10 @@ class DelegateMapperCompilerTest extends MapperCompilerTestCase
 
     private function createPersonMapperCompiler(): MapperCompiler
     {
-        return new MapObject(PersonInput::class, [
-            'id' => new MapInt(),
-            'name' => new MapString(),
-            'age' => new MapOptional(new MapInt()),
+        return new ObjectInputMapperCompiler(PersonInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'name' => new StringInputMapperCompiler(),
+            'age' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
         ]);
     }
 

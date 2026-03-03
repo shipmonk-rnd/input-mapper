@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertUniqueItems;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -14,7 +14,7 @@ class AssertUniqueItemsTest extends ValidatorCompilerTestCase
 
     public function testUniqueItemsIntValidator(): void
     {
-        $mapperCompiler = new MapList(new MapInt());
+        $mapperCompiler = new ListInputMapperCompiler(new IntInputMapperCompiler());
         $validatorCompiler = new AssertUniqueItems();
         $validator = $this->compileValidator('UniqueItemsIntValidator', $mapperCompiler, $validatorCompiler);
 
@@ -29,7 +29,7 @@ class AssertUniqueItemsTest extends ValidatorCompilerTestCase
 
     public function testUniqueItemsStringValidator(): void
     {
-        $mapperCompiler = new MapList(new MapString());
+        $mapperCompiler = new ListInputMapperCompiler(new StringInputMapperCompiler());
         $validatorCompiler = new AssertUniqueItems();
         $validator = $this->compileValidator('UniqueItemsStringValidator', $mapperCompiler, $validatorCompiler);
 

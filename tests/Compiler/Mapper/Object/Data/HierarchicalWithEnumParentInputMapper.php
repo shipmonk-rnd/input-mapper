@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -11,7 +11,7 @@ use function implode;
 use function is_array;
 
 /**
- * Generated mapper by {@see MapDiscriminatedObject}. Do not edit directly.
+ * Generated mapper by {@see DiscriminatedObjectInputMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<HierarchicalWithEnumParentInput>
  */

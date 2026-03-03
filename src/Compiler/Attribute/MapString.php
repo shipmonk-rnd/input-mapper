@@ -3,47 +3,16 @@
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
-use PhpParser\Node\Expr;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapString implements MapperCompiler
+class MapString implements InputMapperCompilerProvider
 {
 
-    public function compile(
-        Expr $value,
-        Expr $path,
-        PhpCodeBuilder $builder,
-    ): CompiledExpr
+    public function getInputMapperCompiler(): MapperCompiler
     {
-        $statements = [
-            $builder->if($builder->not($builder->funcCall($builder->importFunction('is_string'), [$value])), [
-                $builder->throw(
-                    $builder->staticCall(
-                        $builder->importClass(MappingFailedException::class),
-                        'incorrectType',
-                        [$value, $path, $builder->val('string')],
-                    ),
-                ),
-            ]),
-        ];
-
-        return new CompiledExpr($value, $statements);
-    }
-
-    public function getInputType(): TypeNode
-    {
-        return new IdentifierTypeNode('mixed');
-    }
-
-    public function getOutputType(): TypeNode
-    {
-        return new IdentifierTypeNode('string');
+        return new StringInputMapperCompiler();
     }
 
 }

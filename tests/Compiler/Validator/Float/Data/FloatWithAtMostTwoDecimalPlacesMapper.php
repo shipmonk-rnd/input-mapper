@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float\Data;
 
 use Nette\Utils\Floats;
-use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -13,7 +13,7 @@ use function is_float;
 use function is_int;
 
 /**
- * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
+ * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<float>
  */

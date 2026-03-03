@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -11,7 +11,7 @@ class MapIntTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $mapper = $this->compileMapper('Int', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));

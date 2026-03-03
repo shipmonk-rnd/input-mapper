@@ -3,9 +3,9 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use LogicException;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -15,7 +15,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
     public function testNoopListLengthValidator(): void
     {
-        $mapperCompiler = new MapList(new MapMixed());
+        $mapperCompiler = new ListInputMapperCompiler(new MixedInputMapperCompiler());
         $validatorCompiler = new AssertListLength();
         $validator = $this->compileValidator('NoopListLengthValidator', $mapperCompiler, $validatorCompiler);
 
@@ -25,7 +25,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
     public function testListLengthValidatorWithMin(): void
     {
-        $mapperCompiler = new MapList(new MapString());
+        $mapperCompiler = new ListInputMapperCompiler(new StringInputMapperCompiler());
         $validatorCompiler = new AssertListLength(min: 2);
         $validator = $this->compileValidator('ListLengthValidatorWithMin', $mapperCompiler, $validatorCompiler);
 
@@ -41,7 +41,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
     public function testListLengthValidatorWithMax(): void
     {
-        $mapperCompiler = new MapList(new MapMixed());
+        $mapperCompiler = new ListInputMapperCompiler(new MixedInputMapperCompiler());
         $validatorCompiler = new AssertListLength(max: 5);
         $validator = $this->compileValidator('ListLengthValidatorWithMax', $mapperCompiler, $validatorCompiler);
 
@@ -57,7 +57,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
     public function testListLengthValidatorWithMinAndMax(): void
     {
-        $mapperCompiler = new MapList(new MapMixed());
+        $mapperCompiler = new ListInputMapperCompiler(new MixedInputMapperCompiler());
         $validatorCompiler = new AssertListLength(min: 1, max: 5);
         $validator = $this->compileValidator('ListLengthValidatorWithMinAndMax', $mapperCompiler, $validatorCompiler);
 
@@ -80,7 +80,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
     public function testListLengthValidatorWithExact(): void
     {
-        $mapperCompiler = new MapList(new MapMixed());
+        $mapperCompiler = new ListInputMapperCompiler(new MixedInputMapperCompiler());
         $validatorCompiler = new AssertListLength(exact: 5);
         $validator = $this->compileValidator('ListLengthValidatorWithExact', $mapperCompiler, $validatorCompiler);
 

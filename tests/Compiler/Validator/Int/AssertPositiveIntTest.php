@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
 
@@ -11,7 +11,7 @@ class AssertPositiveIntTest extends ValidatorCompilerTestCase
 
     public function testPositiveIntValidator(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertPositiveInt();
 
         self::assertNull($validatorCompiler->gte);

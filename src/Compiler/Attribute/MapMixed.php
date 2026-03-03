@@ -3,34 +3,16 @@
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
-use PhpParser\Node\Expr;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapMixed implements MapperCompiler
+class MapMixed implements InputMapperCompilerProvider
 {
 
-    public function compile(
-        Expr $value,
-        Expr $path,
-        PhpCodeBuilder $builder,
-    ): CompiledExpr
+    public function getInputMapperCompiler(): MapperCompiler
     {
-        return new CompiledExpr($value);
-    }
-
-    public function getInputType(): TypeNode
-    {
-        return new IdentifierTypeNode('mixed');
-    }
-
-    public function getOutputType(): TypeNode
-    {
-        return new IdentifierTypeNode('mixed');
+        return new MixedInputMapperCompiler();
     }
 
 }

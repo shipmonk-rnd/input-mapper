@@ -2,27 +2,27 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
-class ValidatedMapperCompilerTest extends MapperCompilerTestCase
+class ValidatedInputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompileWithEmptyValidatorList(): void
     {
-        $mapperCompiler = new ValidatedMapperCompiler(new MapInt(), []);
+        $mapperCompiler = new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), []);
         $mapper = $this->compileMapper('NotValidatedIntMapper', $mapperCompiler);
         self::assertSame(1, $mapper->map(1));
     }
 
     public function testCompile(): void
     {
-        $mapperCompiler = new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()]);
+        $mapperCompiler = new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertPositiveInt()]);
         $mapper = $this->compileMapper('PositiveIntMapper', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));
@@ -36,7 +36,7 @@ class ValidatedMapperCompilerTest extends MapperCompilerTestCase
 
     public function testCompileWithIncompatibleValidator(): void
     {
-        $mapperCompiler = new ValidatedMapperCompiler(new MapInt(), [new AssertUrl()]);
+        $mapperCompiler = new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertUrl()]);
 
         self::assertException(
             CannotCompileMapperException::class,

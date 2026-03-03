@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonk\InputMapper\Compiler\Mapper\Object;
+namespace ShipMonk\InputMapper\Compiler\Mapper\Input;
 
 use Nette\Utils\Arrays;
 use PhpParser\Node\Expr;
@@ -15,7 +15,7 @@ use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\CallbackMapper;
 use function count;
 
-class DelegateMapperCompiler implements MapperCompiler
+class DelegateInputMapperCompiler implements MapperCompiler
 {
 
     /**

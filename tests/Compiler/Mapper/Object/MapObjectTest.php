@@ -2,13 +2,13 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
@@ -90,12 +90,12 @@ class MapObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithAllowExtraProperties(): void
     {
-        $mapperCompiler = new MapObject(
+        $mapperCompiler = new ObjectInputMapperCompiler(
             PersonInput::class,
             [
-                'id' => new MapInt(),
-                'name' => new MapString(),
-                'age' => new MapOptional(new MapInt()),
+                'id' => new IntInputMapperCompiler(),
+                'name' => new StringInputMapperCompiler(),
+                'age' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
             ],
             allowExtraKeys: true,
         );
@@ -110,11 +110,11 @@ class MapObjectTest extends MapperCompilerTestCase
 
     public function testCompileGeneric(): void
     {
-        $collectionMapperCompiler = new MapObject(
+        $collectionMapperCompiler = new ObjectInputMapperCompiler(
             className: CollectionInput::class,
             constructorArgsMapperCompilers: [
-                'items' => new MapList(new DelegateMapperCompiler('T')),
-                'size' => new MapInt(),
+                'items' => new ListInputMapperCompiler(new DelegateInputMapperCompiler('T')),
+                'size' => new IntInputMapperCompiler(),
             ],
             genericParameters: [
                 new GenericTypeParameter('T'),
@@ -122,11 +122,11 @@ class MapObjectTest extends MapperCompilerTestCase
         );
 
         $intCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
-            $this->compileMapper('CollectionInnerInt', new MapInt()),
+            $this->compileMapper('CollectionInnerInt', new IntInputMapperCompiler()),
         ]);
 
         $stringCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
-            $this->compileMapper('CollectionInnerString', new MapString()),
+            $this->compileMapper('CollectionInnerString', new StringInputMapperCompiler()),
         ]);
 
         self::assertEquals(
@@ -142,10 +142,10 @@ class MapObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithRenamedSourceKey(): void
     {
-        $mapperCompiler = new MapObject(PersonInput::class, [
-            'ID' => new MapInt(),
-            'NAME' => new MapString(),
-            'AGE' => new MapOptional(new MapInt()),
+        $mapperCompiler = new ObjectInputMapperCompiler(PersonInput::class, [
+            'ID' => new IntInputMapperCompiler(),
+            'NAME' => new StringInputMapperCompiler(),
+            'AGE' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
         ]);
 
         $mapper = $this->compileMapper('PersonWithRenamedSourceKeys', $mapperCompiler);
@@ -158,23 +158,23 @@ class MapObjectTest extends MapperCompilerTestCase
 
     private function createMovieInputMapperCompiler(): MapperCompiler
     {
-        return new MapObject(MovieInput::class, [
-            'id' => new MapInt(),
-            'title' => new MapString(),
-            'description' => new MapOptional(new MapString()),
-            'year' => new MapInt(),
-            'genres' => new MapList(new MapString()),
-            'director' => new DelegateMapperCompiler(PersonInput::class),
-            'actors' => new MapList(new DelegateMapperCompiler(PersonInput::class)),
+        return new ObjectInputMapperCompiler(MovieInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'title' => new StringInputMapperCompiler(),
+            'description' => new OptionalInputMapperCompiler(new StringInputMapperCompiler()),
+            'year' => new IntInputMapperCompiler(),
+            'genres' => new ListInputMapperCompiler(new StringInputMapperCompiler()),
+            'director' => new DelegateInputMapperCompiler(PersonInput::class),
+            'actors' => new ListInputMapperCompiler(new DelegateInputMapperCompiler(PersonInput::class)),
         ]);
     }
 
     private function createPersonInputMapperCompiler(): MapperCompiler
     {
-        return new MapObject(PersonInput::class, [
-            'id' => new MapInt(),
-            'name' => new MapString(),
-            'age' => new MapOptional(new MapInt()),
+        return new ObjectInputMapperCompiler(PersonInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'name' => new StringInputMapperCompiler(),
+            'age' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
         ]);
     }
 

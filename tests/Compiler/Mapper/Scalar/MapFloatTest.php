@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use const INF;
@@ -13,7 +13,7 @@ class MapFloatTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $mapper = $this->compileMapper('Float', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
@@ -83,7 +83,7 @@ class MapFloatTest extends MapperCompilerTestCase
 
     public function testCompileWithAllowedInfinity(): void
     {
-        $mapperCompiler = new MapFloat(allowInfinity: true);
+        $mapperCompiler = new FloatInputMapperCompiler(allowInfinity: true);
         $mapper = $this->compileMapper('FloatWithAllowedInfinity', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
@@ -101,7 +101,7 @@ class MapFloatTest extends MapperCompilerTestCase
 
     public function testCompileWithAllowedNan(): void
     {
-        $mapperCompiler = new MapFloat(allowNan: true);
+        $mapperCompiler = new FloatInputMapperCompiler(allowNan: true);
         $mapper = $this->compileMapper('FloatWithAllowedNan', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
@@ -124,7 +124,7 @@ class MapFloatTest extends MapperCompilerTestCase
 
     public function testCompileWithAllowedInfinityAndNan(): void
     {
-        $mapperCompiler = new MapFloat(allowInfinity: true, allowNan: true);
+        $mapperCompiler = new FloatInputMapperCompiler(allowInfinity: true, allowNan: true);
         $mapper = $this->compileMapper('FloatWithAllowedInfinityAndNan', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));

@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -12,8 +12,8 @@ class MapListTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $itemMapperCompiler = new MapInt();
-        $mapperCompiler = new MapList($itemMapperCompiler);
+        $itemMapperCompiler = new IntInputMapperCompiler();
+        $mapperCompiler = new ListInputMapperCompiler($itemMapperCompiler);
         $mapper = $this->compileMapper('GenericList', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));

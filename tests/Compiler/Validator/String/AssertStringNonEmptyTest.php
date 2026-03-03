@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -12,7 +12,7 @@ class AssertStringNonEmptyTest extends ValidatorCompilerTestCase
 
     public function testNonEmptyStringValidator(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringNonEmpty();
         $validator = $this->compileValidator('StringNonEmptyValidator', $mapperCompiler, $validatorCompiler);
 

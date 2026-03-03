@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace ShipMonk\InputMapper\Compiler\Attribute;
+namespace ShipMonk\InputMapper\Compiler\Mapper\Input;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -13,7 +13,7 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 
-class ValidatedMapperCompiler implements MapperCompiler
+class ValidatedInputMapperCompiler implements MapperCompiler
 {
 
     /**

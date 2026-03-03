@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -11,7 +11,7 @@ class MapStringTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $mapper = $this->compileMapper('String', $mapperCompiler);
 
         self::assertSame('', $mapper->map(''));

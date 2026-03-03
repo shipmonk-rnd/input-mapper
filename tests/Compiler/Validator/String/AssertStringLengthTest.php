@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
 use LogicException;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -13,7 +13,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
 
     public function testNoopStringLengthValidator(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringLength();
         $validator = $this->compileValidator('NoopStringLengthValidator', $mapperCompiler, $validatorCompiler);
 
@@ -23,7 +23,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
 
     public function testStringLengthValidatorWithMin(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringLength(min: 5);
         $validator = $this->compileValidator('StringLengthValidatorWithMin', $mapperCompiler, $validatorCompiler);
 
@@ -39,7 +39,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
 
     public function testStringLengthValidatorWithMax(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringLength(max: 5);
         $validator = $this->compileValidator('StringLengthValidatorWithMax', $mapperCompiler, $validatorCompiler);
 
@@ -55,7 +55,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
 
     public function testStringLengthValidatorWithMinAndMax(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringLength(min: 1, max: 5);
         $validator = $this->compileValidator('StringLengthValidatorWithMinAndMax', $mapperCompiler, $validatorCompiler);
 
@@ -78,7 +78,7 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
 
     public function testStringLengthValidatorWithExact(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringLength(exact: 5);
         $validator = $this->compileValidator('StringLengthValidatorWithExact', $mapperCompiler, $validatorCompiler);
 

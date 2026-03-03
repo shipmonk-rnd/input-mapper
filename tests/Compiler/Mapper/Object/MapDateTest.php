@@ -4,7 +4,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -14,7 +14,7 @@ class MapDateTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
 
         /** @var Mapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateStandalone', $mapperCompiler);
@@ -42,7 +42,7 @@ class MapDateTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(['!Y-m-d'], 'date string in Y-m-d format', 'Europe/Prague');
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(['!Y-m-d'], 'date string in Y-m-d format', 'Europe/Prague');
 
         /** @var Mapper<DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateStandaloneWithTimeZone', $mapperCompiler);

@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Attribute\ChainMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ChainMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -15,7 +15,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new ChainMapperCompiler([new MapInt(), new MapToDouble()]);
+        $mapperCompiler = new ChainMapperCompiler([new IntInputMapperCompiler(), new MapToDouble()]);
         $mapper = $this->compileMapper('DoubleInt', $mapperCompiler);
 
         self::assertSame(2, $mapper->map(1));
@@ -31,7 +31,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
 
     public function testCompileWithIncompatibleMapper(): void
     {
-        $mapperCompiler = new ChainMapperCompiler([new MapString(), new MapToDouble()]);
+        $mapperCompiler = new ChainMapperCompiler([new StringInputMapperCompiler(), new MapToDouble()]);
 
         self::assertException(
             CannotCompileMapperException::class,

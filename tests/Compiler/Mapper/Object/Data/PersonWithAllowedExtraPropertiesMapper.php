@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -14,7 +14,7 @@ use function is_int;
 use function is_string;
 
 /**
- * Generated mapper by {@see MapObject}. Do not edit directly.
+ * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<PersonInput>
  */

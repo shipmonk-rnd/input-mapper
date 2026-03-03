@@ -3,8 +3,8 @@
 namespace ShipMonk\InputMapperTests\Compiler\MapperFactory\Data;
 
 use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
@@ -23,7 +23,7 @@ class CarInputWithVarTags
         public readonly Optional $brand,
 
         /** @var array<int> */
-        #[MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()]))]
+        #[MapList(new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertPositiveInt()]))]
         public readonly array $numbers,
 
         #[AssertUrl]

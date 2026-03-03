@@ -2,13 +2,13 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
- * Generated mapper by {@see MapNullable}. Do not edit directly.
+ * Generated mapper by {@see NullableInputMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<mixed>
  */

@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -11,7 +11,7 @@ use function is_array;
 use function is_int;
 
 /**
- * Generated mapper by {@see MapList}. Do not edit directly.
+ * Generated mapper by {@see ListInputMapperCompiler}. Do not edit directly.
  *
  * @implements Mapper<list<int>>
  */

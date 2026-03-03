@@ -5,7 +5,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Object;
 use DateTimeImmutable;
 use DateTimeInterface;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Object\AssertDateTimeRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -15,7 +15,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopDateTimeRangeValidator(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange();
         $validator = $this->compileValidator('NoopDateTimeRangeValidator', $mapperCompiler, $validatorCompiler);
 
@@ -25,7 +25,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -41,7 +41,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithExclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange(gt: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -56,7 +56,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange(lte: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -72,7 +72,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithExclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange(lt: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -87,7 +87,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
-        $mapperCompiler = new MapDate();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05', lte: '2000-01-10');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -110,7 +110,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithBothDateAndTime(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(format: DateTimeInterface::RFC3339);
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(format: DateTimeInterface::RFC3339);
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-01T00:00:05Z');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithBothDateAndTime', $mapperCompiler, $validatorCompiler);
 
@@ -134,7 +134,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithRelativeBound(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(format: DateTimeInterface::RFC3339);
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(format: DateTimeInterface::RFC3339);
         $validatorCompiler = new AssertDateTimeRange(gte: 'now');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithRelativeBound', $mapperCompiler, $validatorCompiler);
 
@@ -150,7 +150,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithTimezone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(format: '!Y-m-d', defaultTimezone: 'America/New_York');
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(format: '!Y-m-d', defaultTimezone: 'America/New_York');
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05', timezone: 'America/New_York');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithTimezone', $mapperCompiler, $validatorCompiler);
 

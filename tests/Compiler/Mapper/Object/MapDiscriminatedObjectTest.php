@@ -2,15 +2,15 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\Optional;
@@ -176,91 +176,91 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithSubtypesFromDifferentHierarchies(): void
     {
-        $mapperCompiler = new MapDiscriminatedObject(
+        $mapperCompiler = new DiscriminatedObjectInputMapperCompiler(
             HierarchicalParentInput::class,
             'type',
             [
-                'childOne' => new DelegateMapperCompiler(HierarchicalChildOneInput::class),
-                'childTwo' => new DelegateMapperCompiler(MovieInput::class),
+                'childOne' => new DelegateInputMapperCompiler(HierarchicalChildOneInput::class),
+                'childTwo' => new DelegateInputMapperCompiler(MovieInput::class),
             ],
         );
 
         self::assertException(
             CannotCompileMapperException::class,
-            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
+            'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
             fn (): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }
 
     private function createParentInputMapperCompiler(): MapperCompiler
     {
-        return new MapDiscriminatedObject(
+        return new DiscriminatedObjectInputMapperCompiler(
             HierarchicalParentInput::class,
             'type',
             [
-                'childOne' => new DelegateMapperCompiler(HierarchicalChildOneInput::class),
-                'childTwo' => new DelegateMapperCompiler(HierarchicalChildTwoInput::class),
+                'childOne' => new DelegateInputMapperCompiler(HierarchicalChildOneInput::class),
+                'childTwo' => new DelegateInputMapperCompiler(HierarchicalChildTwoInput::class),
             ],
         );
     }
 
     private function createParentInputWithEnumMapperCompiler(): MapperCompiler
     {
-        return new MapDiscriminatedObject(
+        return new DiscriminatedObjectInputMapperCompiler(
             HierarchicalWithEnumParentInput::class,
             'type',
             [
-                'childOne' => new DelegateMapperCompiler(HierarchicalWithEnumChildInput::class),
+                'childOne' => new DelegateInputMapperCompiler(HierarchicalWithEnumChildInput::class),
             ],
         );
     }
 
     public function createHierarchicalChildOneInputMapperCompiler(): MapperCompiler
     {
-        return new MapObject(HierarchicalChildOneInput::class, [
-            'id' => new MapInt(),
-            'name' => new MapString(),
-            'age' => new MapOptional(new MapInt()),
-            'type' => new MapString(),
-            'childOneField' => new MapString(),
+        return new ObjectInputMapperCompiler(HierarchicalChildOneInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'name' => new StringInputMapperCompiler(),
+            'age' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
+            'type' => new StringInputMapperCompiler(),
+            'childOneField' => new StringInputMapperCompiler(),
         ]);
     }
 
     public function createHierarchicalChildTwoInputMapperCompiler(): MapperCompiler
     {
-        return new MapObject(HierarchicalChildTwoInput::class, [
-            'id' => new MapInt(),
-            'name' => new MapString(),
-            'age' => new MapOptional(new MapInt()),
-            'type' => new MapString(),
-            'childTwoField' => new MapInt(),
+        return new ObjectInputMapperCompiler(HierarchicalChildTwoInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'name' => new StringInputMapperCompiler(),
+            'age' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
+            'type' => new StringInputMapperCompiler(),
+            'childTwoField' => new IntInputMapperCompiler(),
         ]);
     }
 
     public function createHierarchicalChildWithEnumMapperCompiler(): MapperCompiler
     {
-        return new MapObject(HierarchicalWithEnumChildInput::class, [
-            'id' => new MapInt(),
-            'type' => new MapEnum(HierarchicalWithEnumType::class, new MapString()),
+        return new ObjectInputMapperCompiler(HierarchicalWithEnumChildInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'type' => new EnumInputMapperCompiler(HierarchicalWithEnumType::class, new StringInputMapperCompiler()),
         ]);
     }
 
     private function createParentInputWithNoTypeFieldMapperCompiler(): MapperCompiler
     {
-        return new MapDiscriminatedObject(
+        return new DiscriminatedObjectInputMapperCompiler(
             HierarchicalWithNoTypeFieldParentInput::class,
             '$type',
             [
-                'childOne' => new DelegateMapperCompiler(HierarchicalWithNoTypeFieldChildInput::class),
+                'childOne' => new DelegateInputMapperCompiler(HierarchicalWithNoTypeFieldChildInput::class),
             ],
         );
     }
 
     public function createHierarchicalChildWithNoTypeFieldMapperCompiler(): MapperCompiler
     {
-        return new MapObject(HierarchicalWithNoTypeFieldChildInput::class, [
-            'id' => new MapInt(),
-            'childOneField' => new MapString(),
+        return new ObjectInputMapperCompiler(HierarchicalWithNoTypeFieldChildInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'childOneField' => new StringInputMapperCompiler(),
         ], allowExtraKeys: true);
     }
 

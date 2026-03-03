@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -14,7 +14,7 @@ class AssertUrlTest extends ValidatorCompilerTestCase
 
     public function testUrlValidatorWithIncompatibleMapperType(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertUrl();
 
         self::assertException(
@@ -26,7 +26,7 @@ class AssertUrlTest extends ValidatorCompilerTestCase
 
     public function testUrlValidator(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertUrl();
         $validator = $this->compileValidator('UrlValidator', $mapperCompiler, $validatorCompiler);
 

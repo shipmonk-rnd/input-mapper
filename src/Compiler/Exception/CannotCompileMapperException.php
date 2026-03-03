@@ -4,7 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Exception;
 
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
@@ -26,12 +26,12 @@ class CannotCompileMapperException extends LogicException
     }
 
     /**
-     * @param MapDiscriminatedObject<T> $mapperCompiler
+     * @param DiscriminatedObjectInputMapperCompiler<T> $mapperCompiler
      *
      * @template T of object
      */
     public static function withIncompatibleSubtypeMapper(
-        MapDiscriminatedObject $mapperCompiler,
+        DiscriminatedObjectInputMapperCompiler $mapperCompiler,
         MapperCompiler $subtypeMapperCompiler,
         ?Throwable $previous = null,
     ): self

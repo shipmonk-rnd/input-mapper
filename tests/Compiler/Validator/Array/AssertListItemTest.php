@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Array;
 
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListItem;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
@@ -19,7 +19,7 @@ class AssertListItemTest extends ValidatorCompilerTestCase
 
     public function testListItemValidator(): void
     {
-        $mapperCompiler = new MapList(new MapInt());
+        $mapperCompiler = new ListInputMapperCompiler(new IntInputMapperCompiler());
         $validatorCompiler = new AssertListItem([new AssertPositiveInt()]);
         $validator = $this->compileValidator('ListItemValidator', $mapperCompiler, $validatorCompiler);
 
@@ -35,7 +35,7 @@ class AssertListItemTest extends ValidatorCompilerTestCase
 
     public function testListItemValidatorWithMultipleValidators(): void
     {
-        $mapperCompiler = new MapList(new MapInt());
+        $mapperCompiler = new ListInputMapperCompiler(new IntInputMapperCompiler());
         $validatorCompiler = new AssertListItem([new AssertPositiveInt(), new AssertIntMultipleOf(5)]);
         $validator = $this->compileValidator('ListItemValidatorWithMultipleValidators', $mapperCompiler, $validatorCompiler);
 
@@ -72,7 +72,7 @@ class AssertListItemTest extends ValidatorCompilerTestCase
             ->method('getInputType')
             ->willReturn(new IdentifierTypeNode('int'));
 
-        $mapperCompiler = new MapList(new MapInt());
+        $mapperCompiler = new ListInputMapperCompiler(new IntInputMapperCompiler());
         $validatorCompiler = new AssertListItem([$itemValidator]);
         $this->compileValidator('ListItemValidatorCalledWithCorrectItemType', $mapperCompiler, $validatorCompiler);
     }

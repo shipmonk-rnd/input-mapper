@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -12,7 +12,7 @@ class AssertIntMultipleOfTest extends ValidatorCompilerTestCase
 
     public function testIntMultipleOfFive(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntMultipleOf(5);
         $validator = $this->compileValidator('IntMultipleOfFive', $mapperCompiler, $validatorCompiler);
 

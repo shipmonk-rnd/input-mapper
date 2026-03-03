@@ -3,9 +3,9 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
 use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
-use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -14,7 +14,7 @@ class MapArrayShapeTest extends MapperCompilerTestCase
 
     public function testCompileEmptySealedArrayShape(): void
     {
-        $mapperCompiler = new MapArrayShape([], sealed: true);
+        $mapperCompiler = new ArrayShapeInputMapperCompiler([], sealed: true);
         $mapper = $this->compileMapper('EmptySealedArrayShape', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
@@ -40,7 +40,7 @@ class MapArrayShapeTest extends MapperCompilerTestCase
 
     public function testCompileEmptyUnsealedArrayShape(): void
     {
-        $mapperCompiler = new MapArrayShape([], sealed: false);
+        $mapperCompiler = new ArrayShapeInputMapperCompiler([], sealed: false);
         $mapper = $this->compileMapper('EmptyUnsealedArrayShape', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
@@ -62,11 +62,11 @@ class MapArrayShapeTest extends MapperCompilerTestCase
     public function testCompileSealedArrayShape(): void
     {
         $items = [
-            new ArrayShapeItemMapping('a', new MapInt()),
-            new ArrayShapeItemMapping('b', new MapString(), optional: true),
+            new ArrayShapeItemMapping('a', new IntInputMapperCompiler()),
+            new ArrayShapeItemMapping('b', new StringInputMapperCompiler(), optional: true),
         ];
 
-        $mapperCompiler = new MapArrayShape($items, sealed: true);
+        $mapperCompiler = new ArrayShapeInputMapperCompiler($items, sealed: true);
         $mapper = $this->compileMapper('SealedArrayShape', $mapperCompiler);
 
         self::assertSame(['a' => 1, 'b' => '2'], $mapper->map(['a' => 1, 'b' => '2']));

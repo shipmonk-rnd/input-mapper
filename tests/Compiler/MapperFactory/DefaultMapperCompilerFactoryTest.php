@@ -14,25 +14,25 @@ use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
-use ShipMonk\InputMapper\Compiler\Attribute\MapArray;
-use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
-use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDefaultValue;
-use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
-use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
-use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
-use ShipMonk\InputMapper\Compiler\Attribute\MapList;
-use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
-use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
-use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
-use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
-use ShipMonk\InputMapper\Compiler\Attribute\MapString;
-use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\BoolInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
@@ -99,46 +99,46 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'CarInput' => [
             CarInput::class,
             [],
-            new MapObject(CarInput::class, [
-                'id' => new MapInt(),
-                'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
-                'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
-                'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
-                'url' => new MapNullable(new ValidatedMapperCompiler(new MapString(), [new AssertUrl()])),
+            new ObjectInputMapperCompiler(CarInput::class, [
+                'id' => new IntInputMapperCompiler(),
+                'name' => new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertStringLength(exact: 7)]),
+                'brand' => new OptionalInputMapperCompiler(new DelegateInputMapperCompiler(BrandInput::class)),
+                'numbers' => new ListInputMapperCompiler(new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertPositiveInt()])),
+                'url' => new NullableInputMapperCompiler(new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertUrl()])),
             ]),
         ];
 
         yield 'CarInputWithVarTags' => [
             CarInputWithVarTags::class,
             [],
-            new MapObject(CarInputWithVarTags::class, [
-                'id' => new MapInt(),
-                'name' => new ValidatedMapperCompiler(new MapString(), [new AssertStringLength(exact: 7)]),
-                'brand' => new MapOptional(new DelegateMapperCompiler(BrandInput::class)),
-                'numbers' => new MapList(new ValidatedMapperCompiler(new MapInt(), [new AssertPositiveInt()])),
-                'url' => new MapNullable(new ValidatedMapperCompiler(new MapString(), [new AssertUrl()])),
+            new ObjectInputMapperCompiler(CarInputWithVarTags::class, [
+                'id' => new IntInputMapperCompiler(),
+                'name' => new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertStringLength(exact: 7)]),
+                'brand' => new OptionalInputMapperCompiler(new DelegateInputMapperCompiler(BrandInput::class)),
+                'numbers' => new ListInputMapperCompiler(new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertPositiveInt()])),
+                'url' => new NullableInputMapperCompiler(new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertUrl()])),
             ]),
         ];
 
         yield 'CarInput with forced root delegation' => [
             CarInput::class,
             [DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => true],
-            new DelegateMapperCompiler(CarInput::class),
+            new DelegateInputMapperCompiler(CarInput::class),
         ];
 
         yield 'BrandInput (with allowed extra keys)' => [
             BrandInput::class,
             [],
-            new MapObject(
+            new ObjectInputMapperCompiler(
                 BrandInput::class,
                 [
-                    'name' => new MapString(),
-                    'foundedIn' => new ValidatedMapperCompiler(
-                        new MapInt(),
+                    'name' => new StringInputMapperCompiler(),
+                    'foundedIn' => new ValidatedInputMapperCompiler(
+                        new IntInputMapperCompiler(),
                         [new AssertIntRange(gte: 1_900, lte: 2_100)],
                     ),
-                    'founders' => new ValidatedMapperCompiler(
-                        new MapList(new MapString()),
+                    'founders' => new ValidatedInputMapperCompiler(
+                        new ListInputMapperCompiler(new StringInputMapperCompiler()),
                         [new AssertListLength(min: 1)],
                     ),
                 ],
@@ -149,25 +149,25 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'BrandInputWithDefaultValues' => [
             BrandInputWithDefaultValues::class,
             [],
-            new MapObject(
+            new ObjectInputMapperCompiler(
                 BrandInputWithDefaultValues::class,
                 [
-                    'name' => new MapDefaultValue(
-                        new ValidatedMapperCompiler(
-                            new MapString(),
+                    'name' => new DefaultValueInputMapperCompiler(
+                        new ValidatedInputMapperCompiler(
+                            new StringInputMapperCompiler(),
                             [new AssertStringLength(min: 5)],
                         ),
                         'ShipMonk',
                     ),
-                    'foundedIn' => new MapDefaultValue(
-                        new MapNullable(new ValidatedMapperCompiler(
-                            new MapInt(),
+                    'foundedIn' => new DefaultValueInputMapperCompiler(
+                        new NullableInputMapperCompiler(new ValidatedInputMapperCompiler(
+                            new IntInputMapperCompiler(),
                             [new AssertInt32()],
                         )),
                         null,
                     ),
-                    'founders' => new MapDefaultValue(
-                        new MapList(new MapString()),
+                    'founders' => new DefaultValueInputMapperCompiler(
+                        new ListInputMapperCompiler(new StringInputMapperCompiler()),
                         ['Jan Bednář'],
                     ),
                 ],
@@ -177,14 +177,14 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'CarFilterInput' => [
             CarFilterInput::class,
             [],
-            new MapObject(
+            new ObjectInputMapperCompiler(
                 className: CarFilterInput::class,
                 constructorArgsMapperCompilers: [
-                    'id' => new DelegateMapperCompiler(InFilterInput::class, [
-                        new MapInt(),
+                    'id' => new DelegateInputMapperCompiler(InFilterInput::class, [
+                        new IntInputMapperCompiler(),
                     ]),
-                    'color' => new DelegateMapperCompiler(EqualsFilterInput::class, [
-                        new DelegateMapperCompiler(ColorEnum::class),
+                    'color' => new DelegateInputMapperCompiler(EqualsFilterInput::class, [
+                        new DelegateInputMapperCompiler(ColorEnum::class),
                     ]),
                 ],
             ),
@@ -193,12 +193,12 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'AnimalInput' => [
             AnimalInput::class,
             [],
-            new MapDiscriminatedObject(
+            new DiscriminatedObjectInputMapperCompiler(
                 className: AnimalInput::class,
                 discriminatorKeyName: 'type',
                 subtypeCompilers: [
-                    AnimalType::Cat->value => new DelegateMapperCompiler(AnimalCatInput::class),
-                    AnimalType::Dog->value => new DelegateMapperCompiler(AnimalDogInput::class),
+                    AnimalType::Cat->value => new DelegateInputMapperCompiler(AnimalCatInput::class),
+                    AnimalType::Dog->value => new DelegateInputMapperCompiler(AnimalDogInput::class),
                 ],
             ),
         ];
@@ -206,28 +206,28 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'ColorEnum' => [
             ColorEnum::class,
             [],
-            new MapEnum(ColorEnum::class, new MapString()),
+            new EnumInputMapperCompiler(ColorEnum::class, new StringInputMapperCompiler()),
         ];
 
         yield 'DateTimeImmutable' => [
             DateTimeImmutable::class,
             [],
-            new MapDateTimeImmutable(),
+            new DateTimeImmutableInputMapperCompiler(),
         ];
 
         yield 'DateTimeInterface' => [
             DateTimeInterface::class,
             [],
-            new MapDateTimeImmutable(),
+            new DateTimeImmutableInputMapperCompiler(),
         ];
 
         yield 'EqualsFilterInput' => [
             EqualsFilterInput::class,
             [],
-            new MapObject(
+            new ObjectInputMapperCompiler(
                 className: EqualsFilterInput::class,
                 constructorArgsMapperCompilers: [
-                    'equals' => new DelegateMapperCompiler('T'),
+                    'equals' => new DelegateInputMapperCompiler('T'),
                 ],
                 genericParameters: [
                     new GenericTypeParameter('T'),
@@ -238,20 +238,20 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'InputWithDate' => [
             InputWithDate::class,
             [],
-            new MapObject(InputWithDate::class, [
-                'date' => new MapDateTimeImmutable('Y-m-d', 'date string in Y-m-d format'),
-                'dateTime' => new DelegateMapperCompiler(DateTimeImmutable::class),
+            new ObjectInputMapperCompiler(InputWithDate::class, [
+                'date' => new DateTimeImmutableInputMapperCompiler('Y-m-d', 'date string in Y-m-d format'),
+                'dateTime' => new DelegateInputMapperCompiler(DateTimeImmutable::class),
             ]),
         ];
 
         yield 'InputWithRenamedSourceKey' => [
             InputWithRenamedSourceKey::class,
             [],
-            new MapObject(
+            new ObjectInputMapperCompiler(
                 className: InputWithRenamedSourceKey::class,
                 constructorArgsMapperCompilers: [
-                    'old_value' => new MapInt(),
-                    'new_value' => new MapInt(),
+                    'old_value' => new IntInputMapperCompiler(),
+                    'new_value' => new IntInputMapperCompiler(),
                 ],
             ),
         ];
@@ -259,85 +259,85 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'array' => [
             'array',
             [],
-            new MapArray(new MapMixed(), new MapMixed()),
+            new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), new MixedInputMapperCompiler()),
         ];
 
         yield 'bool' => [
             'bool',
             [],
-            new MapBool(),
+            new BoolInputMapperCompiler(),
         ];
 
         yield 'int' => [
             'int',
             [],
-            new MapInt(),
+            new IntInputMapperCompiler(),
         ];
 
         yield 'float' => [
             'float',
             [],
-            new MapFloat(),
+            new FloatInputMapperCompiler(),
         ];
 
         yield 'mixed' => [
             'mixed',
             [],
-            new MapMixed(),
+            new MixedInputMapperCompiler(),
         ];
 
         yield 'string' => [
             'string',
             [],
-            new MapString(),
+            new StringInputMapperCompiler(),
         ];
 
         yield '?int' => [
             '?int',
             [],
-            new MapNullable(new MapInt()),
+            new NullableInputMapperCompiler(new IntInputMapperCompiler()),
         ];
 
         yield 'int|null' => [
             'int|null',
             [],
-            new MapNullable(new MapInt()),
+            new NullableInputMapperCompiler(new IntInputMapperCompiler()),
         ];
 
         yield 'int[]' => [
             'int[]',
             [],
-            new MapArray(new MapMixed(), new MapInt()),
+            new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), new IntInputMapperCompiler()),
         ];
 
         yield 'array<int>' => [
             'array<int>',
             [],
-            new MapArray(new MapMixed(), new MapInt()),
+            new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), new IntInputMapperCompiler()),
         ];
 
         yield 'array<string, int>' => [
             'array<string, int>',
             [],
-            new MapArray(new MapString(), new MapInt()),
+            new ArrayInputMapperCompiler(new StringInputMapperCompiler(), new IntInputMapperCompiler()),
         ];
 
         yield 'list' => [
             'list',
             [],
-            new MapList(new MapMixed()),
+            new ListInputMapperCompiler(new MixedInputMapperCompiler()),
         ];
 
         yield 'list<int>' => [
             'list<int>',
             [],
-            new MapList(new MapInt()),
+            new ListInputMapperCompiler(new IntInputMapperCompiler()),
         ];
 
         yield 'int<0, 10>' => [
             'int<0, 10>',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertIntRange(gte: 0, lte: 10),
             ]),
         ];
@@ -345,7 +345,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'int<min, 10>' => [
             'int<min, 10>',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertIntRange(lte: 10),
             ]),
         ];
@@ -353,7 +353,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'int<0, max>' => [
             'int<0, max>',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertIntRange(gte: 0),
             ]),
         ];
@@ -361,7 +361,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'positive-int' => [
             'positive-int',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertPositiveInt(),
             ]),
         ];
@@ -369,7 +369,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'negative-int' => [
             'negative-int',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertNegativeInt(),
             ]),
         ];
@@ -377,7 +377,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'non-empty-list' => [
             'non-empty-list',
             [],
-            new ValidatedMapperCompiler(new MapList(new MapMixed()), [
+            new ValidatedInputMapperCompiler(new ListInputMapperCompiler(new MixedInputMapperCompiler()), [
                 new AssertListLength(min: 1),
             ]),
         ];
@@ -385,7 +385,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'non-empty-list<int>' => [
             'non-empty-list<int>',
             [],
-            new ValidatedMapperCompiler(new MapList(new MapInt()), [
+            new ValidatedInputMapperCompiler(new ListInputMapperCompiler(new IntInputMapperCompiler()), [
                 new AssertListLength(min: 1),
             ]),
         ];
@@ -401,7 +401,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'non-positive-int' => [
             'non-positive-int',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertNonPositiveInt(),
             ]),
         ];
@@ -409,7 +409,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'non-negative-int' => [
             'non-negative-int',
             [],
-            new ValidatedMapperCompiler(new MapInt(), [
+            new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [
                 new AssertNonNegativeInt(),
             ]),
         ];
@@ -417,22 +417,22 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield '?list<string>' => [
             '?list<string>',
             [],
-            new MapNullable(new MapList(new MapString())),
+            new NullableInputMapperCompiler(new ListInputMapperCompiler(new StringInputMapperCompiler())),
         ];
 
         yield 'ShipMonk\InputMapper\Runtime\Optional<string>' => [
             'ShipMonk\InputMapper\Runtime\Optional<string>',
             [],
-            new MapOptional(new MapString()),
+            new OptionalInputMapperCompiler(new StringInputMapperCompiler()),
         ];
 
         yield 'array sealed shape' => [
             'array{foo: string, bar: int}',
             [],
-            new MapArrayShape(
+            new ArrayShapeInputMapperCompiler(
                 items: [
-                    new ArrayShapeItemMapping('foo', new MapString()),
-                    new ArrayShapeItemMapping('bar', new MapInt()),
+                    new ArrayShapeItemMapping('foo', new StringInputMapperCompiler()),
+                    new ArrayShapeItemMapping('bar', new IntInputMapperCompiler()),
                 ],
                 sealed: true,
             ),
@@ -441,10 +441,10 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'array unsealed shape' => [
             'array{foo: string, bar: int, ...}',
             [],
-            new MapArrayShape(
+            new ArrayShapeInputMapperCompiler(
                 items: [
-                    new ArrayShapeItemMapping('foo', new MapString()),
-                    new ArrayShapeItemMapping('bar', new MapInt()),
+                    new ArrayShapeItemMapping('foo', new StringInputMapperCompiler()),
+                    new ArrayShapeItemMapping('bar', new IntInputMapperCompiler()),
                 ],
                 sealed: false,
             ),
@@ -503,7 +503,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'InputWithIncompatibleMapperCompiler' => [
             InputWithIncompatibleMapperCompiler::class,
             [],
-            'Cannot use mapper ShipMonk\InputMapper\Compiler\Attribute\MapString for parameter $id of method ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
+            'Cannot use mapper ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler for parameter $id of method ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler::__construct, because mapper output type \'string\' is not compatible with parameter type \'int\'',
         ];
 
         yield 'DateTime' => [
@@ -543,10 +543,10 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
         $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
 
-        $carMapperCompiler = new MapObject(CarInput::class, [
-            'id' => new MapInt(),
-            'name' => new MapString(),
-            'brand' => new DelegateMapperCompiler(BrandInput::class),
+        $carMapperCompiler = new ObjectInputMapperCompiler(CarInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'name' => new StringInputMapperCompiler(),
+            'brand' => new DelegateInputMapperCompiler(BrandInput::class),
         ]);
 
         $mapperCompilerFactory = new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
