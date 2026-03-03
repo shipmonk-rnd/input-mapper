@@ -42,6 +42,23 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
     {
         $statements = [];
         $arrayItems = [];
+        $hasOptionalProperties = false;
+
+        foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
+            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
+                $hasOptionalProperties = true;
+            }
+        }
+
+        $optionalStatements = [];
+
+        foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
+            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
+                $hasOptionalProperties = true;
+            }
+        }
+
+        $outputVariableName = $hasOptionalProperties ? $builder->uniqVariableName('output') : null;
 
         foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
             $propertyAccess = $builder->propertyFetch($value, $propertyName);
@@ -51,7 +68,27 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
             $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);
             $builder->addMethod($propertyMapperMethod);
 
-            $arrayItems[] = $builder->arrayItem($propertyMapperCall, $builder->val($outputKey));
+            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler && $outputVariableName !== null) {
+                $optionalStatements[] = $builder->if(
+                    $builder->methodCall($propertyAccess, 'isDefined'),
+                    [
+                        $builder->assign(
+                            $builder->arrayDimFetch($builder->var($outputVariableName), $builder->val($outputKey)),
+                            $propertyMapperCall,
+                        ),
+                    ],
+                );
+            } else {
+                $arrayItems[] = $builder->arrayItem($propertyMapperCall, $builder->val($outputKey));
+            }
+        }
+
+        if ($outputVariableName !== null) {
+            $statements = [
+                $builder->assign($builder->var($outputVariableName), $builder->array($arrayItems)),
+                ...$optionalStatements,
+            ];
+            return new CompiledExpr($builder->var($outputVariableName), $statements);
         }
 
         return new CompiledExpr(

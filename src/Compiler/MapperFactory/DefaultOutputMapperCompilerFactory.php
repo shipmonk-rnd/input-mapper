@@ -6,8 +6,11 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
@@ -19,9 +22,12 @@ use ShipMonk\InputMapper\Compiler\Attribute\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
 use function array_fill_keys;
 use function class_exists;
@@ -68,6 +74,37 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
                 'string' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')),
                 default => throw CannotCreateMapperCompilerException::fromType($type),
             };
+        }
+
+        if ($type instanceof NullableTypeNode) {
+            return new NullableOutputMapperCompiler($this->createInner($type->type, $options));
+        }
+
+        if ($type instanceof GenericTypeNode) {
+            return match (strtolower($type->type->name)) {
+                strtolower(Optional::class) => match (count($type->genericTypes)) {
+                    1 => new OptionalOutputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
+                    default => throw CannotCreateMapperCompilerException::fromType($type),
+                },
+                default => throw CannotCreateMapperCompilerException::fromType($type),
+            };
+        }
+
+        if ($type instanceof UnionTypeNode) {
+            $isNullable = false;
+            $subTypesWithoutNull = [];
+
+            foreach ($type->types as $subType) {
+                if ($subType instanceof IdentifierTypeNode && strtolower($subType->name) === 'null') {
+                    $isNullable = true;
+                } else {
+                    $subTypesWithoutNull[] = $subType;
+                }
+            }
+
+            if ($isNullable && count($subTypesWithoutNull) === 1) {
+                return $this->create(new NullableTypeNode($subTypesWithoutNull[0]), $options);
+            }
         }
 
         throw CannotCreateMapperCompilerException::fromType($type);
