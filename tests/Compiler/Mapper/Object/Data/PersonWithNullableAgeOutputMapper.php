@@ -25,29 +25,7 @@ class PersonWithNullableAgeOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        return ['id' => $this->mapId($data->id, [...$path, 'id']), 'name' => $this->mapName($data->name, [...$path, 'name']), 'age' => $this->mapAge($data->age, [...$path, 'age'])];
-    }
-
-    /**
-     * @param  int $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapId(mixed $data, array $path = []): mixed
-    {
-        return $data;
-    }
-
-    /**
-     * @param  string $data
-     * @param  list<string|int> $path
-     * @return string
-     * @throws MappingFailedException
-     */
-    private function mapName(mixed $data, array $path = []): mixed
-    {
-        return $data;
+        return ['id' => $data->id, 'name' => $data->name, 'age' => $this->mapAge($data->age, [...$path, 'age'])];
     }
 
     /**

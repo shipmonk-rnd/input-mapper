@@ -28,34 +28,12 @@ class SealedArrayShapeOutputMapper implements OutputMapper
     public function map(mixed $data, array $path = []): mixed
     {
         $mapped = [];
-        $mapped['a'] = $this->mapA($data['a'], [...$path, 'a']);
+        $mapped['a'] = $data['a'];
 
         if (array_key_exists('b', $data)) {
-            $mapped['b'] = $this->mapB($data['b'], [...$path, 'b']);
+            $mapped['b'] = $data['b'];
         }
 
         return $mapped;
-    }
-
-    /**
-     * @param  int $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapA(mixed $data, array $path = []): mixed
-    {
-        return $data;
-    }
-
-    /**
-     * @param  string $data
-     * @param  list<string|int> $path
-     * @return string
-     * @throws MappingFailedException
-     */
-    private function mapB(mixed $data, array $path = []): mixed
-    {
-        return $data;
     }
 }

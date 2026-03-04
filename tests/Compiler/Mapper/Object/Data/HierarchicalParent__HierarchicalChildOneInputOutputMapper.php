@@ -26,35 +26,13 @@ class HierarchicalParent__HierarchicalChildOneInputOutputMapper implements Outpu
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $output = ['id' => $this->mapId($data->id, [...$path, 'id']), 'name' => $this->mapName($data->name, [...$path, 'name']), 'type' => $this->mapType($data->type, [...$path, 'type']), 'childOneField' => $this->mapChildOneField($data->childOneField, [...$path, 'childOneField'])];
+        $output = ['id' => $data->id, 'name' => $data->name, 'type' => $data->type, 'childOneField' => $data->childOneField];
 
         if ($data->age->isDefined()) {
             $output['age'] = $this->mapAge($data->age, [...$path, 'age']);
         }
 
         return $output;
-    }
-
-    /**
-     * @param  int $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapId(mixed $data, array $path = []): mixed
-    {
-        return $data;
-    }
-
-    /**
-     * @param  string $data
-     * @param  list<string|int> $path
-     * @return string
-     * @throws MappingFailedException
-     */
-    private function mapName(mixed $data, array $path = []): mixed
-    {
-        return $data;
     }
 
     /**
@@ -66,27 +44,5 @@ class HierarchicalParent__HierarchicalChildOneInputOutputMapper implements Outpu
     private function mapAge(mixed $data, array $path = []): mixed
     {
         return $data->get();
-    }
-
-    /**
-     * @param  string $data
-     * @param  list<string|int> $path
-     * @return string
-     * @throws MappingFailedException
-     */
-    private function mapType(mixed $data, array $path = []): mixed
-    {
-        return $data;
-    }
-
-    /**
-     * @param  string $data
-     * @param  list<string|int> $path
-     * @return string
-     * @throws MappingFailedException
-     */
-    private function mapChildOneField(mixed $data, array $path = []): mixed
-    {
-        return $data;
     }
 }

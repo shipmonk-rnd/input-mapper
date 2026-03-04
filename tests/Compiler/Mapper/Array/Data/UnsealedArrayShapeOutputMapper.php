@@ -27,18 +27,7 @@ class UnsealedArrayShapeOutputMapper implements OutputMapper
     public function map(mixed $data, array $path = []): mixed
     {
         $mapped = [];
-        $mapped['a'] = $this->mapA($data['a'], [...$path, 'a']);
+        $mapped['a'] = $data['a'];
         return $mapped;
-    }
-
-    /**
-     * @param  int $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapA(mixed $data, array $path = []): mixed
-    {
-        return $data;
     }
 }

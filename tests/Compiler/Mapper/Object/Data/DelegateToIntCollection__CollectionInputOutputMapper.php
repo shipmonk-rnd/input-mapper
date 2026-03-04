@@ -29,26 +29,6 @@ class DelegateToIntCollection__CollectionInputOutputMapper implements OutputMapp
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        return ['items' => $this->mapItems($data->items, [...$path, 'items']), 'size' => $this->mapSize($data->size, [...$path, 'size'])];
-    }
-
-    /**
-     * @param  list<string|int> $path
-     * @throws MappingFailedException
-     */
-    private function mapItems(mixed $data, array $path = []): mixed
-    {
-        return $data;
-    }
-
-    /**
-     * @param  int $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapSize(mixed $data, array $path = []): mixed
-    {
-        return $data;
+        return ['items' => $data->items, 'size' => $data->size];
     }
 }

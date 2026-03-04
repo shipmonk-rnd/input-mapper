@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function count;
@@ -62,11 +63,16 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
 
         foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
             $propertyAccess = $builder->propertyFetch($value, $propertyName);
-            $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyName));
-            $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
-            $propertyMapperMethod = $builder->outputMapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
-            $propertyMapperCall = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);
-            $builder->addMethod($propertyMapperMethod);
+
+            if ($propertyMapperCompiler instanceof PassthroughMapperCompiler) {
+                $mappedValue = $propertyAccess;
+            } else {
+                $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyName));
+                $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
+                $propertyMapperMethod = $builder->outputMapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
+                $mappedValue = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);
+                $builder->addMethod($propertyMapperMethod);
+            }
 
             if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler && $outputVariableName !== null) {
                 $optionalStatements[] = $builder->if(
@@ -74,12 +80,12 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
                     [
                         $builder->assign(
                             $builder->arrayDimFetch($builder->var($outputVariableName), $builder->val($outputKey)),
-                            $propertyMapperCall,
+                            $mappedValue,
                         ),
                     ],
                 );
             } else {
-                $arrayItems[] = $builder->arrayItem($propertyMapperCall, $builder->val($outputKey));
+                $arrayItems[] = $builder->arrayItem($mappedValue, $builder->val($outputKey));
             }
         }
 

@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use function ucfirst;
 
@@ -38,14 +39,20 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
 
         foreach ($this->items as $itemMapping) {
             $itemValue = $builder->arrayDimFetch($value, $builder->val($itemMapping['key']));
-            $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping['key']));
-            $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping['key']));
-            $itemMapperMethod = $builder->outputMapperMethod($itemMapperMethodName, $itemMapping['mapper'])->makePrivate()->getNode();
-            $builder->addMethod($itemMapperMethod);
+
+            if ($itemMapping['mapper'] instanceof PassthroughMapperCompiler) {
+                $mappedItemValue = $itemValue;
+            } else {
+                $itemPath = $builder->arrayImmutableAppend($path, $builder->val($itemMapping['key']));
+                $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping['key']));
+                $itemMapperMethod = $builder->outputMapperMethod($itemMapperMethodName, $itemMapping['mapper'])->makePrivate()->getNode();
+                $builder->addMethod($itemMapperMethod);
+                $mappedItemValue = $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemPath]);
+            }
 
             $itemAssignment = $builder->assign(
                 $builder->arrayDimFetch($builder->var($mappedVariableName), $builder->val($itemMapping['key'])),
-                $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemPath]),
+                $mappedItemValue,
             );
 
             if ($itemMapping['optional']) {
