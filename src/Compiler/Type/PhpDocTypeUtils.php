@@ -330,7 +330,7 @@ class PhpDocTypeUtils
         } elseif ($type instanceof IdentifierTypeNode) {
             if (!self::isKeyword($type) || $type->name === 'self' || $type->name === 'static' || $type->name === 'parent') {
                 if (!in_array($type->name, $genericParameterNames, true)) {
-                    $type->name = Reflection::expandClassName($type->name, $context);
+                    $type->name = Reflection::expandClassName($type->name, $context); // @phpstan-ignore argument.type (expandClassName expects ReflectionClass<object>, ReflectionClass<covariant object> given; Nette should use covariant too)
                 }
             }
         } elseif ($type instanceof ArrayShapeItemNode) {

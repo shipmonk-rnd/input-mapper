@@ -32,7 +32,10 @@ parameters:
 
     ignoreErrors:
         -
-            message: '#Property [\w\\]++::\$provider is never read, only written\.#'
+            identifiers:
+                - shipmonk.deadProperty.neverRead
+                - property.onlyWritten
+                - shipmonk.deadEnumCase
             paths: [tests/**/Data/*.php]
         -
             message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
