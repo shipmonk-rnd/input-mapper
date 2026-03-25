@@ -153,7 +153,6 @@ class DefaultOutputMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new DiscriminatedObjectOutputMapperCompiler(
                 HierarchicalParentInput::class,
-                'type',
                 [
                     'childOne' => new DelegateOutputMapperCompiler(HierarchicalChildOneInput::class),
                     'childTwo' => new DelegateOutputMapperCompiler(HierarchicalChildTwoInput::class),

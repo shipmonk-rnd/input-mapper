@@ -29,7 +29,6 @@ class DiscriminatedObjectOutputMapperCompiler implements GenericMapperCompiler
      */
     public function __construct(
         public readonly string $className,
-        public readonly string $discriminatorKeyName,
         public readonly array $subtypeCompilers,
         public readonly array $genericParameters = [],
     )

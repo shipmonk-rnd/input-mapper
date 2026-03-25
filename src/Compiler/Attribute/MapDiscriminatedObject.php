@@ -44,7 +44,7 @@ class MapDiscriminatedObject implements MapperCompilerProvider
             $subtypeOutputCompilers[$key] = new DelegateOutputMapperCompiler($subtypeClassName);
         }
 
-        return new DiscriminatedObjectOutputMapperCompiler($this->className, $this->discriminatorKeyName, $subtypeOutputCompilers, $this->genericParameters);
+        return new DiscriminatedObjectOutputMapperCompiler($this->className, $subtypeOutputCompilers, $this->genericParameters);
     }
 
 }

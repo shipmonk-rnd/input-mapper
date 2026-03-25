@@ -311,7 +311,6 @@ class DefaultOutputMapperCompilerFactory implements MapperCompilerFactory
 
         return new DiscriminatedObjectOutputMapperCompiler(
             $inputClassName,
-            $discriminatorAttribute->key,
             $subtypeMappers,
             $genericParameters,
         );
