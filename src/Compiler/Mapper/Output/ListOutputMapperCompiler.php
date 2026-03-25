@@ -3,7 +3,6 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -42,12 +41,9 @@ class ListOutputMapperCompiler implements MapperCompiler
         $statements = [
             $builder->assign($builder->var($mappedVariableName), $builder->val([])),
 
-            new Foreach_($value, $builder->var($itemVariableName), [
-                'stmts' => [
-                    ...$itemMapper->statements,
-                    $builder->assign($builder->arrayDimFetch($builder->var($mappedVariableName)), $itemMapper->expr),
-                ],
-                'keyVar' => $foreachKey,
+            $builder->foreach($value, $builder->var($itemVariableName), $foreachKey, [
+                ...$itemMapper->statements,
+                $builder->assign($builder->arrayDimFetch($builder->var($mappedVariableName)), $itemMapper->expr),
             ]),
         ];
 

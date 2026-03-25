@@ -7,6 +7,7 @@ use DateTimeInterface;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
+use function is_array;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapDateTimeImmutable implements MapperCompilerProvider
@@ -33,7 +34,8 @@ class MapDateTimeImmutable implements MapperCompilerProvider
 
     public function getOutputMapperCompiler(): MapperCompiler
     {
-        return new DateTimeImmutableOutputMapperCompiler($this->format, $this->targetTimezone);
+        $outputFormat = is_array($this->format) ? $this->format[0] : $this->format;
+        return new DateTimeImmutableOutputMapperCompiler($outputFormat, $this->targetTimezone);
     }
 
 }

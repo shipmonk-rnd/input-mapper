@@ -64,6 +64,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
@@ -316,24 +317,32 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             return $this->createDiscriminatorObjectMapping($className, $discriminatorAttribute->newInstance());
         }
 
-        $inputCompiler = $this->createObjectMappingByConstructorInvocation($className, $options);
-        $outputCompiler = $this->createObjectMappingByPropertyReading($className, $options);
+        $inputType = new IdentifierTypeNode($className);
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
+        $genericParameterNames = array_column($genericParameters, 'name');
+        $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
+
+        $inputCompiler = $this->createObjectMappingByConstructorInvocation($classReflection, $genericParameters, $genericParameterNames, $options);
+        $outputCompiler = $this->createObjectMappingByPropertyReading($classReflection, $genericParameters, $genericParameterNames, $options);
 
         return new MapObject($inputCompiler, $outputCompiler);
     }
 
     /**
-     * @param class-string $className
+     * @param ReflectionClass<object> $classReflection
+     * @param list<GenericTypeParameter> $genericParameters
+     * @param list<string> $genericParameterNames
      * @param array<string, mixed> $options
      * @return ObjectInputMapperCompiler<object>
      */
     protected function createObjectMappingByConstructorInvocation(
-        string $className,
+        ReflectionClass $classReflection,
+        array $genericParameters,
+        array $genericParameterNames,
         array $options,
     ): ObjectInputMapperCompiler
     {
-        $inputType = new IdentifierTypeNode($className);
-        $classReflection = new ReflectionClass($className);
+        $inputType = new IdentifierTypeNode($classReflection->getName());
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
@@ -343,10 +352,6 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         if (!$constructor->isPublic()) {
             throw CannotCreateMapperCompilerException::fromType($inputType, 'class has a non-public constructor');
         }
-
-        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
-        $genericParameterNames = array_column($genericParameters, 'name');
-        $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
 
         $constructorParameterMapperCompilers = [];
         $constructorParameterTypes = $this->getConstructorParameterTypes($constructor, $genericParameterNames);
@@ -367,21 +372,20 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param class-string $className
+     * @param ReflectionClass<object> $classReflection
+     * @param list<GenericTypeParameter> $genericParameters
+     * @param list<string> $genericParameterNames
      * @param array<string, mixed> $options
      * @return ObjectOutputMapperCompiler<object>
      */
     protected function createObjectMappingByPropertyReading(
-        string $className,
+        ReflectionClass $classReflection,
+        array $genericParameters,
+        array $genericParameterNames,
         array $options,
     ): ObjectOutputMapperCompiler
     {
-        $inputType = new IdentifierTypeNode($className);
-        $classReflection = new ReflectionClass($className);
-
-        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
-        $genericParameterNames = array_column($genericParameters, 'name');
-        $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
+        $inputType = new IdentifierTypeNode($classReflection->getName());
 
         /** @var array<string, array<string, TypeNode>> $constructorTypesByClass */
         $constructorTypesByClass = [];

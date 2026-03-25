@@ -30,7 +30,7 @@ class DateTimeImmutableOutputMapperCompilerTest extends OutputMapperCompilerTest
 
     public function testCompileWithMultipleFormats(): void
     {
-        $mapperCompiler = new DateTimeImmutableOutputMapperCompiler([DateTimeInterface::RFC3339, DateTimeInterface::RFC3339_EXTENDED]);
+        $mapperCompiler = new DateTimeImmutableOutputMapperCompiler(DateTimeInterface::RFC3339);
         $mapper = $this->compileOutputMapper('DateTimeImmutableMultiFormat', $mapperCompiler);
 
         $dateTime = new DateTimeImmutable('2024-01-15T10:30:00+00:00');
