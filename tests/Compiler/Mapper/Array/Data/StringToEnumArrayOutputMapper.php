@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\OutputMapper;
@@ -10,22 +11,28 @@ use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 /**
  * Generated mapper by {@see ArrayOutputMapperCompiler}. Do not edit directly.
  *
- * @implements OutputMapper<array<string, int>>
+ * @implements OutputMapper<array<string, SuitEnum>>
  */
-class StringToIntArrayOutputMapper implements OutputMapper
+class StringToEnumArrayOutputMapper implements OutputMapper
 {
     public function __construct(private readonly OutputMapperProvider $provider)
     {
     }
 
     /**
-     * @param  array<string, int> $data
+     * @param  array<string, SuitEnum> $data
      * @param  list<string|int> $path
-     * @return array<string, int>
+     * @return array<string, string>
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        return $data;
+        $mapped = [];
+
+        foreach ($data as $key => $value) {
+            $mapped[$key] = $value->value;
+        }
+
+        return $mapped;
     }
 }

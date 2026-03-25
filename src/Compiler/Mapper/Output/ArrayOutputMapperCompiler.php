@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 
@@ -27,6 +28,10 @@ class ArrayOutputMapperCompiler implements MapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
+        if ($this->keyMapperCompiler instanceof PassthroughMapperCompiler && $this->valueMapperCompiler instanceof PassthroughMapperCompiler) {
+            return new CompiledExpr($value);
+        }
+
         [$keyVariableName, $valueVariableName, $mappedVariableName] = $builder->uniqVariableNames('key', 'value', 'mapped');
 
         $itemPath = $builder->arrayImmutableAppend($path, $builder->var($keyVariableName));
