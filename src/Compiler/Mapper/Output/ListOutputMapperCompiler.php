@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 
 class ListOutputMapperCompiler implements MapperCompiler
@@ -25,6 +26,10 @@ class ListOutputMapperCompiler implements MapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
+        if ($this->itemMapperCompiler instanceof PassthroughMapperCompiler) {
+            return new CompiledExpr($value);
+        }
+
         [$indexVariableName, $itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('index', 'item', 'mapped');
 
         $itemValue = $builder->var($itemVariableName);
