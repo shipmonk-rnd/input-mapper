@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -30,18 +31,28 @@ class ListOutputMapperCompiler implements MapperCompiler
             return new CompiledExpr($value);
         }
 
-        [$indexVariableName, $itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('index', 'item', 'mapped');
+        [$itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('item', 'mapped');
 
         $itemValue = $builder->var($itemVariableName);
-        $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
-        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
+        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $path, $builder);
+
+        if ($itemMapper->statements !== []) {
+            $indexVariableName = $builder->uniqVariableName('index');
+            $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
+            $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
+        }
+
+        $foreachKey = isset($indexVariableName) ? $builder->var($indexVariableName) : null;
 
         $statements = [
             $builder->assign($builder->var($mappedVariableName), $builder->val([])),
 
-            $builder->foreach($value, $builder->var($itemVariableName), $builder->var($indexVariableName), [
-                ...$itemMapper->statements,
-                $builder->assign($builder->arrayDimFetch($builder->var($mappedVariableName)), $itemMapper->expr),
+            new Foreach_($value, $builder->var($itemVariableName), [
+                'stmts' => [
+                    ...$itemMapper->statements,
+                    $builder->assign($builder->arrayDimFetch($builder->var($mappedVariableName)), $itemMapper->expr),
+                ],
+                'keyVar' => $foreachKey,
             ]),
         ];
 
