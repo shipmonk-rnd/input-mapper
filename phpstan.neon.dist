@@ -33,10 +33,7 @@ parameters:
 
     ignoreErrors:
         -
-            identifiers:
-                - shipmonk.deadProperty.neverRead
-                - property.onlyWritten
-                - shipmonk.deadEnumCase
+            identifier: property.onlyWritten
             paths: [tests/**/Data/*.php]
         -
             identifier: throws.unusedType

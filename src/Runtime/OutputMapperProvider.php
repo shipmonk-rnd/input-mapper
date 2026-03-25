@@ -55,7 +55,7 @@ class OutputMapperProvider
 
     /**
      * @param class-string<T> $inputClassName
-     * @param list<OutputMapper<mixed>> $innerMappers
+     * @param list<OutputMapper<*>> $innerMappers
      * @return OutputMapper<T>
      *
      * @template T of object
@@ -96,7 +96,7 @@ class OutputMapperProvider
 
     /**
      * @param class-string<T> $inputClassName
-     * @param list<OutputMapper<mixed>> $innerMappers
+     * @param list<OutputMapper<*>> $innerMappers
      * @return OutputMapper<T>
      *
      * @template T of object
@@ -117,7 +117,7 @@ class OutputMapperProvider
 
         foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($this->mapperFactories[$classLikeName])) {
-                /** @var callable(class-string<T>, list<OutputMapper<mixed>>, self): OutputMapper<T> $factory */
+                /** @var callable(class-string<T>, list<OutputMapper<*>>, self): OutputMapper<T> $factory */
                 $factory = $this->mapperFactories[$classLikeName];
                 return $factory($inputClassName, $innerMappers, $this);
             }
