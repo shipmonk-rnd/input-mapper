@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapEnum implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapEnum implements MapperCompilerProvider
 {
 
     /**

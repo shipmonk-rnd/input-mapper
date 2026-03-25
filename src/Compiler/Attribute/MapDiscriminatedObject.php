@@ -13,7 +13,7 @@ use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
  * @template T of object
  */
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDiscriminatedObject implements InputMapperCompilerProvider, OutputMapperCompilerProvider
+class MapDiscriminatedObject implements MapperCompilerProvider
 {
 
     /**
