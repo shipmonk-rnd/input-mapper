@@ -4,7 +4,9 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
 class ArrayShapeOutputMapperCompilerTest extends OutputMapperCompilerTestCase
@@ -51,6 +53,19 @@ class ArrayShapeOutputMapperCompilerTest extends OutputMapperCompilerTestCase
 
         self::assertSame(['a' => 1], $mapper->map(['a' => 1]));
         self::assertSame(['a' => 1], $mapper->map(['a' => 1, 'extra' => 'ignored']));
+    }
+
+    public function testCompileWithInlinedExpressionMapper(): void
+    {
+        $items = [
+            ['key' => 'name', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => false],
+            ['key' => 'suit', 'mapper' => new EnumOutputMapperCompiler(SuitEnum::class), 'optional' => false],
+        ];
+
+        $mapperCompiler = new ArrayShapeOutputMapperCompiler($items, sealed: true);
+        $mapper = $this->compileOutputMapper('ArrayShapeWithInlinedExpression', $mapperCompiler);
+
+        self::assertSame(['name' => 'test', 'suit' => 'H'], $mapper->map(['name' => 'test', 'suit' => SuitEnum::Hearts]));
     }
 
 }
