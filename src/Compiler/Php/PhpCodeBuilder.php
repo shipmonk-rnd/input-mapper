@@ -507,8 +507,11 @@ class PhpCodeBuilder extends BuilderFactory
         return $uniqueName;
     }
 
-    public function importType(TypeNode $type): void
+    public function importType(TypeNode $type): TypeNode
     {
+        /** @var TypeNode $type */
+        $type = unserialize(serialize($type));
+
         $stack = [$type];
         $index = 1;
 
@@ -532,6 +535,8 @@ class PhpCodeBuilder extends BuilderFactory
                 }
             }
         }
+
+        return $type;
     }
 
     /**
@@ -559,22 +564,18 @@ class PhpCodeBuilder extends BuilderFactory
         });
 
         assert($dataVarName !== null && $pathVarName !== null);
-        $inputType = $mapperCompiler->getInputType();
-        $outputType = $mapperCompiler->getOutputType();
-
-        $this->importType($inputType);
-        $this->importType($outputType);
+        $inputType = $this->importType($mapperCompiler->getInputType());
+        $outputType = $this->importType($mapperCompiler->getOutputType());
 
         $clonedGenericParameters = [];
 
         foreach ($this->genericParameters as $genericParameter) {
-            /** @var GenericTypeParameter $clonedGenericParameter */
-            $clonedGenericParameter = unserialize(serialize($genericParameter));
-            $clonedGenericParameters[] = $clonedGenericParameter;
-
-            if ($clonedGenericParameter->bound !== null) {
-                $this->importType($clonedGenericParameter->bound);
-            }
+            $clonedGenericParameters[] = new GenericTypeParameter(
+                $genericParameter->name,
+                $genericParameter->variance,
+                $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
+                $genericParameter->default,
+            );
         }
 
         $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $clonedGenericParameters, $phpDocInputTypeUseful);
@@ -621,7 +622,7 @@ class PhpCodeBuilder extends BuilderFactory
                 },
             ));
 
-            $this->importType($innerMappersType);
+            $innerMappersType = $this->importType($innerMappersType);
             $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
         }
 
@@ -642,8 +643,7 @@ class PhpCodeBuilder extends BuilderFactory
             ->makePublic()
             ->getNode();
 
-        $outputType = $mapperCompiler->getOutputType();
-        $this->importType($outputType);
+        $outputType = $this->importType($mapperCompiler->getOutputType());
 
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
@@ -717,18 +717,12 @@ class PhpCodeBuilder extends BuilderFactory
         });
 
         assert($dataVarName !== null && $pathVarName !== null);
-        $inputType = $mapperCompiler->getInputType();
-        $outputType = $mapperCompiler->getOutputType();
-
-        $this->importType($inputType);
-        $this->importType($outputType);
+        $inputType = $this->importType($mapperCompiler->getInputType());
+        $outputType = $this->importType($mapperCompiler->getOutputType());
 
         foreach ($this->genericParameters as $genericParameter) {
             if ($genericParameter->bound !== null) {
-                /** @var GenericTypeParameter $clonedGenericParameter */
-                $clonedGenericParameter = unserialize(serialize($genericParameter));
-                assert($clonedGenericParameter->bound !== null);
-                $this->importType($clonedGenericParameter->bound);
+                $this->importType($genericParameter->bound);
             }
         }
 
@@ -776,7 +770,7 @@ class PhpCodeBuilder extends BuilderFactory
                 },
             ));
 
-            $this->importType($innerMappersType);
+            $innerMappersType = $this->importType($innerMappersType);
             $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
         }
 
@@ -797,8 +791,7 @@ class PhpCodeBuilder extends BuilderFactory
             ->makePublic()
             ->getNode();
 
-        $inputType = $mapperCompiler->getInputType();
-        $this->importType($inputType);
+        $inputType = $this->importType($mapperCompiler->getInputType());
 
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
