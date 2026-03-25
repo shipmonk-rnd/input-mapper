@@ -292,24 +292,23 @@ $inputMapperProvider->registerFactory(MyCustomClass::class, function () {
 
 ### Customizing default mappers inferred from types
 
-To customize how default mappers are inferred from types, you need to implement
-
-* `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and `InputMapperCompilerFactoryProvider` for input mapping, or
-* `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and `OutputMapperCompilerFactoryProvider` for output mapping.
+To customize how default mappers are inferred from types, you need to implement `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and `MapperCompilerFactoryProvider`.
 
 Then register your factory provider with the corresponding provider:
 
 ```php
+$mapperCompilerFactoryProvider = new MyCustomMapperCompilerFactoryProvider();
+
 $inputMapperProvider = new ShipMonk\InputMapper\Runtime\InputMapperProvider(
     tempDir: $tempDir,
     autoRefresh: $autoRefresh,
-    mapperCompilerFactoryProvider: new MyCustomInputMapperCompilerFactoryProvider(),
+    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
 );
 
 $outputMapperProvider = new ShipMonk\InputMapper\Runtime\OutputMapperProvider(
     tempDir: $tempDir,
     autoRefresh: $autoRefresh,
-    mapperCompilerFactoryProvider: new MyCustomOutputMapperCompilerFactoryProvider(),
+    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
 );
 ```
 

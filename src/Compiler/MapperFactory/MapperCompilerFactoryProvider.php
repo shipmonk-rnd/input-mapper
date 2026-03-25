@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
-interface InputMapperCompilerFactoryProvider
+interface MapperCompilerFactoryProvider
 {
 
     public function get(): MapperCompilerFactory;

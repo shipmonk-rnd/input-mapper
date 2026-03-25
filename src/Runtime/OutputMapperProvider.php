@@ -5,8 +5,8 @@ namespace ShipMonk\InputMapper\Runtime;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use RuntimeException;
-use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultOutputMapperCompilerFactoryProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\OutputMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
 use function array_map;
@@ -48,7 +48,7 @@ class OutputMapperProvider
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
-        private readonly OutputMapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultOutputMapperCompilerFactoryProvider(),
+        private readonly MapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultMapperCompilerFactoryProvider(),
     )
     {
     }
@@ -191,7 +191,7 @@ class OutputMapperProvider
     ): string
     {
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
-        $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName));
+        $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName))->getOutputMapperCompiler();
 
         $codeBuilder = new PhpCodeBuilder();
         $codePrinter = new PhpCodePrinter();

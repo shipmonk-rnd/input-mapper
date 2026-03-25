@@ -28,31 +28,41 @@ use ReflectionClass;
 use ReflectionEnum;
 use ReflectionMethod;
 use ReflectionParameter;
+use ReflectionProperty;
 use ShipMonk\InputMapper\Compiler\Attribute\AllowExtraKeys;
+use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 use ShipMonk\InputMapper\Compiler\Attribute\InputMapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\MapArray;
+use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
+use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDelegate;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapEnum;
+use ShipMonk\InputMapper\Compiler\Attribute\MapFloat;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapList;
+use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
+use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
+use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
+use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
+use ShipMonk\InputMapper\Compiler\Attribute\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
+use ShipMonk\InputMapper\Compiler\Attribute\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
+use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\BoolInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ChainMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
@@ -73,18 +83,17 @@ use function class_parents;
 use function count;
 use function interface_exists;
 use function is_array;
-use function strcasecmp;
 use function strtolower;
 use function substr;
 
-class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
+class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
     final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
     final public const GENERIC_PARAMETERS = 'genericParameters';
 
     /**
-     * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompiler> $mapperCompilerFactories
+     * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompilerProvider> $mapperCompilerFactories
      */
     public function __construct(
         protected readonly Lexer $phpDocLexer,
@@ -92,13 +101,13 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
         protected array $mapperCompilerFactories = [],
     )
     {
-        $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompiler(...));
-        $this->setMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompiler(...));
+        $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompilerProvider(...));
+        $this->setMapperCompilerFactory(DateTimeInterface::class, $this->createDateTimeMapperCompilerProvider(...));
     }
 
     /**
      * @param class-string<T> $className
-     * @param callable(class-string<T>, array<string, mixed>): MapperCompiler $factory
+     * @param callable(class-string<T>, array<string, mixed>): MapperCompilerProvider $factory
      *
      * @template T of object
      */
@@ -116,7 +125,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
     public function create(
         TypeNode $type,
         array $options = [],
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
         if ($type instanceof IdentifierTypeNode) {
             if (!PhpDocTypeUtils::isKeyword($type)) {
@@ -127,50 +136,50 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
                         }
                     }
 
-                    return new DelegateInputMapperCompiler($type->name);
+                    return new MapDelegate($type->name);
                 }
 
                 if (!class_exists($type->name) && !interface_exists($type->name)) {
                     throw CannotCreateMapperCompilerException::fromType($type, 'there is no class, interface or enum with this name');
                 }
 
-                return $this->createObjectMapperCompiler($type->name, $options);
+                return $this->createObjectMapperCompilerProvider($type->name, $options);
             }
 
             return match (strtolower($type->name)) {
-                'array' => new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), new MixedInputMapperCompiler()),
-                'bool' => new BoolInputMapperCompiler(),
-                'float' => new FloatInputMapperCompiler(),
-                'int' => new IntInputMapperCompiler(),
-                'mixed' => new MixedInputMapperCompiler(),
-                'string' => new StringInputMapperCompiler(),
+                'array' => new MapArray(new MapMixed(), new MapMixed()),
+                'bool' => new MapBool(),
+                'float' => new MapFloat(),
+                'int' => new MapInt(),
+                'mixed' => new MapMixed(),
+                'string' => new MapString(),
 
                 default => match ($type->name) {
-                    'list' => new ListInputMapperCompiler(new MixedInputMapperCompiler()),
-                    'non-empty-list' => new ValidatedInputMapperCompiler(new ListInputMapperCompiler(new MixedInputMapperCompiler()), [new AssertListLength(min: 1)]),
-                    'non-empty-string' => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('string'), $options), [new AssertStringNonEmpty()]),
-                    'negative-int' => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
-                    'non-negative-int' => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
-                    'non-positive-int' => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),
-                    'positive-int' => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertPositiveInt()]),
+                    'list' => new MapList(new MapMixed()),
+                    'non-empty-list' => new ValidatedMapperCompilerProvider(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
+                    'non-empty-string' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('string'), $options), [new AssertStringNonEmpty()]),
+                    'negative-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
+                    'non-negative-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
+                    'non-positive-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),
+                    'positive-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertPositiveInt()]),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
             };
         }
 
         if ($type instanceof NullableTypeNode) {
-            return new NullableInputMapperCompiler($this->createInner($type->type, $options));
+            return new MapNullable($this->createInner($type->type, $options));
         }
 
         if ($type instanceof GenericTypeNode) {
             return match (strtolower($type->type->name)) {
                 'array' => match (count($type->genericTypes)) {
-                    1 => new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), $this->createInner($type->genericTypes[0], $options)),
-                    2 => new ArrayInputMapperCompiler($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
+                    1 => new MapArray(new MapMixed(), $this->createInner($type->genericTypes[0], $options)),
+                    2 => new MapArray($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
-                    2 => new ValidatedInputMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [
+                    2 => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [
                         new AssertIntRange(
                             gte: $this->resolveIntegerBoundary($type, $type->genericTypes[0], 'min'),
                             lte: $this->resolveIntegerBoundary($type, $type->genericTypes[1], 'max'),
@@ -180,15 +189,15 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
                 },
                 default => match ($type->type->name) {
                     'list' => match (count($type->genericTypes)) {
-                        1 => new ListInputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
+                        1 => new MapList($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     'non-empty-list' => match (count($type->genericTypes)) {
-                        1 => new ValidatedInputMapperCompiler(new ListInputMapperCompiler($this->createInner($type->genericTypes[0], $options)), [new AssertListLength(min: 1)]),
+                        1 => new ValidatedMapperCompilerProvider(new MapList($this->createInner($type->genericTypes[0], $options)), [new AssertListLength(min: 1)]),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
-                        1 => new OptionalInputMapperCompiler($this->createInner($type->genericTypes[0], $options)),
+                        1 => new MapOptional($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     default => $this->createFromGenericType($type, $options),
@@ -197,7 +206,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof ArrayTypeNode) {
-            return new ArrayInputMapperCompiler(new MixedInputMapperCompiler(), $this->createInner($type->type, $options));
+            return new MapArray(new MapMixed(), $this->createInner($type->type, $options));
         }
 
         if ($type instanceof ArrayShapeNode) {
@@ -210,10 +219,10 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 };
 
-                $items[] = ['key' => $key, 'mapper' => $this->createInner($item->valueType, $options), 'optional' => $item->optional];
+                $items[] = new ArrayShapeItemMapping($key, $this->createInner($item->valueType, $options), $item->optional);
             }
 
-            return new ArrayShapeInputMapperCompiler($items, $type->sealed);
+            return new MapArrayShape($items, $type->sealed);
         }
 
         if ($type instanceof UnionTypeNode) {
@@ -221,7 +230,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
             $subTypesWithoutNull = [];
 
             foreach ($type->types as $subType) {
-                if ($subType instanceof IdentifierTypeNode && strcasecmp($subType->name, 'null') === 0) {
+                if ($subType instanceof IdentifierTypeNode && strtolower($subType->name) === 'null') {
                     $isNullable = true;
                 } else {
                     $subTypesWithoutNull[] = $subType;
@@ -242,7 +251,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
     protected function createInner(
         TypeNode $type,
         array $options,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
         $options[self::DELEGATE_OBJECT_MAPPING] ??= true;
         return $this->create($type, $options);
@@ -254,14 +263,14 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
     protected function createFromGenericType(
         GenericTypeNode $type,
         array $options,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
         if (!class_exists($type->type->name) && !interface_exists($type->type->name)) {
             throw CannotCreateMapperCompilerException::fromType($type, 'there is no class or interface with this name');
         }
 
         $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($type->type)->parameters;
-        $innerMapperCompilers = [];
+        $innerMapperCompilerProviders = [];
 
         foreach ($type->genericTypes as $index => $genericType) {
             $genericParameter = $genericParameters[$index] ?? throw CannotCreateMapperCompilerException::fromType($type, "generic parameter at index {$index} does not exist");
@@ -270,57 +279,61 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
                 throw CannotCreateMapperCompilerException::fromType($type, "type {$genericType} is not a subtype of {$genericParameter->bound}");
             }
 
-            $innerMapperCompilers[] = $this->createInner($genericType, $options);
+            $innerMapperCompilerProviders[] = $this->createInner($genericType, $options);
         }
 
-        return new DelegateInputMapperCompiler($type->type->name, $innerMapperCompilers);
+        return new MapDelegate($type->type->name, $innerMapperCompilerProviders);
     }
 
     /**
-     * @param class-string $inputClassName
+     * @param class-string $className
      * @param array<string, mixed> $options
      */
-    protected function createObjectMapperCompiler(
-        string $inputClassName,
+    protected function createObjectMapperCompilerProvider(
+        string $className,
         array $options,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
-        $classParents = class_parents($inputClassName);
-        $classImplements = class_implements($inputClassName);
+        $classParents = class_parents($className);
+        $classImplements = class_implements($className);
 
         if ($classParents === false || $classImplements === false) {
-            throw new LogicException("Unable to get class parents or implements for '$inputClassName'.");
+            throw new LogicException("Unable to get class parents or implements for '$className'.");
         }
 
-        $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
+        $classLikeNames = [$className => true, ...$classParents, ...$classImplements];
 
         foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
                 $factory = $this->mapperCompilerFactories[$classLikeName];
-                return $factory($inputClassName, $options);
+                return $factory($className, $options);
             }
         }
 
-        $classReflection = new ReflectionClass($inputClassName);
+        $classReflection = new ReflectionClass($className);
 
         foreach ($classReflection->getAttributes(Discriminator::class) as $discriminatorAttribute) {
-            return $this->createDiscriminatorObjectMapping($inputClassName, $discriminatorAttribute->newInstance());
+            return $this->createDiscriminatorObjectMapping($className, $discriminatorAttribute->newInstance());
         }
 
-        return $this->createObjectMappingByConstructorInvocation($inputClassName, $options);
+        $inputCompiler = $this->createObjectMappingByConstructorInvocation($className, $options);
+        $outputCompiler = $this->createObjectMappingByPropertyReading($className, $options);
+
+        return new MapObject($inputCompiler, $outputCompiler);
     }
 
     /**
-     * @param class-string $inputClassName
+     * @param class-string $className
      * @param array<string, mixed> $options
+     * @return ObjectInputMapperCompiler<object>
      */
     protected function createObjectMappingByConstructorInvocation(
-        string $inputClassName,
+        string $className,
         array $options,
-    ): MapperCompiler
+    ): ObjectInputMapperCompiler
     {
-        $inputType = new IdentifierTypeNode($inputClassName);
-        $classReflection = new ReflectionClass($inputClassName);
+        $inputType = new IdentifierTypeNode($className);
+        $classReflection = new ReflectionClass($className);
         $constructor = $classReflection->getConstructor();
 
         if ($constructor === null) {
@@ -354,25 +367,83 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
     }
 
     /**
-     * @param class-string $inputClassName
+     * @param class-string $className
+     * @param array<string, mixed> $options
+     * @return ObjectOutputMapperCompiler<object>
+     */
+    protected function createObjectMappingByPropertyReading(
+        string $className,
+        array $options,
+    ): ObjectOutputMapperCompiler
+    {
+        $inputType = new IdentifierTypeNode($className);
+        $classReflection = new ReflectionClass($className);
+
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
+        $genericParameterNames = array_column($genericParameters, 'name');
+        $options[self::GENERIC_PARAMETERS] = array_fill_keys($genericParameterNames, true);
+
+        /** @var array<string, array<string, TypeNode>> $constructorTypesByClass */
+        $constructorTypesByClass = [];
+
+        $propertyMapperCompilers = [];
+
+        foreach ($classReflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isReadOnly()) {
+                continue;
+            }
+
+            $propertyName = $property->getName();
+            $declaringClass = $property->getDeclaringClass();
+            $declaringClassName = $declaringClass->getName();
+
+            if (!isset($constructorTypesByClass[$declaringClassName])) {
+                $declaringConstructor = $declaringClass->getConstructor();
+
+                if ($declaringConstructor === null) {
+                    throw CannotCreateMapperCompilerException::fromType($inputType, "class {$declaringClassName} has no constructor");
+                }
+
+                $constructorTypesByClass[$declaringClassName] = $this->getConstructorParameterTypes($declaringConstructor, $genericParameterNames);
+            }
+
+            $type = $constructorTypesByClass[$declaringClassName][$propertyName]
+                ?? throw CannotCreateMapperCompilerException::fromType($inputType, "cannot determine type for property {$propertyName}");
+
+            $outputKey = $propertyName;
+
+            foreach ($property->getAttributes(SourceKey::class) as $attribute) {
+                $outputKey = $attribute->newInstance()->key;
+            }
+
+            $mapperCompiler = $this->createPropertyMapperCompiler($property, $type, $options);
+
+            $propertyMapperCompilers[$propertyName] = [$outputKey, $mapperCompiler];
+        }
+
+        return new ObjectOutputMapperCompiler($classReflection->getName(), $propertyMapperCompilers, $genericParameters);
+    }
+
+    /**
+     * @param class-string $className
      */
     public function createDiscriminatorObjectMapping(
-        string $inputClassName,
+        string $className,
         Discriminator $discriminatorAttribute,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
-        $inputType = new IdentifierTypeNode($inputClassName);
+        $inputType = new IdentifierTypeNode($className);
         $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
 
-        $subtypeMappers = array_map(
+        $subtypeCompilers = array_map(
             static fn (string $subtypeClassName): MapperCompiler => new DelegateInputMapperCompiler($subtypeClassName),
             $discriminatorAttribute->mapping,
         );
 
-        return new DiscriminatedObjectInputMapperCompiler(
-            $inputClassName,
+        return new MapDiscriminatedObject(
+            $className,
             $discriminatorAttribute->key,
-            $subtypeMappers,
+            $subtypeCompilers,
             $genericParameters,
         );
     }
@@ -454,7 +525,7 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
         }
 
         $mapper = match (count($mappers)) {
-            0 => $this->createInner($type, $options),
+            0 => $this->createInner($type, $options)->getInputMapperCompiler(),
             1 => $mappers[0],
             default => new ChainMapperCompiler($mappers),
         };
@@ -478,6 +549,28 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
         }
 
         return $mapper;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    protected function createPropertyMapperCompiler(
+        ReflectionProperty $propertyReflection,
+        TypeNode $type,
+        array $options,
+    ): MapperCompiler
+    {
+        $mappers = [];
+
+        foreach ($propertyReflection->getAttributes(OutputMapperCompilerProvider::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            $mappers[] = $attribute->newInstance()->getOutputMapperCompiler();
+        }
+
+        return match (count($mappers)) {
+            0 => $this->createInner($type, $options)->getOutputMapperCompiler(),
+            1 => $mappers[0],
+            default => throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName()),
+        };
     }
 
     protected function addValidator(
@@ -511,30 +604,30 @@ class DefaultInputMapperCompilerFactory implements MapperCompilerFactory
      * @param class-string<BackedEnum> $enumName
      * @param array<string, mixed> $options
      */
-    protected function createEnumMapperCompiler(
+    protected function createEnumMapperCompilerProvider(
         string $enumName,
         array $options,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
         $enumReflection = new ReflectionEnum($enumName);
         $backingReflectionType = $enumReflection->getBackingType() ?? throw new LogicException("Enum {$enumName} has no backing type");
         $backingType = PhpDocTypeUtils::fromReflectionType($backingReflectionType);
-        $backingTypeMapperCompiler = $this->createInner($backingType, $options);
+        $backingTypeMapperCompiler = $this->createInner($backingType, $options)->getInputMapperCompiler();
 
-        return new EnumInputMapperCompiler($enumName, $backingTypeMapperCompiler);
+        return new MapEnum($enumName, $backingTypeMapperCompiler);
     }
 
     /**
      * @param class-string $className
      * @param array<string, mixed> $options
      */
-    protected function createDateTimeMapperCompiler(
+    protected function createDateTimeMapperCompilerProvider(
         string $className,
         array $options,
-    ): MapperCompiler
+    ): MapperCompilerProvider
     {
         if ($className === DateTimeInterface::class || $className === DateTimeImmutable::class) {
-            return new DateTimeImmutableInputMapperCompiler();
+            return new MapDateTimeImmutable();
         }
 
         throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));

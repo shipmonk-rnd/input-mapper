@@ -8,7 +8,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 
-class DefaultInputMapperCompilerFactoryProvider implements InputMapperCompilerFactoryProvider
+class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvider
 {
 
     private ?MapperCompilerFactory $mapperCompilerFactory = null;
@@ -21,7 +21,7 @@ class DefaultInputMapperCompilerFactoryProvider implements InputMapperCompilerFa
     protected function create(): MapperCompilerFactory
     {
         $config = $this->createParserConfig();
-        return new DefaultInputMapperCompilerFactory($this->createPhpDocLexer($config), $this->createPhpDocParser($config));
+        return new DefaultMapperCompilerFactory($this->createPhpDocLexer($config), $this->createPhpDocParser($config));
     }
 
     protected function createPhpDocLexer(ParserConfig $config): Lexer

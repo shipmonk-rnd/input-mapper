@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
@@ -13,6 +14,8 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
+use ShipMonk\InputMapper\Compiler\Attribute\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
@@ -32,7 +35,14 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultInputMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
@@ -44,6 +54,10 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildTwoInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SimplePersonInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalCatInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalDogInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalInput;
@@ -64,28 +78,23 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstr
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 
-class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
+class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
 {
 
     /**
      * @param array<string, mixed> $options
      */
-    #[DataProvider('provideCreateOkData')]
-    public function testCreateOk(
+    #[DataProvider('provideCreateInputOkData')]
+    public function testCreateInputOk(
         string $type,
         array $options,
         MapperCompiler $expectedMapperCompiler,
     ): void
     {
-        $config = new ParserConfig([]);
-        $phpDocLexer = new Lexer($config);
-        $phpDocConstExprParser = new ConstExprParser($config);
-        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
-        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
-        $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
+        $factory = self::createFactory();
+        $phpDocType = self::parseType($type);
 
-        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
-        $mapperCompiler = $mapperCompilerFactory->create($phpDocType, $options);
+        $mapperCompiler = $factory->create($phpDocType, $options)->getInputMapperCompiler();
 
         self::assertEquals($expectedMapperCompiler, $mapperCompiler);
     }
@@ -93,7 +102,7 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
     /**
      * @return iterable<array{string, array<string, mixed>, MapperCompiler}>
      */
-    public static function provideCreateOkData(): iterable
+    public static function provideCreateInputOkData(): iterable
     {
         yield 'CarInput' => [
             CarInput::class,
@@ -121,7 +130,7 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
 
         yield 'CarInput with forced root delegation' => [
             CarInput::class,
-            [DefaultInputMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => true],
+            [DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => true],
             new DelegateInputMapperCompiler(CarInput::class),
         ];
 
@@ -453,6 +462,132 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
     /**
      * @param array<string, mixed> $options
      */
+    #[DataProvider('provideCreateOutputOkData')]
+    public function testCreateOutputOk(
+        string $type,
+        array $options,
+        MapperCompiler $expectedMapperCompiler,
+    ): void
+    {
+        $factory = self::createFactory();
+        $phpDocType = self::parseType($type);
+
+        $mapperCompiler = $factory->create($phpDocType, $options)->getOutputMapperCompiler();
+
+        self::assertEquals($expectedMapperCompiler, $mapperCompiler);
+    }
+
+    /**
+     * @return iterable<array{string, array<string, mixed>, MapperCompiler}>
+     */
+    public static function provideCreateOutputOkData(): iterable
+    {
+        yield 'int' => [
+            'int',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+        ];
+
+        yield 'string' => [
+            'string',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('string')),
+        ];
+
+        yield 'bool' => [
+            'bool',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('bool')),
+        ];
+
+        yield 'float' => [
+            'float',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('float')),
+        ];
+
+        yield 'mixed' => [
+            'mixed',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')),
+        ];
+
+        yield 'SimplePersonInput' => [
+            SimplePersonInput::class,
+            [],
+            new ObjectOutputMapperCompiler(SimplePersonInput::class, [
+                'id' => ['id', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+                'name' => ['name', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            ]),
+        ];
+
+        yield 'InputWithRenamedSourceKey' => [
+            InputWithRenamedSourceKey::class,
+            [],
+            new ObjectOutputMapperCompiler(InputWithRenamedSourceKey::class, [
+                'oldValue' => ['old_value', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+                'newValue' => ['new_value', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+            ]),
+        ];
+
+        yield 'list<int>' => [
+            'list<int>',
+            [],
+            new ListOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+        ];
+
+        yield 'array<string, int>' => [
+            'array<string, int>',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('string')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'array<int>' => [
+            'array<int>',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'int[]' => [
+            'int[]',
+            [],
+            new ArrayOutputMapperCompiler(
+                new PassthroughMapperCompiler(new IdentifierTypeNode('mixed')),
+                new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+            ),
+        ];
+
+        yield 'array{a: int, b?: string}' => [
+            'array{a: int, b?: string}',
+            [],
+            new ArrayShapeOutputMapperCompiler([
+                ['key' => 'a', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('int')), 'optional' => false],
+                ['key' => 'b', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => true],
+            ], sealed: true),
+        ];
+
+        yield 'HierarchicalParentInput (discriminated)' => [
+            HierarchicalParentInput::class,
+            [],
+            new DiscriminatedObjectOutputMapperCompiler(
+                HierarchicalParentInput::class,
+                [
+                    'childOne' => new DelegateOutputMapperCompiler(HierarchicalChildOneInput::class),
+                    'childTwo' => new DelegateOutputMapperCompiler(HierarchicalChildTwoInput::class),
+                ],
+            ),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
     #[DataProvider('provideCreateErrorData')]
     public function testCreateError(
         string $type,
@@ -460,19 +595,13 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
         ?string $expectedMessage = null,
     ): void
     {
-        $config = new ParserConfig([]);
-        $phpDocLexer = new Lexer($config);
-        $phpDocConstExprParser = new ConstExprParser($config);
-        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
-        $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
-        $phpDocType = $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
-
-        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
+        $factory = self::createFactory();
+        $phpDocType = self::parseType($type);
 
         self::assertException(
             CannotCreateMapperCompilerException::class,
             $expectedMessage,
-            static fn () => $mapperCompilerFactory->create($phpDocType, $options),
+            static fn () => $factory->create($phpDocType, $options),
         );
     }
 
@@ -507,7 +636,7 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
 
         yield 'DateTime' => [
             DateTime::class,
-            [DefaultInputMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false],
+            [DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING => false],
         ];
 
         yield 'array<int, int, int>' => [
@@ -536,29 +665,40 @@ class DefaultInputMapperCompilerFactoryTest extends InputMapperTestCase
 
     public function testCreateWithCustomFactory(): void
     {
+        $factory = self::createFactory();
+
+        $customProvider = new MapInt();
+
+        $factory->setMapperCompilerFactory(CarInput::class, static function (string $className, array $options) use ($customProvider): MapperCompilerProvider {
+            self::assertSame(CarInput::class, $className);
+            self::assertSame([], $options);
+
+            return $customProvider;
+        });
+
+        $phpDocType = new IdentifierTypeNode(CarInput::class);
+        self::assertSame($customProvider, $factory->create($phpDocType));
+    }
+
+    private static function createFactory(): DefaultMapperCompilerFactory
+    {
         $config = new ParserConfig([]);
         $phpDocLexer = new Lexer($config);
         $phpDocConstExprParser = new ConstExprParser($config);
         $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
         $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
 
-        $carMapperCompiler = new ObjectInputMapperCompiler(CarInput::class, [
-            'id' => new IntInputMapperCompiler(),
-            'name' => new StringInputMapperCompiler(),
-            'brand' => new DelegateInputMapperCompiler(BrandInput::class),
-        ]);
+        return new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
+    }
 
-        $mapperCompilerFactory = new DefaultInputMapperCompilerFactory($phpDocLexer, $phpDocParser);
+    private static function parseType(string $type): TypeNode
+    {
+        $config = new ParserConfig([]);
+        $phpDocLexer = new Lexer($config);
+        $phpDocConstExprParser = new ConstExprParser($config);
+        $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
 
-        $mapperCompilerFactory->setMapperCompilerFactory(CarInput::class, static function (string $inputClassName, array $options) use ($carMapperCompiler): MapperCompiler {
-            self::assertSame(CarInput::class, $inputClassName);
-            self::assertSame([], $options);
-
-            return $carMapperCompiler;
-        });
-
-        $phpDocType = new IdentifierTypeNode(CarInput::class);
-        self::assertSame($carMapperCompiler, $mapperCompilerFactory->create($phpDocType));
+        return $phpDocTypeParser->parse(new TokenIterator($phpDocLexer->tokenize($type)));
     }
 
 }
