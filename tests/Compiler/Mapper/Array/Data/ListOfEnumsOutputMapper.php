@@ -29,7 +29,7 @@ class ListOfEnumsOutputMapper implements OutputMapper
     {
         $mapped = [];
 
-        foreach ($data as $item) {
+        foreach ($data as $index => $item) {
             $mapped[] = $item->value;
         }
 

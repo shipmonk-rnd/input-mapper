@@ -31,18 +31,13 @@ class ListOutputMapperCompiler implements MapperCompiler
             return new CompiledExpr($value);
         }
 
-        [$itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('item', 'mapped');
+        [$indexVariableName, $itemVariableName, $mappedVariableName] = $builder->uniqVariableNames('index', 'item', 'mapped');
 
         $itemValue = $builder->var($itemVariableName);
-        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $path, $builder);
+        $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
+        $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
 
-        if ($itemMapper->statements !== []) {
-            $indexVariableName = $builder->uniqVariableName('index');
-            $itemPath = $builder->arrayImmutableAppend($path, $builder->var($indexVariableName));
-            $itemMapper = $this->itemMapperCompiler->compile($itemValue, $itemPath, $builder);
-        }
-
-        $foreachKey = isset($indexVariableName) ? $builder->var($indexVariableName) : null;
+        $foreachKey = $builder->var($indexVariableName);
 
         $statements = [
             $builder->assign($builder->var($mappedVariableName), $builder->val([])),
