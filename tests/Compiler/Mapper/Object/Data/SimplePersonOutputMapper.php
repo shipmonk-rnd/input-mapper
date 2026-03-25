@@ -21,6 +21,7 @@ class SimplePersonOutputMapper implements OutputMapper
     /**
      * @param  SimplePersonInput $data
      * @param  list<string|int> $path
+     * @return array{id: int, name: string}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed

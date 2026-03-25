@@ -58,7 +58,7 @@ class DiscriminatedObjectOutputMapperCompilerTest extends OutputMapperCompilerTe
         );
 
         self::assertSame(
-            ['id' => 1, 'name' => 'Alice', 'type' => 'childOne', 'childOneField' => 'extra', 'age' => 30],
+            ['id' => 1, 'name' => 'Alice', 'age' => 30, 'type' => 'childOne', 'childOneField' => 'extra'],
             $mapper->map($childOne),
         );
 

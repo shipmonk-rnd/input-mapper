@@ -25,6 +25,7 @@ class DelegateToIntCollection__CollectionInputOutputMapper implements OutputMapp
     /**
      * @param  CollectionInput<T> $data
      * @param  list<string|int> $path
+     * @return array{items: mixed, size: int}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed

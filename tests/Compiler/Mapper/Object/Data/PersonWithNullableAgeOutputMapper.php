@@ -21,6 +21,7 @@ class PersonWithNullableAgeOutputMapper implements OutputMapper
     /**
      * @param  PersonWithNullableAgeInput $data
      * @param  list<string|int> $path
+     * @return array{id: int, name: string, age: ?int}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed

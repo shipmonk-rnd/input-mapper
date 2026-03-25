@@ -4,7 +4,6 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapper\Runtime\OutputMapper;
 use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 
@@ -22,27 +21,21 @@ class HierarchicalParent__HierarchicalChildOneInputOutputMapper implements Outpu
     /**
      * @param  HierarchicalChildOneInput $data
      * @param  list<string|int> $path
+     * @return array{id: int, name: string, age?: int, type: string, childOneField: string}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $output = ['id' => $data->id, 'name' => $data->name, 'type' => $data->type, 'childOneField' => $data->childOneField];
+        $output = [];
+        $output['id'] = $data->id;
+        $output['name'] = $data->name;
 
         if ($data->age->isDefined()) {
-            $output['age'] = $this->mapAge($data->age, [...$path, 'age']);
+            $output['age'] = $data->age->get();
         }
 
+        $output['type'] = $data->type;
+        $output['childOneField'] = $data->childOneField;
         return $output;
-    }
-
-    /**
-     * @param  Optional<int> $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapAge(mixed $data, array $path = []): mixed
-    {
-        return $data->get();
     }
 }

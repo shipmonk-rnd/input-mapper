@@ -4,7 +4,6 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapper\Runtime\OutputMapper;
 use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 
@@ -22,27 +21,19 @@ class DelegateToPerson__PersonInputOutputMapper implements OutputMapper
     /**
      * @param  PersonInput $data
      * @param  list<string|int> $path
+     * @return array{id: int, name: string, age?: int}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $output = ['id' => $data->id, 'name' => $data->name];
+        $output = [];
+        $output['id'] = $data->id;
+        $output['name'] = $data->name;
 
         if ($data->age->isDefined()) {
-            $output['age'] = $this->mapAge($data->age, [...$path, 'age']);
+            $output['age'] = $data->age->get();
         }
 
         return $output;
-    }
-
-    /**
-     * @param  Optional<int> $data
-     * @param  list<string|int> $path
-     * @return int
-     * @throws MappingFailedException
-     */
-    private function mapAge(mixed $data, array $path = []): mixed
-    {
-        return $data->get();
     }
 }

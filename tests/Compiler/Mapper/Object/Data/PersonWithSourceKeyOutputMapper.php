@@ -21,6 +21,7 @@ class PersonWithSourceKeyOutputMapper implements OutputMapper
     /**
      * @param  PersonWithSourceKeyInput $data
      * @param  list<string|int> $path
+     * @return array{id: int, full_name: string}
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): mixed

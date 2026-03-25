@@ -43,10 +43,10 @@ class RoundTripTest extends InputMapperTestCase
 
     public function testNestedObjectsWithOptionalPresent(): void
     {
-        // Optional fields (description, age) appear after non-optional fields in output
         $data = [
             'id' => 1,
             'title' => 'The Matrix',
+            'description' => 'Sci-fi movie',
             'year' => 1_999,
             'genres' => ['Action', 'Sci-Fi'],
             'director' => ['id' => 7, 'name' => 'Lana Wachowski'],
@@ -54,7 +54,6 @@ class RoundTripTest extends InputMapperTestCase
                 ['id' => 8, 'name' => 'Keanu Reeves', 'age' => 56],
                 ['id' => 9, 'name' => 'Laurence Fishburne'],
             ],
-            'description' => 'Sci-fi movie',
         ];
         self::assertSame($data, $this->roundTrip(MovieInput::class, $data));
     }
@@ -132,10 +131,10 @@ class RoundTripTest extends InputMapperTestCase
 
     public function testCombinationOfAllTypes(): void
     {
-        // Optional fields (description, age) placed after non-optional fields in output
         $data = [
             'id' => 1,
             'title' => 'Complex Movie',
+            'description' => 'A movie with all types',
             'year' => 2024,
             'genres' => ['Action', 'Drama', 'Comedy'],
             'director' => ['id' => 10, 'name' => 'Director', 'age' => 45],
@@ -143,7 +142,6 @@ class RoundTripTest extends InputMapperTestCase
                 ['id' => 11, 'name' => 'Actor One', 'age' => 30],
                 ['id' => 12, 'name' => 'Actor Two'],
             ],
-            'description' => 'A movie with all types',
         ];
         self::assertSame($data, $this->roundTrip(MovieInput::class, $data));
     }
@@ -204,8 +202,8 @@ class RoundTripTest extends InputMapperTestCase
             'childOneField' => 'extra',
             'id' => 1,
             'name' => 'Alice',
-            'type' => 'childOne',
             'age' => 30,
+            'type' => 'childOne',
         ];
         self::assertSame($expectedOutput, $this->roundTrip(HierarchicalParentInput::class, $inputData));
     }

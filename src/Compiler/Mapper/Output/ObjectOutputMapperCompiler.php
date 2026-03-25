@@ -4,13 +4,14 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
 use Nette\Utils\Arrays;
 use PhpParser\Node\Expr;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function count;
@@ -41,66 +42,83 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
-        $statements = [];
-        $arrayItems = [];
         $hasOptionalProperties = false;
 
-        foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
+        foreach ($this->propertyMapperCompilers as [$outputKey, $propertyMapperCompiler]) {
             if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
                 $hasOptionalProperties = true;
+                break;
             }
         }
 
-        $optionalStatements = [];
-
-        foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
-            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
-                $hasOptionalProperties = true;
-            }
+        if ($hasOptionalProperties) {
+            return $this->compileWithOptionalProperties($value, $path, $builder);
         }
 
-        $outputVariableName = $hasOptionalProperties ? $builder->uniqVariableName('output') : null;
+        $arrayItems = [];
 
         foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
             $propertyAccess = $builder->propertyFetch($value, $propertyName);
+            $mappedValue = $this->compilePropertyValue($propertyAccess, $path, $propertyName, $propertyMapperCompiler, $builder);
+            $arrayItems[] = $builder->arrayItem($mappedValue, $builder->val($outputKey));
+        }
 
-            if ($propertyMapperCompiler instanceof PassthroughMapperCompiler) {
-                $mappedValue = $propertyAccess;
-            } else {
-                $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyName));
-                $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
-                $propertyMapperMethod = $builder->outputMapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
-                $mappedValue = $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);
-                $builder->addMethod($propertyMapperMethod);
-            }
+        return new CompiledExpr($builder->array($arrayItems));
+    }
 
-            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler && $outputVariableName !== null) {
-                $optionalStatements[] = $builder->if(
+    private function compileWithOptionalProperties(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
+    {
+        $outputVariableName = $builder->uniqVariableName('output');
+        $statements = [
+            $builder->assign($builder->var($outputVariableName), $builder->val([])),
+        ];
+
+        foreach ($this->propertyMapperCompilers as $propertyName => [$outputKey, $propertyMapperCompiler]) {
+            $propertyAccess = $builder->propertyFetch($value, $propertyName);
+            $mappedValue = $this->compilePropertyValue($propertyAccess, $path, $propertyName, $propertyMapperCompiler, $builder);
+
+            $assignment = $builder->assign(
+                $builder->arrayDimFetch($builder->var($outputVariableName), $builder->val($outputKey)),
+                $mappedValue,
+            );
+
+            if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
+                $statements[] = $builder->if(
                     $builder->methodCall($propertyAccess, 'isDefined'),
-                    [
-                        $builder->assign(
-                            $builder->arrayDimFetch($builder->var($outputVariableName), $builder->val($outputKey)),
-                            $mappedValue,
-                        ),
-                    ],
+                    [$assignment],
                 );
             } else {
-                $arrayItems[] = $builder->arrayItem($mappedValue, $builder->val($outputKey));
+                $statements[] = $assignment;
             }
         }
 
-        if ($outputVariableName !== null) {
-            $statements = [
-                $builder->assign($builder->var($outputVariableName), $builder->array($arrayItems)),
-                ...$optionalStatements,
-            ];
-            return new CompiledExpr($builder->var($outputVariableName), $statements);
+        return new CompiledExpr($builder->var($outputVariableName), $statements);
+    }
+
+    private function compilePropertyValue(
+        Expr $propertyAccess,
+        Expr $path,
+        string $propertyName,
+        MapperCompiler $propertyMapperCompiler,
+        PhpCodeBuilder $builder,
+    ): Expr
+    {
+        $propertyPath = $builder->arrayImmutableAppend($path, $builder->val($propertyName));
+        $compiled = $propertyMapperCompiler->compile($propertyAccess, $propertyPath, $builder);
+
+        if ($compiled->statements === []) {
+            return $compiled->expr;
         }
 
-        return new CompiledExpr(
-            $builder->array($arrayItems),
-            $statements,
-        );
+        $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
+        $propertyMapperMethod = $builder->outputMapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
+        $builder->addMethod($propertyMapperMethod);
+
+        return $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);
     }
 
     public function getInputType(): TypeNode
@@ -121,7 +139,18 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode('mixed');
+        $items = [];
+
+        foreach ($this->propertyMapperCompilers as [$outputKey, $propertyMapperCompiler]) {
+            $optional = $propertyMapperCompiler instanceof OptionalOutputMapperCompiler;
+            $items[] = new ArrayShapeItemNode(
+                new IdentifierTypeNode($outputKey),
+                $optional,
+                $propertyMapperCompiler->getOutputType(),
+            );
+        }
+
+        return ArrayShapeNode::createSealed($items);
     }
 
     /**
