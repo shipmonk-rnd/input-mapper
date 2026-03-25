@@ -10,6 +10,6 @@ interface NarrowingValidatorCompiler extends ValidatorCompiler
     /**
      * Must return subtype of input type returned by {@link self::getInputType()}.
      */
-    public function getNarrowedInputType(): TypeNode;
+    public function getNarrowedType(): TypeNode;
 
 }

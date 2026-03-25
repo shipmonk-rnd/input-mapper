@@ -4,18 +4,18 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Scalar\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\BoolInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_bool;
 
 /**
  * Generated mapper by {@see BoolInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<bool>
+ * @implements Mapper<mixed, bool>
  */
-class BoolMapper implements InputMapper
+class BoolMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

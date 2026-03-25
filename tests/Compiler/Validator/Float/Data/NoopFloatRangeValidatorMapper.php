@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Float\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function floatval;
 use function is_finite;
 use function is_float;
@@ -14,15 +14,15 @@ use function is_int;
 /**
  * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<float>
+ * @implements Mapper<mixed, float>
  */
-class NoopFloatRangeValidatorMapper implements InputMapper
+class NoopFloatRangeValidatorMapper implements Mapper
 {
     private const MIN_SAFE_INTEGER = -9007199254740991;
 
     private const MAX_SAFE_INTEGER = 9007199254740991;
 
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

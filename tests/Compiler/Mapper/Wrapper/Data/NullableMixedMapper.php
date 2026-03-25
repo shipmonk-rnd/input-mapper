@@ -4,17 +4,17 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
  * Generated mapper by {@see NullableInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<mixed>
+ * @implements Mapper<mixed, mixed>
  */
-class NullableMixedMapper implements InputMapper
+class NullableMixedMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

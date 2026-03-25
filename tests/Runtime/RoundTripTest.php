@@ -2,10 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Runtime;
 
-use ShipMonk\InputMapper\Runtime\CallbackInputMapper;
-use ShipMonk\InputMapper\Runtime\CallbackOutputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\CallbackMapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput;
@@ -23,16 +21,12 @@ use function sys_get_temp_dir;
 class RoundTripTest extends InputMapperTestCase
 {
 
-    private InputMapperProvider $inputMapperProvider;
-
-    private OutputMapperProvider $outputMapperProvider;
+    private MapperProvider $mapperProvider;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $tempDir = sys_get_temp_dir();
-        $this->inputMapperProvider = new InputMapperProvider($tempDir, autoRefresh: true);
-        $this->outputMapperProvider = new OutputMapperProvider($tempDir, autoRefresh: true);
+        $this->mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true);
     }
 
     public function testFlatScalarDto(): void
@@ -109,13 +103,13 @@ class RoundTripTest extends InputMapperTestCase
 
     public function testGenericClassWithInts(): void
     {
-        /** @var CallbackInputMapper<int> $intInputMapper */
-        $intInputMapper = new CallbackInputMapper(static fn (mixed $data): mixed => $data);
-        /** @var CallbackOutputMapper<mixed> $intOutputMapper */
-        $intOutputMapper = new CallbackOutputMapper(static fn (mixed $data): mixed => $data);
+        /** @var CallbackMapper<mixed, int> $intInputMapper */
+        $intInputMapper = new CallbackMapper(static fn (mixed $data): mixed => $data);
+        /** @var CallbackMapper<mixed, mixed> $intOutputMapper */
+        $intOutputMapper = new CallbackMapper(static fn (mixed $data): mixed => $data);
 
-        $inputMapper = $this->inputMapperProvider->get(CollectionInput::class, [$intInputMapper]);
-        $outputMapper = $this->outputMapperProvider->get(CollectionInput::class, [$intOutputMapper]);
+        $inputMapper = $this->mapperProvider->getInputMapper(CollectionInput::class, [$intInputMapper]);
+        $outputMapper = $this->mapperProvider->getOutputMapper(CollectionInput::class, [$intOutputMapper]);
 
         $data = ['items' => [1, 2, 3], 'size' => 3];
         $object = $inputMapper->map($data);
@@ -237,8 +231,8 @@ class RoundTripTest extends InputMapperTestCase
         array $data,
     ): mixed
     {
-        $object = $this->inputMapperProvider->get($className)->map($data);
-        return $this->outputMapperProvider->get($className)->map($object);
+        $object = $this->mapperProvider->getInputMapper($className)->map($data);
+        return $this->mapperProvider->getOutputMapper($className)->map($object);
     }
 
 }

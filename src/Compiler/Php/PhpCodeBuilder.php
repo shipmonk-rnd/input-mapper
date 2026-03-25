@@ -57,10 +57,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_column;
 use function array_fill_keys;
 use function array_filter;
@@ -603,7 +601,7 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperConstructorPhpDocLines = [];
         $mapperConstructorBuilder = $this->method('__construct');
 
-        $providerParameter = $this->param('provider')->setType($this->importClass(InputMapperProvider::class))->getNode();
+        $providerParameter = $this->param('provider')->setType($this->importClass(MapperProvider::class))->getNode();
         $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
         $mapperConstructorBuilder->addParam($providerParameter);
 
@@ -617,7 +615,7 @@ class PhpCodeBuilder extends BuilderFactory
                 static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
                     return new ArrayShapeItemNode(
                         keyName: null,
-                        valueType: new GenericTypeNode(new IdentifierTypeNode(InputMapper::class), [new IdentifierTypeNode($genericParameter->name)]),
+                        valueType: new GenericTypeNode(new IdentifierTypeNode(Mapper::class), [new IdentifierTypeNode('mixed'), new IdentifierTypeNode($genericParameter->name)]),
                         optional: false,
                     );
                 },
@@ -650,8 +648,8 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
         $implementsType = new GenericTypeNode(
-            new IdentifierTypeNode($this->importClass(InputMapper::class)),
-            [$outputType],
+            new IdentifierTypeNode($this->importClass(Mapper::class)),
+            [new IdentifierTypeNode('mixed'), $outputType],
         );
 
         $phpDocLines = [
@@ -679,7 +677,7 @@ class PhpCodeBuilder extends BuilderFactory
 
         return $this->class($shortClassName)
             ->setDocComment($phpDoc)
-            ->implement($this->importClass(InputMapper::class))
+            ->implement($this->importClass(Mapper::class))
             ->addStmts($constants)
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
@@ -758,7 +756,7 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperConstructorPhpDocLines = [];
         $mapperConstructorBuilder = $this->method('__construct');
 
-        $providerParameter = $this->param('provider')->setType($this->importClass(OutputMapperProvider::class))->getNode();
+        $providerParameter = $this->param('provider')->setType($this->importClass(MapperProvider::class))->getNode();
         $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
         $mapperConstructorBuilder->addParam($providerParameter);
 
@@ -772,7 +770,7 @@ class PhpCodeBuilder extends BuilderFactory
                 static function (GenericTypeParameter $genericParameter): ArrayShapeItemNode {
                     return new ArrayShapeItemNode(
                         keyName: null,
-                        valueType: new GenericTypeNode(new IdentifierTypeNode(OutputMapper::class), [new IdentifierTypeNode($genericParameter->name)]),
+                        valueType: new GenericTypeNode(new IdentifierTypeNode(Mapper::class), [new IdentifierTypeNode($genericParameter->name), new IdentifierTypeNode('mixed')]),
                         optional: false,
                     );
                 },
@@ -805,8 +803,8 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
         $implementsType = new GenericTypeNode(
-            new IdentifierTypeNode($this->importClass(OutputMapper::class)),
-            [$inputType],
+            new IdentifierTypeNode($this->importClass(Mapper::class)),
+            [$inputType, new IdentifierTypeNode('mixed')],
         );
 
         $phpDocLines = [
@@ -834,7 +832,7 @@ class PhpCodeBuilder extends BuilderFactory
 
         return $this->class($shortClassName)
             ->setDocComment($phpDoc)
-            ->implement($this->importClass(OutputMapper::class))
+            ->implement($this->importClass(Mapper::class))
             ->addStmts($constants)
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)

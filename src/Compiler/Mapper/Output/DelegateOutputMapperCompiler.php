@@ -2,60 +2,19 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
-use Nette\Utils\Arrays;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\VariadicPlaceholder;
-use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PhpParser\Builder\Method;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Mapper\AbstractDelegateMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
-use ShipMonk\InputMapper\Runtime\CallbackOutputMapper;
-use function count;
 
-class DelegateOutputMapperCompiler implements MapperCompiler
+class DelegateOutputMapperCompiler extends AbstractDelegateMapperCompiler
 {
-
-    /**
-     * @param list<MapperCompiler> $innerMapperCompilers
-     */
-    public function __construct(
-        public readonly string $className,
-        public readonly array $innerMapperCompilers = [],
-    )
-    {
-    }
-
-    public function compile(
-        Expr $value,
-        Expr $path,
-        PhpCodeBuilder $builder,
-    ): CompiledExpr
-    {
-        $compilerMapper = $this->compileMapperExpr($builder);
-        $mapper = $compilerMapper->expr;
-        $statements = $compilerMapper->statements;
-        $mapped = $builder->methodCall($mapper, 'map', [$value, $path]);
-
-        return new CompiledExpr($mapped, $statements);
-    }
 
     public function getInputType(): TypeNode
     {
-        $inputType = new IdentifierTypeNode($this->className);
-
-        if (count($this->innerMapperCompilers) === 0) {
-            return $inputType;
-        }
-
-        return new GenericTypeNode($inputType, Arrays::map(
-            $this->innerMapperCompilers,
-            static function (MapperCompiler $innerMapperCompiler): TypeNode {
-                return $innerMapperCompiler->getInputType();
-            },
-        ));
+        return $this->getClassType(static fn (MapperCompiler $mc): TypeNode => $mc->getInputType());
     }
 
     public function getOutputType(): TypeNode
@@ -63,66 +22,18 @@ class DelegateOutputMapperCompiler implements MapperCompiler
         return new IdentifierTypeNode('mixed'); // exact type unknown because the delegate mapper is resolved at runtime
     }
 
-    /**
-     * @return list<Expr>
-     */
-    private function compileInnerMappers(PhpCodeBuilder $builder): array
+    protected function getProviderMethodName(): string
     {
-        $innerMappers = [];
-
-        foreach ($this->innerMapperCompilers as $key => $innerMapperCompiler) {
-            $innerMappers[] = $this->compileInnerMapper($innerMapperCompiler, $key, $builder);
-        }
-
-        return $innerMappers;
+        return 'getOutputMapper';
     }
 
-    private function compileInnerMapper(
-        MapperCompiler $innerMapperCompiler,
-        int $key,
+    protected function buildMapperMethod(
+        string $methodName,
+        MapperCompiler $mapperCompiler,
         PhpCodeBuilder $builder,
-    ): Expr
+    ): Method
     {
-        if ($innerMapperCompiler instanceof self && count($innerMapperCompiler->innerMapperCompilers) === 0) {
-            $provider = $builder->propertyFetch($builder->var('this'), 'provider');
-            $innerClassExpr = $builder->classConstFetch($builder->importClass($innerMapperCompiler->className), 'class');
-            return $builder->methodCall($provider, 'get', [$innerClassExpr]);
-        }
-
-        $innerMapperMethodName = $builder->uniqMethodName("mapInner{$key}");
-        $innerMapperMethod = $builder->outputMapperMethod($innerMapperMethodName, $innerMapperCompiler)->makePrivate()->getNode();
-        $builder->addMethod($innerMapperMethod);
-
-        $innerMapperMethodCallback = new MethodCall($builder->var('this'), $innerMapperMethodName, [new VariadicPlaceholder()]);
-        return $builder->new($builder->importClass(CallbackOutputMapper::class), [$innerMapperMethodCallback]);
-    }
-
-    private function compileMapperExpr(PhpCodeBuilder $builder): CompiledExpr
-    {
-        foreach ($builder->getGenericParameters() as $offset => $genericParameter) {
-            if ($this->className === $genericParameter->name) {
-                $innerMappers = $builder->propertyFetch($builder->var('this'), 'innerMappers');
-                $innerMapper = $builder->arrayDimFetch($innerMappers, $builder->val($offset));
-                return new CompiledExpr($innerMapper);
-            }
-        }
-
-        $statements = [];
-        $classNameExpr = $builder->classConstFetch($builder->importClass($this->className), 'class');
-        $provider = $builder->propertyFetch($builder->var('this'), 'provider');
-        $innerMappers = $this->compileInnerMappers($builder);
-
-        if (count($innerMappers) > 0) {
-            $innerMappersVarName = $builder->uniqVariableName('innerMappers');
-            $statements[] = $builder->assign($builder->var($innerMappersVarName), $builder->val($innerMappers));
-            $getArguments = [$classNameExpr, $builder->var($innerMappersVarName)];
-
-        } else {
-            $getArguments = [$classNameExpr];
-        }
-
-        $mapper = $builder->methodCall($provider, 'get', $getArguments);
-        return new CompiledExpr($mapper, $statements);
+        return $builder->outputMapperMethod($methodName, $mapperCompiler);
     }
 
 }

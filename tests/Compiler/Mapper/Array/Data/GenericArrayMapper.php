@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -13,11 +13,11 @@ use function is_string;
 /**
  * Generated mapper by {@see ArrayInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<array<string, int>>
+ * @implements Mapper<mixed, array<string, int>>
  */
-class GenericArrayMapper implements InputMapper
+class GenericArrayMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function array_diff_key;
@@ -20,11 +20,11 @@ use function is_string;
 /**
  * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<MovieInput>
+ * @implements Mapper<mixed, MovieInput>
  */
-class MovieMapper implements InputMapper
+class MovieMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 
@@ -163,7 +163,7 @@ class MovieMapper implements InputMapper
      */
     private function mapDirector(mixed $data, array $path = []): PersonInput
     {
-        return $this->provider->get(PersonInput::class)->map($data, $path);
+        return $this->provider->getInputMapper(PersonInput::class)->map($data, $path);
     }
 
     /**
@@ -180,7 +180,7 @@ class MovieMapper implements InputMapper
         $mapped = [];
 
         foreach ($data as $index => $item) {
-            $mapped[] = $this->provider->get(PersonInput::class)->map($item, [...$path, $index]);
+            $mapped[] = $this->provider->getInputMapper(PersonInput::class)->map($item, [...$path, $index]);
         }
 
         return $mapped;

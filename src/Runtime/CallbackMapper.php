@@ -6,14 +6,15 @@ use Closure;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
- * @template-covariant T
- * @implements InputMapper<T>
+ * @template-contravariant I
+ * @template-covariant O
+ * @implements Mapper<I, O>
  */
-class CallbackInputMapper implements InputMapper
+class CallbackMapper implements Mapper
 {
 
     /**
-     * @param Closure(mixed, list<string|int>): T $callback
+     * @param Closure(I, list<string|int>): O $callback
      */
     public function __construct(
         private readonly Closure $callback,
@@ -22,8 +23,9 @@ class CallbackInputMapper implements InputMapper
     }
 
     /**
+     * @param I $data
      * @param list<string|int> $path
-     * @return T
+     * @return O
      *
      * @throws MappingFailedException
      */

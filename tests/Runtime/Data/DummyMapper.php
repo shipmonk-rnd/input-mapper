@@ -2,12 +2,12 @@
 
 namespace ShipMonk\InputMapperTests\Runtime\Data;
 
-use ShipMonk\InputMapper\Runtime\InputMapper;
+use ShipMonk\InputMapper\Runtime\Mapper;
 
 /**
- * @implements InputMapper<mixed>
+ * @implements Mapper<mixed, mixed>
  */
-class DummyMapper implements InputMapper
+class DummyMapper implements Mapper
 {
 
     /**

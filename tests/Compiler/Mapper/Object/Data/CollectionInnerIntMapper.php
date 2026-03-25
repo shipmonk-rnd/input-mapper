@@ -4,18 +4,18 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
 /**
  * Generated mapper by {@see IntInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<int>
+ * @implements Mapper<mixed, int>
  */
-class CollectionInnerIntMapper implements InputMapper
+class CollectionInnerIntMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

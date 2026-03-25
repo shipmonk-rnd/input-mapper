@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Runtime;
 
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\DummyOutputMapper;
 use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
@@ -18,17 +18,17 @@ class OutputMapperProviderTest extends InputMapperTestCase
         $myCustomMapper = new DummyOutputMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(
+        $mapperProvider->registerOutputFactory(
             EmptyInput::class,
-            static function (string $inputClassName, array $innerMappers, OutputMapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyOutputMapper {
+            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyOutputMapper {
                 self::assertSame(EmptyInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;
             },
         );
 
-        self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
-        self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getOutputMapper(EmptyInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getOutputMapper(EmptyInput::class));
     }
 
     public function testGetCustomMapperForInterfaceImplementationInput(): void
@@ -36,17 +36,17 @@ class OutputMapperProviderTest extends InputMapperTestCase
         $myCustomMapper = new DummyOutputMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(
+        $mapperProvider->registerOutputFactory(
             InputInterface::class,
-            static function (string $inputClassName, array $innerMappers, OutputMapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyOutputMapper {
+            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyOutputMapper {
                 self::assertSame(InterfaceImplementationInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;
             },
         );
 
-        self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
-        self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getOutputMapper(InterfaceImplementationInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getOutputMapper(InterfaceImplementationInput::class));
     }
 
     public function testCachingReturnsSameInstance(): void
@@ -55,7 +55,7 @@ class OutputMapperProviderTest extends InputMapperTestCase
         $callCount = 0;
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(
+        $mapperProvider->registerOutputFactory(
             EmptyInput::class,
             static function () use ($myCustomMapper, &$callCount): DummyOutputMapper {
                 $callCount++;
@@ -63,17 +63,17 @@ class OutputMapperProviderTest extends InputMapperTestCase
             },
         );
 
-        $mapper1 = $mapperProvider->get(EmptyInput::class);
-        $mapper2 = $mapperProvider->get(EmptyInput::class);
+        $mapper1 = $mapperProvider->getOutputMapper(EmptyInput::class);
+        $mapper2 = $mapperProvider->getOutputMapper(EmptyInput::class);
 
         self::assertSame($mapper1, $mapper2);
         self::assertSame(1, $callCount);
     }
 
-    private function createMapperProvider(): OutputMapperProvider
+    private function createMapperProvider(): MapperProvider
     {
         $tempDir = sys_get_temp_dir();
-        return new OutputMapperProvider($tempDir, autoRefresh: true);
+        return new MapperProvider($tempDir, autoRefresh: true);
     }
 
 }

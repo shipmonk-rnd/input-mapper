@@ -4,18 +4,18 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
 
 /**
  * Generated mapper by {@see OptionalOutputMapperCompiler}. Do not edit directly.
  *
- * @implements OutputMapper<Optional<int>>
+ * @implements Mapper<Optional<int>, mixed>
  */
-class OptionalIntOutputMapper implements OutputMapper
+class OptionalIntOutputMapper implements Mapper
 {
-    public function __construct(private readonly OutputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

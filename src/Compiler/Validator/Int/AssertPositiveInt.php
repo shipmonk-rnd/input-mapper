@@ -17,7 +17,7 @@ class AssertPositiveInt extends AssertIntRange
         );
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         return new IdentifierTypeNode('positive-int');
     }

@@ -5,17 +5,17 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
  * Generated mapper by {@see DateTimeImmutableOutputMapperCompiler}. Do not edit directly.
  *
- * @implements OutputMapper<DateTimeImmutable>
+ * @implements Mapper<DateTimeImmutable, mixed>
  */
-class DateTimeImmutableMultiFormatOutputMapper implements OutputMapper
+class DateTimeImmutableMultiFormatOutputMapper implements Mapper
 {
-    public function __construct(private readonly OutputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

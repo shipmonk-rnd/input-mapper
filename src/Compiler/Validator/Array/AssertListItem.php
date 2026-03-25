@@ -78,13 +78,13 @@ class AssertListItem implements NarrowingValidatorCompiler
         );
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         $validatorOutputTypes = [];
 
         foreach ($this->validators as $validator) {
             $validatorOutputTypes[] = $validator instanceof NarrowingValidatorCompiler
-                ? $validator->getNarrowedInputType()
+                ? $validator->getNarrowedType()
                 : $validator->getInputType();
         }
 

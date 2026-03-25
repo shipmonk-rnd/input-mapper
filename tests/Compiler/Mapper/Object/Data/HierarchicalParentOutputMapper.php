@@ -4,17 +4,17 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
  * Generated mapper by {@see DiscriminatedObjectOutputMapperCompiler}. Do not edit directly.
  *
- * @implements OutputMapper<HierarchicalParentInput>
+ * @implements Mapper<HierarchicalParentInput, mixed>
  */
-class HierarchicalParentOutputMapper implements OutputMapper
+class HierarchicalParentOutputMapper implements Mapper
 {
-    public function __construct(private readonly OutputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 
@@ -39,7 +39,7 @@ class HierarchicalParentOutputMapper implements OutputMapper
      */
     private function mapChildOne(mixed $data, array $path = []): mixed
     {
-        return $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path);
+        return $this->provider->getOutputMapper(HierarchicalChildOneInput::class)->map($data, $path);
     }
 
     /**
@@ -49,6 +49,6 @@ class HierarchicalParentOutputMapper implements OutputMapper
      */
     private function mapChildTwo(mixed $data, array $path = []): mixed
     {
-        return $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path);
+        return $this->provider->getOutputMapper(HierarchicalChildTwoInput::class)->map($data, $path);
     }
 }

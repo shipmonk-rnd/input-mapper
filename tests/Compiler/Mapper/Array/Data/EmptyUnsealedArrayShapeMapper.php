@@ -4,18 +4,18 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_array;
 
 /**
  * Generated mapper by {@see ArrayShapeInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<array{...}>
+ * @implements Mapper<mixed, array{...}>
  */
-class EmptyUnsealedArrayShapeMapper implements InputMapper
+class EmptyUnsealedArrayShapeMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

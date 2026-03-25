@@ -93,7 +93,7 @@ class AssertListLength implements NarrowingValidatorCompiler
         return new IdentifierTypeNode('list');
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         $itemType = new IdentifierTypeNode('mixed');
 

@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapper\Runtime\OptionalSome;
 use function array_key_exists;
@@ -16,11 +16,11 @@ use function is_string;
 /**
  * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<PersonInput>
+ * @implements Mapper<mixed, PersonInput>
  */
-class PersonWithAllowedExtraPropertiesMapper implements InputMapper
+class PersonWithAllowedExtraPropertiesMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

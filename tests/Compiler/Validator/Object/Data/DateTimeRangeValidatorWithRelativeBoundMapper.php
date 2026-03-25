@@ -5,18 +5,18 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Object\Data;
 use DateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
  * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<DateTimeImmutable>
+ * @implements Mapper<mixed, DateTimeImmutable>
  */
-class DateTimeRangeValidatorWithRelativeBoundMapper implements InputMapper
+class DateTimeRangeValidatorWithRelativeBoundMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

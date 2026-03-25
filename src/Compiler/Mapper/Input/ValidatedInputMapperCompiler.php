@@ -74,7 +74,7 @@ class ValidatedInputMapperCompiler implements MapperCompiler
 
         foreach ($this->validatorCompilers as $validatorCompiler) {
             if ($validatorCompiler instanceof NarrowingValidatorCompiler) {
-                $outputTypes[] = $validatorCompiler->getNarrowedInputType();
+                $outputTypes[] = $validatorCompiler->getNarrowedType();
             }
         }
 

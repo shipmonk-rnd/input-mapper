@@ -114,7 +114,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         string $expectedNarrowedType,
     ): void
     {
-        self::assertSame($expectedNarrowedType, $validatorCompiler->getNarrowedInputType()->__toString());
+        self::assertSame($expectedNarrowedType, $validatorCompiler->getNarrowedType()->__toString());
     }
 
     /**

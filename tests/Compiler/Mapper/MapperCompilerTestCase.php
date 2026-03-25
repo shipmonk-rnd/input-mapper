@@ -6,8 +6,8 @@ use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use function assert;
 use function class_exists;
@@ -23,15 +23,15 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
     /**
      * @param array<class-string, MapperCompiler> $providedMapperCompilers
-     * @param list<InputMapper<mixed>> $innerMappers
-     * @return InputMapper<mixed>
+     * @param list<Mapper<mixed, mixed>> $innerMappers
+     * @return Mapper<mixed, mixed>
      */
     protected function compileMapper(
         string $name,
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers = [],
         array $innerMappers = [],
-    ): InputMapper
+    ): Mapper
     {
         $testCaseReflection = new ReflectionClass($this);
 
@@ -51,16 +51,16 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
             require $mapperPath;
         }
 
-        $mapperProvider = $this->createMock(InputMapperProvider::class);
+        $mapperProvider = $this->createMock(MapperProvider::class);
 
-        $mapperProvider->expects(self::any())->method('get')->willReturnCallback(
-            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): InputMapper {
-                /** @var list<InputMapper<mixed>> $innerMappers */
+        $mapperProvider->expects(self::any())->method('getInputMapper')->willReturnCallback(
+            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): Mapper {
+                /** @var list<Mapper<mixed, mixed>> $innerMappers */
                 return $this->compileMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $innerMappers);
             },
         );
 
-        assert(is_a($mapperClassName, InputMapper::class, true));
+        assert(is_a($mapperClassName, Mapper::class, true));
         return new $mapperClassName($mapperProvider, $innerMappers);
     }
 

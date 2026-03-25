@@ -6,18 +6,18 @@ use DateTimeImmutable;
 use DateTimeZone;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
  * Generated mapper by {@see DateTimeImmutableInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<DateTimeImmutable>
+ * @implements Mapper<mixed, DateTimeImmutable>
  */
-class DateTimeImmutableWithTimeZoneMapper implements InputMapper
+class DateTimeImmutableWithTimeZoneMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

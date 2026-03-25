@@ -4,21 +4,21 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
  * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
  *
  * @template T
- * @implements OutputMapper<CollectionInput<T>>
+ * @implements Mapper<CollectionInput<T>, mixed>
  */
-class DelegateToEnumCollection__CollectionInputOutputMapper implements OutputMapper
+class DelegateToEnumCollection__CollectionInputOutputMapper implements Mapper
 {
     /**
-     * @param array{OutputMapper<T>} $innerMappers
+     * @param array{Mapper<T, mixed>} $innerMappers
      */
-    public function __construct(private readonly OutputMapperProvider $provider, private readonly array $innerMappers)
+    public function __construct(private readonly MapperProvider $provider, private readonly array $innerMappers)
     {
     }
 

@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Array\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_is_list;
 use function count;
 use function is_array;
@@ -13,11 +13,11 @@ use function is_array;
 /**
  * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<list<mixed>>
+ * @implements Mapper<mixed, list<mixed>>
  */
-class NoopListLengthValidatorMapper implements InputMapper
+class NoopListLengthValidatorMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 

@@ -3,19 +3,19 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
-use ShipMonk\InputMapper\Runtime\CallbackOutputMapper;
+use ShipMonk\InputMapper\Runtime\CallbackMapper;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\OutputMapper;
-use ShipMonk\InputMapper\Runtime\OutputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
  * Generated mapper by {@see DelegateOutputMapperCompiler}. Do not edit directly.
  *
- * @implements OutputMapper<CollectionInput<int>>
+ * @implements Mapper<CollectionInput<int>, mixed>
  */
-class DelegateToIntCollectionOutputMapper implements OutputMapper
+class DelegateToIntCollectionOutputMapper implements Mapper
 {
-    public function __construct(private readonly OutputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 
@@ -26,8 +26,8 @@ class DelegateToIntCollectionOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $innerMappers = [new CallbackOutputMapper($this->mapInner0(...))];
-        return $this->provider->get(CollectionInput::class, $innerMappers)->map($data, $path);
+        $innerMappers = [new CallbackMapper($this->mapInner0(...))];
+        return $this->provider->getOutputMapper(CollectionInput::class, $innerMappers)->map($data, $path);
     }
 
     /**

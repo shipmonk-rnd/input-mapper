@@ -3,8 +3,8 @@
 namespace ShipMonk\InputMapperTests\Runtime;
 
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\DummyMapper;
@@ -21,10 +21,10 @@ class InputMapperProviderTest extends InputMapperTestCase
     public function testGetMapperForEmptyInput(): void
     {
         $mapperProvider = $this->createMapperProvider();
-        $mapper = $mapperProvider->get(EmptyInput::class);
-        self::assertInstanceOf(InputMapper::class, $mapper); // @phpstan-ignore-line always true
+        $mapper = $mapperProvider->getInputMapper(EmptyInput::class);
+        self::assertInstanceOf(Mapper::class, $mapper); // @phpstan-ignore-line always true
         self::assertInstanceOf(EmptyInput::class, $mapper->map([])); // @phpstan-ignore-line always true
-        self::assertSame($mapper, $mapperProvider->get(EmptyInput::class));
+        self::assertSame($mapper, $mapperProvider->getInputMapper(EmptyInput::class));
     }
 
     public function testGetCustomMapperForEmptyInput(): void
@@ -32,17 +32,17 @@ class InputMapperProviderTest extends InputMapperTestCase
         $myCustomMapper = new DummyMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(
+        $mapperProvider->registerInputFactory(
             EmptyInput::class,
-            static function (string $inputClassName, array $innerMappers, InputMapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
                 self::assertSame(EmptyInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;
             },
         );
 
-        self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
-        self::assertSame($myCustomMapper, $mapperProvider->get(EmptyInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(EmptyInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(EmptyInput::class));
     }
 
     public function testGetCustomMapperForInterfaceImplementationInput(): void
@@ -50,23 +50,23 @@ class InputMapperProviderTest extends InputMapperTestCase
         $myCustomMapper = new DummyMapper();
 
         $mapperProvider = $this->createMapperProvider();
-        $mapperProvider->registerFactory(
+        $mapperProvider->registerInputFactory(
             InputInterface::class,
-            static function (string $inputClassName, array $innerMappers, InputMapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
                 self::assertSame(InterfaceImplementationInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;
             },
         );
 
-        self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
-        self::assertSame($myCustomMapper, $mapperProvider->get(InterfaceImplementationInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(InterfaceImplementationInput::class));
+        self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(InterfaceImplementationInput::class));
     }
 
     public function testMapperForOptionalNotNullInput(): void
     {
         $mapperProvider = $this->createMapperProvider();
-        $mapper = $mapperProvider->get(OptionalNotNullInput::class);
+        $mapper = $mapperProvider->getInputMapper(OptionalNotNullInput::class);
         self::assertEquals(new OptionalNotNullInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNotNullInput(Optional::none([], 'number')), $mapper->map([]));
 
@@ -90,7 +90,7 @@ class InputMapperProviderTest extends InputMapperTestCase
     public function testMapperForOptionalNullableInput(): void
     {
         $mapperProvider = $this->createMapperProvider();
-        $mapper = $mapperProvider->get(OptionalNullableInput::class);
+        $mapper = $mapperProvider->getInputMapper(OptionalNullableInput::class);
         self::assertEquals(new OptionalNullableInput(Optional::of(123)), $mapper->map(['number' => 123]));
         self::assertEquals(new OptionalNullableInput(Optional::of(null)), $mapper->map(['number' => null]));
         self::assertEquals(new OptionalNullableInput(Optional::none([], 'number')), $mapper->map([]));
@@ -104,10 +104,10 @@ class InputMapperProviderTest extends InputMapperTestCase
         );
     }
 
-    private function createMapperProvider(): InputMapperProvider
+    private function createMapperProvider(): MapperProvider
     {
         $tempDir = sys_get_temp_dir();
-        return new InputMapperProvider($tempDir, autoRefresh: true);
+        return new MapperProvider($tempDir, autoRefresh: true);
     }
 
 }

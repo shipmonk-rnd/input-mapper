@@ -99,7 +99,7 @@ class AssertIntRange implements NarrowingValidatorCompiler
         return new IdentifierTypeNode('int');
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         $inclusiveLowerBounds = [PHP_INT_MIN];
         $inclusiveUpperBounds = [PHP_INT_MAX];

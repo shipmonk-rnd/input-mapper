@@ -4,8 +4,8 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
-use ShipMonk\InputMapper\Runtime\InputMapper;
-use ShipMonk\InputMapper\Runtime\InputMapperProvider;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
@@ -17,11 +17,11 @@ use function is_string;
 /**
  * Generated mapper by {@see ArrayShapeInputMapperCompiler}. Do not edit directly.
  *
- * @implements InputMapper<array{a: int, b?: string}>
+ * @implements Mapper<mixed, array{a: int, b?: string}>
  */
-class SealedArrayShapeMapper implements InputMapper
+class SealedArrayShapeMapper implements Mapper
 {
-    public function __construct(private readonly InputMapperProvider $provider)
+    public function __construct(private readonly MapperProvider $provider)
     {
     }
 
