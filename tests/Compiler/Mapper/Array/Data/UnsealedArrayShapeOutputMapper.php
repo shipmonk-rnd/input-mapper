@@ -26,8 +26,6 @@ class UnsealedArrayShapeOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $mapped = [];
-        $mapped['a'] = $data['a'];
-        return $mapped;
+        return ['a' => $data['a']];
     }
 }

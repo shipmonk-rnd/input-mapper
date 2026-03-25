@@ -27,9 +27,6 @@ class ArrayShapeWithInlinedExpressionOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $mapped = [];
-        $mapped['name'] = $data['name'];
-        $mapped['suit'] = $data['suit']->value;
-        return $mapped;
+        return ['name' => $data['name'], 'suit' => $data['suit']->value];
     }
 }

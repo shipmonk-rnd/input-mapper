@@ -26,7 +26,6 @@ class EmptyUnsealedArrayShapeOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $mapped = [];
-        return $mapped;
+        return [];
     }
 }
