@@ -33,25 +33,18 @@ class DateTimeImmutableOutputMapperCompiler implements MapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
-        $statements = [];
         $outputExpr = $value;
 
         if ($this->targetTimezone !== null) {
-            $convertedVariableName = $builder->uniqVariableName('converted');
-            $statements[] = $builder->assign(
-                $builder->var($convertedVariableName),
-                $builder->methodCall($value, 'setTimezone', [
-                    $builder->new($builder->importClass(DateTimeZone::class), [$this->targetTimezone]),
-                ]),
-            );
-            $outputExpr = $builder->var($convertedVariableName);
+            $outputExpr = $builder->methodCall($value, 'setTimezone', [
+                $builder->new($builder->importClass(DateTimeZone::class), [$this->targetTimezone]),
+            ]);
         }
 
         $outputFormat = is_array($this->format) ? $this->format[0] : $this->format;
 
         return new CompiledExpr(
             $builder->methodCall($outputExpr, 'format', [$outputFormat]),
-            $statements,
         );
     }
 

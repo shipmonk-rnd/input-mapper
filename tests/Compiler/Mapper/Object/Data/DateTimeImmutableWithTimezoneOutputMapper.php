@@ -28,7 +28,6 @@ class DateTimeImmutableWithTimezoneOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $converted = $data->setTimezone(new DateTimeZone('Europe/Prague'));
-        return $converted->format('Y-m-d\\TH:i:sP');
+        return $data->setTimezone(new DateTimeZone('Europe/Prague'))->format('Y-m-d\\TH:i:sP');
     }
 }
