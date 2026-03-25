@@ -5,9 +5,9 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 use DateTimeImmutable;
 use DateTimeInterface;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
-class DateTimeImmutableOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class DateTimeImmutableOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompileWithDefaultFormat(): void

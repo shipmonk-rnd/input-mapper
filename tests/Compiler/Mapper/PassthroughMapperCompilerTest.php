@@ -5,7 +5,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 
-class PassthroughMapperCompilerTest extends OutputMapperCompilerTestCase
+class PassthroughMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void

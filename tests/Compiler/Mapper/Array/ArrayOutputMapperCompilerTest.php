@@ -6,10 +6,10 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
-class ArrayOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class ArrayOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompilePassthrough(): void

@@ -6,9 +6,9 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
-class OptionalOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class OptionalOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void

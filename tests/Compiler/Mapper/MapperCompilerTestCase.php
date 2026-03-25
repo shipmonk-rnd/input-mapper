@@ -64,6 +64,49 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         return new $mapperClassName($mapperProvider, $innerMappers);
     }
 
+    /**
+     * @param array<class-string, MapperCompiler> $providedMapperCompilers
+     * @param list<Mapper<mixed, mixed>> $innerMappers
+     * @return Mapper<mixed, mixed>
+     */
+    protected function compileOutputMapper(
+        string $name,
+        MapperCompiler $mapperCompiler,
+        array $providedMapperCompilers = [],
+        array $innerMappers = [],
+    ): Mapper
+    {
+        $testCaseReflection = new ReflectionClass($this);
+
+        $mapperShortClassName = ucfirst($name) . 'OutputMapper';
+        $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
+        $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
+
+        $mapperDir = strtr(str_replace('ShipMonk\InputMapperTests', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
+        $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
+
+        $builder = new PhpCodeBuilder();
+        $printer = new PhpCodePrinter();
+        $mapperCode = $printer->prettyPrintFile($builder->outputMapperFile($mapperClassName, $mapperCompiler));
+        self::assertSnapshot($mapperPath, $mapperCode);
+
+        if (!class_exists($mapperClassName, autoload: false)) {
+            require $mapperPath;
+        }
+
+        $mapperProvider = $this->createMock(MapperProvider::class);
+
+        $mapperProvider->expects(self::any())->method('getOutputMapper')->willReturnCallback(
+            function (string $inputClassName, array $innerMappers = []) use ($name, $providedMapperCompilers): Mapper {
+                /** @var list<Mapper<mixed, mixed>> $innerMappers */
+                return $this->compileOutputMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $innerMappers);
+            },
+        );
+
+        assert(is_a($mapperClassName, Mapper::class, true));
+        return new $mapperClassName($mapperProvider, $innerMappers);
+    }
+
     private function toShortClassName(string $className): string
     {
         $pos = strrpos($className, '\\');

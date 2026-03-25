@@ -9,12 +9,12 @@ use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildOneInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalChildTwoInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
-class DiscriminatedObjectOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class DiscriminatedObjectOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void

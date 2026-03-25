@@ -8,13 +8,13 @@ use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonWithNullableAgeInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonWithSourceKeyInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SimplePersonInput;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
-class MapOutputObjectTest extends OutputMapperCompilerTestCase
+class MapOutputObjectTest extends MapperCompilerTestCase
 {
 
     public function testCompileSimplePerson(): void

@@ -3,10 +3,10 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
-class EnumOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class EnumOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void

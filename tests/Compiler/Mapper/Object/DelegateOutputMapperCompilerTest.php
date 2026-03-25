@@ -11,12 +11,12 @@ use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Optional;
+use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\PersonInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
-use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
-class DelegateOutputMapperCompilerTest extends OutputMapperCompilerTestCase
+class DelegateOutputMapperCompilerTest extends MapperCompilerTestCase
 {
 
     public function testCompile(): void
