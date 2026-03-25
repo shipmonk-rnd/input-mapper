@@ -90,7 +90,7 @@ class DiscriminatedObjectOutputMapperCompiler implements GenericMapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode('mixed');
+        return new IdentifierTypeNode('mixed'); // exact type unknown because subtypes are resolved at runtime via delegates
     }
 
     /**
