@@ -60,7 +60,7 @@ class DelegateOutputMapperCompiler implements MapperCompiler
 
     public function getOutputType(): TypeNode
     {
-        return new IdentifierTypeNode('mixed');
+        return new IdentifierTypeNode('mixed'); // exact type unknown because the delegate mapper is resolved at runtime
     }
 
     /**
