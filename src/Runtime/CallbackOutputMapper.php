@@ -6,9 +6,8 @@ use Closure;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
- * @implements OutputMapper<T>
- *
  * @template-contravariant T
+ * @implements OutputMapper<T>
  */
 class CallbackOutputMapper implements OutputMapper
 {

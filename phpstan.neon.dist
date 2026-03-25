@@ -33,8 +33,14 @@ parameters:
 
     ignoreErrors:
         -
-            identifier: property.onlyWritten
+            identifiers:
+                - property.onlyWritten
+                - shipmonk.deadProperty.neverRead
+                - shipmonk.deadEnumCase
             paths: [tests/**/Data/*.php]
+        -
+            identifier: shipmonk.deadProperty.neverRead
+            paths: [src/Compiler/Mapper/Output/DiscriminatedObjectOutputMapperCompiler.php]
         -
             identifier: throws.unusedType
             paths: [tests/**/Data/*.php]
