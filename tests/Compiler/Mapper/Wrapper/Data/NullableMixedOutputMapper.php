@@ -24,12 +24,6 @@ class NullableMixedOutputMapper implements OutputMapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        if ($data === null) {
-            $mapped = null;
-        } else {
-            $mapped = $data;
-        }
-
-        return $mapped;
+        return $data;
     }
 }

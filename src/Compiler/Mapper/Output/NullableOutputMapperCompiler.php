@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 
@@ -24,7 +25,18 @@ class NullableOutputMapperCompiler implements MapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
+        if ($this->innerMapperCompiler instanceof PassthroughMapperCompiler) {
+            return new CompiledExpr($value);
+        }
+
         $mapper = $this->innerMapperCompiler->compile($value, $path, $builder);
+
+        if ($mapper->statements === []) {
+            return new CompiledExpr(
+                $builder->ternary($builder->same($value, $builder->val(null)), $builder->val(null), $mapper->expr),
+            );
+        }
+
         $mappedVariableName = $builder->uniqVariableName('mapped');
 
         $statements = [

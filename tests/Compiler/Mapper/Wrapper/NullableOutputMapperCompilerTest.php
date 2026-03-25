@@ -3,8 +3,10 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
 use ShipMonk\InputMapperTests\Compiler\Mapper\OutputMapperCompilerTestCase;
 
 class NullableOutputMapperCompilerTest extends OutputMapperCompilerTestCase
@@ -28,6 +30,16 @@ class NullableOutputMapperCompilerTest extends OutputMapperCompilerTestCase
         self::assertNull($mapper->map(null));
         self::assertSame(1, $mapper->map(1));
         self::assertSame('A', $mapper->map('A'));
+    }
+
+    public function testCompileWithExpressionOnlyInnerMapper(): void
+    {
+        $mapperCompiler = new NullableOutputMapperCompiler(new EnumOutputMapperCompiler(SuitEnum::class));
+        $mapper = $this->compileOutputMapper('NullableEnum', $mapperCompiler);
+
+        self::assertNull($mapper->map(null));
+        self::assertSame('H', $mapper->map(SuitEnum::Hearts));
+        self::assertSame('S', $mapper->map(SuitEnum::Spades));
     }
 
 }
