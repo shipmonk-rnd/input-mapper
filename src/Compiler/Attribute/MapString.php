@@ -6,6 +6,7 @@ use Attribute;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]

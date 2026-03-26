@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 
 class MapObject implements MapperCompilerProvider

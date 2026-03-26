@@ -2,6 +2,8 @@
 
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+
 class ArrayShapeItemMapping
 {
 

@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\Attribute\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 
 interface MapperCompilerFactory
 {

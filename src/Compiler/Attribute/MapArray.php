@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]

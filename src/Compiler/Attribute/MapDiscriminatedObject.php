@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
