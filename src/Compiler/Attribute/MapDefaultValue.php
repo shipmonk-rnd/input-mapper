@@ -7,11 +7,11 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDefaultValue implements InputMapperCompilerProvider
+class MapDefaultValue implements MapperCompilerProvider
 {
 
     public function __construct(
-        public readonly MapperCompiler $mapperCompiler,
+        public readonly MapperCompilerProvider $mapperCompilerProvider,
         public readonly mixed $defaultValue,
     )
     {
@@ -19,7 +19,12 @@ class MapDefaultValue implements InputMapperCompilerProvider
 
     public function getInputMapperCompiler(): MapperCompiler
     {
-        return new DefaultValueInputMapperCompiler($this->mapperCompiler, $this->defaultValue);
+        return new DefaultValueInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler(), $this->defaultValue);
+    }
+
+    public function getOutputMapperCompiler(): MapperCompiler
+    {
+        return $this->mapperCompilerProvider->getOutputMapperCompiler();
     }
 
 }
