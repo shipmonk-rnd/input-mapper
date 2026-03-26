@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapperTests\Runtime;
 
 use ShipMonk\InputMapper\Runtime\CallbackMapper;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\CollectionInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput;
@@ -14,6 +15,7 @@ use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SimplePersonInput;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\AllOptionalInput;
 use ShipMonk\InputMapperTests\Runtime\Data\CardInput;
+use ShipMonk\InputMapperTests\Runtime\Data\EdgeValuesInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EventInput;
 use function sys_get_temp_dir;
@@ -218,6 +220,23 @@ class RoundTripTest extends InputMapperTestCase
             'type' => 'childTwo',
         ];
         self::assertSame($expectedOutput, $this->roundTrip(HierarchicalParentInput::class, $inputData));
+    }
+
+    public function testEdgeValuesZeroFalseEmptyString(): void
+    {
+        $data = ['zero' => 0, 'emptyString' => '', 'false' => false, 'zeroFloat' => 0.0];
+        self::assertSame($data, $this->roundTrip(EdgeValuesInput::class, $data));
+    }
+
+    public function testDiscriminatedObjectOutputWithUnrecognizedSubtype(): void
+    {
+        $outputMapper = $this->mapperProvider->getOutputMapper(HierarchicalParentInput::class);
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /: Expected %s, got %s',
+            static fn () => $outputMapper->map(new SimplePersonInput(id: 1, name: 'Alice')), // @phpstan-ignore argument.type
+        );
     }
 
     /**
