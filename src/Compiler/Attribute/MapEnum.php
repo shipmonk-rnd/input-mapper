@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use Attribute;
 use BackedEnum;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
@@ -18,14 +19,14 @@ class MapEnum implements MapperCompilerProvider
      */
     public function __construct(
         public readonly string $enumName,
-        public readonly MapperCompiler $backingValueMapperCompiler,
+        public readonly InputMapperCompilerProvider $backingValueMapperCompilerProvider,
     )
     {
     }
 
     public function getInputMapperCompiler(): MapperCompiler
     {
-        return new EnumInputMapperCompiler($this->enumName, $this->backingValueMapperCompiler);
+        return new EnumInputMapperCompiler($this->enumName, $this->backingValueMapperCompilerProvider->getInputMapperCompiler());
     }
 
     public function getOutputMapperCompiler(): MapperCompiler
