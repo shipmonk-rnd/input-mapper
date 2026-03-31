@@ -9,7 +9,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class ValidatedMapperCompilerProvider implements MapperCompilerProvider
+class MapValidated implements MapperCompilerProvider
 {
 
     /**

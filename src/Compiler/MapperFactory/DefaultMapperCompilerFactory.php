@@ -47,9 +47,9 @@ use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
 use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
 use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
 use ShipMonk\InputMapper\Compiler\Attribute\MapString;
+use ShipMonk\InputMapper\Compiler\Attribute\MapValidated;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
-use ShipMonk\InputMapper\Compiler\Attribute\ValidatedMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ChainMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
@@ -157,12 +157,12 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
                 default => match ($type->name) {
                     'list' => new MapList(new MapMixed()),
-                    'non-empty-list' => new ValidatedMapperCompilerProvider(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
-                    'non-empty-string' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('string'), $options), [new AssertStringNonEmpty()]),
-                    'negative-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
-                    'non-negative-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
-                    'non-positive-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),
-                    'positive-int' => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertPositiveInt()]),
+                    'non-empty-list' => new MapValidated(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
+                    'non-empty-string' => new MapValidated($this->createInner(new IdentifierTypeNode('string'), $options), [new AssertStringNonEmpty()]),
+                    'negative-int' => new MapValidated($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
+                    'non-negative-int' => new MapValidated($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
+                    'non-positive-int' => new MapValidated($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),
+                    'positive-int' => new MapValidated($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertPositiveInt()]),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
             };
@@ -180,7 +180,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
                 'int' => match (count($type->genericTypes)) {
-                    2 => new ValidatedMapperCompilerProvider($this->createInner(new IdentifierTypeNode('int'), $options), [
+                    2 => new MapValidated($this->createInner(new IdentifierTypeNode('int'), $options), [
                         new AssertIntRange(
                             gte: $this->resolveIntegerBoundary($type, $type->genericTypes[0], 'min'),
                             lte: $this->resolveIntegerBoundary($type, $type->genericTypes[1], 'max'),
@@ -194,7 +194,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     'non-empty-list' => match (count($type->genericTypes)) {
-                        1 => new ValidatedMapperCompilerProvider(new MapList($this->createInner($type->genericTypes[0], $options)), [new AssertListLength(min: 1)]),
+                        1 => new MapValidated(new MapList($this->createInner($type->genericTypes[0], $options)), [new AssertListLength(min: 1)]),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
                     },
                     Optional::class => match (count($type->genericTypes)) {
