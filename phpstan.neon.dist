@@ -48,6 +48,10 @@ parameters:
             message: "#^Method ShipMonk\\\\InputMapperTests\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorWithMultipleValidatorsMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
             count: 1
             path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
+        -
+            message: "#^Method ShipMonk\\\\InputMapperTests\\\\Compiler\\\\Validator\\\\String\\\\Data\\\\StringNonEmptyValidatorMapper\\:\\:map\\(\\) should return non\\-empty\\-string but returns string\\.$#"
+            count: 1
+            path: tests/Compiler/Validator/String/Data/StringNonEmptyValidatorMapper.php
 
         -
             identifier: method.internalClass

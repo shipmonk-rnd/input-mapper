@@ -61,6 +61,7 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
+use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
@@ -147,6 +148,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 default => match ($type->name) {
                     'list' => new MapList(new MapMixed()),
                     'non-empty-list' => new ValidatedMapperCompiler(new MapList(new MapMixed()), [new AssertListLength(min: 1)]),
+                    'non-empty-string' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('string'), $options), [new AssertStringNonEmpty()]),
                     'negative-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNegativeInt()]),
                     'non-negative-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonNegativeInt()]),
                     'non-positive-int' => new ValidatedMapperCompiler($this->createInner(new IdentifierTypeNode('int'), $options), [new AssertNonPositiveInt()]),

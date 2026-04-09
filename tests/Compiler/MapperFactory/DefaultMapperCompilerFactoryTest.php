@@ -43,6 +43,7 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonNegativeInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringLength;
+use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalCatInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\AnimalDogInput;
@@ -386,6 +387,14 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             new ValidatedMapperCompiler(new MapList(new MapInt()), [
                 new AssertListLength(min: 1),
+            ]),
+        ];
+
+        yield 'non-empty-string' => [
+            'non-empty-string',
+            [],
+            new ValidatedMapperCompiler(new MapString(), [
+                new AssertStringNonEmpty(),
             ]),
         ];
 

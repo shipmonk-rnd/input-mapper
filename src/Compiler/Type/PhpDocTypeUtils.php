@@ -227,6 +227,7 @@ class PhpDocTypeUtils
             return match ($type->name) {
                 'list',
                 'non-empty-list' => new Identifier('array'),
+                'non-empty-string' => new Identifier('string'),
                 'positive-int',
                 'negative-int',
                 'non-positive-int',
@@ -566,7 +567,7 @@ class PhpDocTypeUtils
                 'resource' => $a instanceof IdentifierTypeNode && $a->name === 'resource',
 
                 'string' => match (true) {
-                    $a instanceof IdentifierTypeNode => $a->name === 'string',
+                    $a instanceof IdentifierTypeNode => $a->name === 'string' || $a->name === 'non-empty-string',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprStringNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_string(constant((string) $a->constExpr)),
