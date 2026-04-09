@@ -48,7 +48,6 @@
             "@check:ec",
             "@check:cs",
             "@check:types",
-            "@check:tests",
             "@check:coverage",
             "@check:dependencies"
         ],
