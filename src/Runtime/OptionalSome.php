@@ -3,9 +3,8 @@
 namespace ShipMonk\InputMapper\Runtime;
 
 /**
- * @extends Optional<T>
- *
  * @template-covariant T
+ * @extends Optional<T>
  */
 final class OptionalSome extends Optional
 {
