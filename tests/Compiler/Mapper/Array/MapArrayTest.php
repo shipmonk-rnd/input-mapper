@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArray;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -13,9 +13,9 @@ class MapArrayTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $keyMapperCompiler = new MapString();
-        $valueMapperCompiler = new MapInt();
-        $mapperCompiler = new MapArray($keyMapperCompiler, $valueMapperCompiler);
+        $keyMapperCompiler = new StringInputMapperCompiler();
+        $valueMapperCompiler = new IntInputMapperCompiler();
+        $mapperCompiler = new ArrayInputMapperCompiler($keyMapperCompiler, $valueMapperCompiler);
         $mapper = $this->compileMapper('GenericArray', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));

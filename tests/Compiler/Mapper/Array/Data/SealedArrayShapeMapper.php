@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Array\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Array\MapArrayShape;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -15,9 +15,9 @@ use function is_int;
 use function is_string;
 
 /**
- * Generated mapper by {@see MapArrayShape}. Do not edit directly.
+ * Generated mapper by {@see ArrayShapeInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<array{a: int, b?: string}>
+ * @implements Mapper<mixed, array{a: int, b?: string}>
  */
 class SealedArrayShapeMapper implements Mapper
 {

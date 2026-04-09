@@ -36,14 +36,24 @@ class MapperProvider
 {
 
     /**
-     * @var array<string, Mapper<mixed>>
+     * @var array<string, Mapper<mixed, mixed>>
      */
-    private array $mappers = [];
+    private array $inputMappers = [];
 
     /**
-     * @var array<class-string, callable(never, list<Mapper<mixed>>, self): Mapper<mixed>>
+     * @var array<string, Mapper<mixed, mixed>>
      */
-    private array $mapperFactories = [];
+    private array $outputMappers = [];
+
+    /**
+     * @var array<class-string, callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>>
+     */
+    private array $inputMapperFactories = [];
+
+    /**
+     * @var array<class-string, callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>>
+     */
+    private array $outputMapperFactories = [];
 
     public function __construct(
         private readonly string $tempDir,
@@ -54,93 +64,146 @@ class MapperProvider
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @param list<Mapper<mixed>> $innerMappers
-     * @return Mapper<T>
+     * @param class-string<T> $className
+     * @param list<Mapper<*, *>> $genericInnerMappers
+     * @return Mapper<mixed, T>
      *
      * @template T of object
      */
-    public function get(
-        string $inputClassName,
-        array $innerMappers = [],
+    public function getInputMapper(
+        string $className,
+        array $genericInnerMappers = [],
     ): Mapper
     {
-        $key = $inputClassName;
+        $key = $this->getCacheKey($className, $genericInnerMappers);
 
-        if (count($innerMappers) > 0) {
-            $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $innerMappers)));
-        }
-
-        /** @var Mapper<T> $mapper */
-        $mapper = $this->mappers[$key] ??= $this->create($inputClassName, $innerMappers);
+        /** @var Mapper<mixed, T> $mapper */
+        $mapper = $this->inputMappers[$key] ??= $this->createMapper($className, $genericInnerMappers, $this->inputMapperFactories, 'input');
         return $mapper;
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @param callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $mapperFactory
+     * @param class-string<T> $className
+     * @param list<Mapper<*, *>> $genericInnerMappers
+     * @return Mapper<T, mixed>
      *
      * @template T of object
      */
-    public function registerFactory(
-        string $inputClassName,
+    public function getOutputMapper(
+        string $className,
+        array $genericInnerMappers = [],
+    ): Mapper
+    {
+        $key = $this->getCacheKey($className, $genericInnerMappers);
+
+        /** @var Mapper<T, mixed> $mapper */
+        $mapper = $this->outputMappers[$key] ??= $this->createMapper($className, $genericInnerMappers, $this->outputMapperFactories, 'output');
+        return $mapper;
+    }
+
+    /**
+     * @param class-string<T> $className
+     * @param callable(class-string<T>, list<Mapper<mixed, mixed>>, self): Mapper<mixed, T> $mapperFactory
+     *
+     * @template T of object
+     */
+    public function registerInputFactory(
+        string $className,
         callable $mapperFactory,
     ): void
     {
-        if (isset($this->mappers[$inputClassName])) {
-            throw new LogicException("Mapper for '$inputClassName' already created.");
+        if (isset($this->inputMappers[$className])) {
+            throw new LogicException("Input mapper for '$className' already created.");
         }
 
-        $this->mapperFactories[$inputClassName] = $mapperFactory;
+        $this->inputMapperFactories[$className] = $mapperFactory; // @phpstan-ignore assign.propertyType
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @param list<Mapper<mixed>> $innerMappers
-     * @return Mapper<T>
+     * @param class-string<T> $className
+     * @param callable(class-string<T>, list<Mapper<mixed, mixed>>, self): Mapper<T, mixed> $mapperFactory
      *
      * @template T of object
      */
-    private function create(
-        string $inputClassName,
-        array $innerMappers,
-    ): Mapper
+    public function registerOutputFactory(
+        string $className,
+        callable $mapperFactory,
+    ): void
     {
-        $classParents = class_parents($inputClassName);
-        $classImplements = class_implements($inputClassName);
-
-        if ($classParents === false || $classImplements === false) {
-            throw new LogicException("Unable to get class parents or implements for '$inputClassName'.");
+        if (isset($this->outputMappers[$className])) {
+            throw new LogicException("Output mapper for '$className' already created.");
         }
 
-        $classLikeNames = [$inputClassName => true, ...$classParents, ...$classImplements];
+        $this->outputMapperFactories[$className] = $mapperFactory; // @phpstan-ignore assign.propertyType
+    }
+
+    /**
+     * @param list<Mapper<*, *>> $genericInnerMappers
+     */
+    private function getCacheKey(
+        string $className,
+        array $genericInnerMappers,
+    ): string
+    {
+        $key = $className;
+
+        if (count($genericInnerMappers) > 0) {
+            $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $genericInnerMappers)));
+        }
+
+        return $key;
+    }
+
+    /**
+     * @param class-string<T> $className
+     * @param list<Mapper<*, *>> $genericInnerMappers
+     * @param array<class-string, callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>> $factories
+     * @param 'input'|'output' $direction
+     * @return Mapper<mixed, mixed>
+     *
+     * @template T of object
+     */
+    private function createMapper(
+        string $className,
+        array $genericInnerMappers,
+        array $factories,
+        string $direction,
+    ): Mapper
+    {
+        $classParents = class_parents($className);
+        $classImplements = class_implements($className);
+
+        if ($classParents === false || $classImplements === false) {
+            throw new LogicException("Unable to get class parents or implements for '$className'.");
+        }
+
+        $classLikeNames = [$className => true, ...$classParents, ...$classImplements];
 
         foreach ($classLikeNames as $classLikeName => $true) {
-            if (isset($this->mapperFactories[$classLikeName])) {
-                /** @var callable(class-string<T>, list<Mapper<mixed>>, self): Mapper<T> $factory */
-                $factory = $this->mapperFactories[$classLikeName];
-                return $factory($inputClassName, $innerMappers, $this);
+            if (isset($factories[$classLikeName])) {
+                $factory = $factories[$classLikeName];
+                return $factory($className, $genericInnerMappers, $this);
             }
         }
 
-        $mapperClassName = $this->getMapperClass($inputClassName);
+        $mapperClassName = $this->getMapperClass($className, $direction);
 
         if (!class_exists($mapperClassName, autoload: false)) {
-            $this->load($inputClassName, $mapperClassName);
+            $this->load($className, $mapperClassName, $direction);
         }
 
-        return new $mapperClassName($this, $innerMappers);
+        return new $mapperClassName($this, $genericInnerMappers);
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @param class-string<Mapper<T>> $mapperClassName
-     *
-     * @template T of object
+     * @param class-string $className
+     * @param class-string<Mapper<mixed, mixed>> $mapperClassName
+     * @param 'input'|'output' $direction
      */
     private function load(
-        string $inputClassName,
+        string $className,
         string $mapperClassName,
+        string $direction,
     ): void
     {
         $path = $this->getMapperPath($mapperClassName);
@@ -164,7 +227,7 @@ class MapperProvider
         }
 
         if (!is_file($path) || $this->autoRefresh) {
-            $code = $this->compile($inputClassName, $mapperClassName);
+            $code = $this->compile($className, $mapperClassName, $direction);
 
             if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
                 @unlink("$path.tmp"); // @ file may not exist
@@ -180,43 +243,49 @@ class MapperProvider
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @param class-string<Mapper<T>> $mapperClassName
-     *
-     * @template T of object
+     * @param class-string $className
+     * @param class-string<Mapper<mixed, mixed>> $mapperClassName
+     * @param 'input'|'output' $direction
      */
     private function compile(
-        string $inputClassName,
+        string $className,
         string $mapperClassName,
+        string $direction,
     ): string
     {
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
-        $mapperCompiler = $mapperCompilerFactory->create(new IdentifierTypeNode($inputClassName));
+        $type = new IdentifierTypeNode($className);
 
         $codeBuilder = new PhpCodeBuilder();
         $codePrinter = new PhpCodePrinter();
 
-        return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
+        if ($direction === 'input') {
+            $mapperCompiler = $mapperCompilerFactory->create($type)->getInputMapperCompiler();
+            return $codePrinter->prettyPrintFile($codeBuilder->inputMapperFile($mapperClassName, $mapperCompiler));
+        }
+
+        $mapperCompiler = $mapperCompilerFactory->create($type)->getOutputMapperCompiler();
+        return $codePrinter->prettyPrintFile($codeBuilder->outputMapperFile($mapperClassName, $mapperCompiler));
     }
 
     /**
-     * @param class-string<T> $inputClassName
-     * @return class-string<Mapper<T>>
-     *
-     * @template T of object
+     * @param class-string $className
+     * @param 'input'|'output' $direction
+     * @return class-string<Mapper<mixed, mixed>>
      */
-    private function getMapperClass(string $inputClassName): string
+    private function getMapperClass(
+        string $className,
+        string $direction,
+    ): string
     {
-        $shortName = $this->getShortName($inputClassName);
-        $hash = substr(md5($inputClassName), 0, 8);
+        $shortName = $this->getShortName($className);
+        $hash = substr(md5($className), 0, 8);
+        $suffix = $direction === 'input' ? 'Mapper' : 'OutputMapper';
 
         // @phpstan-ignore-next-line
-        return "ShipMonk\\InputMapper\\Runtime\\Generated\\{$shortName}Mapper_{$hash}";
+        return "ShipMonk\\InputMapper\\Runtime\\Generated\\{$shortName}{$suffix}_{$hash}";
     }
 
-    /**
-     * @param class-string<Mapper<mixed>> $mapperClassName
-     */
     private function getMapperPath(string $mapperClassName): string
     {
         $shortName = $this->getShortName($mapperClassName);

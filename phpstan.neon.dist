@@ -33,9 +33,12 @@ parameters:
     ignoreErrors:
         -
             identifiers:
-                - shipmonk.deadProperty.neverRead
                 - property.onlyWritten
+                - shipmonk.deadProperty.neverRead
                 - shipmonk.deadEnumCase
+            paths: [tests/**/Data/*.php]
+        -
+            identifier: throws.unusedType
             paths: [tests/**/Data/*.php]
         -
             message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'

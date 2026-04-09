@@ -1,6 +1,6 @@
 # ShipMonk Input Mapper
 
-High performance input mapper for PHP with support for generics, array shapes and nullable types. For each input class, a mapper is generated at runtime and cached on disk. The mapper is generated only once and then reused on subsequent requests. The generated mapper is highly optimized for performance and it is designed to be human readable. You can see [example of generated mappers in the tests directory](tests/Compiler/Mapper/Object/Data/MovieMapper.php).
+Bidirectional mapper for PHP with support for generics, array shapes and nullable types. For each class, input and output mappers are generated at runtime and cached on disk. The mappers are generated only once and then reused on subsequent requests. The generated mappers are highly optimized for performance and designed to be human readable. You can see examples of generated mappers in the tests directory: [input mapper](tests/Compiler/Mapper/Object/Data/MovieMapper.php), [output mapper](tests/Compiler/Mapper/Object/Data/SimplePersonOutputMapper.php).
 
 
 ## Installation:
@@ -25,11 +25,13 @@ Input Mapper comes with built-in mappers for the following types:
 * `BackedEnum`
 * and most importantly classes with public constructor
 
+All built-in mappers support both input (array → object) and output (object → array) directions.
+
 You can write your own mappers or replace the default mappers with your own.
 
 ### Built-in validators
 
-Input Mapper comes with some built-in validators:
+Input Mapper comes with some built-in validators (input mapping only):
 
 * int validators:
   * `AssertInt16`
@@ -97,15 +99,13 @@ By default, any extra properties are not allowed. You can change that by adding 
 
 ### Map Input
 
-To map input, provide a path to a writable directory where generated mappers will be stored.
-
-It's important to set $autoRefresh to false in production to avoid recompiling mappers on every request.
+To map input data (e.g. JSON) to objects, use `MapperProvider`:
 
 ```php
 $tempDir = sys_get_temp_dir() . '/input-mapper';
 $autoRefresh = true; // MUST be set to false in production
 $mapperProvider = new ShipMonk\InputMapper\Runtime\MapperProvider($tempDir, $autoRefresh);
-$mapper = $mapperProvider->get(Person::class);
+$mapper = $mapperProvider->getInputMapper(Person::class);
 
 try {
     $person = $mapper->map([
@@ -131,6 +131,19 @@ try {
     // ...
 }
 ```
+
+### Map Output
+
+To convert objects back to plain arrays (e.g. for JSON serialization), use the same `MapperProvider`:
+
+```php
+$mapper = $mapperProvider->getOutputMapper(Person::class);
+
+$data = $mapper->map($person);
+// ['name' => 'John', 'age' => 30, 'email' => null, 'hobbies' => ['hiking', 'reading'], 'friends' => [...]]
+```
+
+The output mapper converts objects to arrays, enums to their backing values, `DateTimeImmutable` to formatted strings, and `Optional` properties are omitted from the output when not defined. All types supported by input mapping are also supported by output mapping.
 
 ### Adding Validation Rules
 
@@ -260,10 +273,10 @@ class Truck extends Vehicle {
 
 ### Using custom mappers
 
-To map classes with your custom mapper, you need to implement `ShipMonk\InputMapper\Runtime\Mapper` interface and register it with `MapperProvider`:
+To map classes with your custom mapper, you need to implement the `InputMapper` or `OutputMapper` interface and register it with the corresponding provider:
 
 ```php
-class MyCustomMapper implements ShipMonk\InputMapper\Runtime\Mapper
+class MyCustomInputMapper implements ShipMonk\InputMapper\Runtime\InputMapper
 {
     public function map(mixed $data, array $path = []): mixed
     {
@@ -271,25 +284,30 @@ class MyCustomMapper implements ShipMonk\InputMapper\Runtime\Mapper
     }
 }
 
-$mapperProvider->registerFactory(MyCustomClass::class, function () {
-    return new MyCustomMapper();
+$inputMapperProvider->registerFactory(MyCustomClass::class, function () {
+    return new MyCustomInputMapper();
 });
 ```
 
 ### Customizing default mappers inferred from types
 
-To customize how default mappers are inferred from types, you need to implement
+To customize how default mappers are inferred from types, you need to implement `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and `MapperCompilerFactoryProvider`.
 
-* `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and
-* `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider`.
-
-Then register your factory provider with `MapperProvider`:
+Then register your factory provider with the corresponding provider:
 
 ```php
-$mapperProvider = new ShipMonk\InputMapper\Runtime\MapperProvider(
+$mapperCompilerFactoryProvider = new MyCustomMapperCompilerFactoryProvider();
+
+$inputMapperProvider = new ShipMonk\InputMapper\Runtime\InputMapperProvider(
     tempDir: $tempDir,
     autoRefresh: $autoRefresh,
-    mapperCompilerFactoryProvider: new MyCustomMapperCompilerFactoryProvider(),
+    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
+);
+
+$outputMapperProvider = new ShipMonk\InputMapper\Runtime\OutputMapperProvider(
+    tempDir: $tempDir,
+    autoRefresh: $autoRefresh,
+    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
 );
 ```
 

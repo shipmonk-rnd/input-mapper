@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -12,7 +12,7 @@ class AssertFloatMultipleOfTest extends ValidatorCompilerTestCase
 
     public function testFloatWithAtMostTwoDecimalPlaces(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatMultipleOf(0.01);
         $validator = $this->compileValidator('FloatWithAtMostTwoDecimalPlaces', $mapperCompiler, $validatorCompiler);
 
@@ -39,7 +39,7 @@ class AssertFloatMultipleOfTest extends ValidatorCompilerTestCase
 
     public function testFloatMultipleOfFive(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatMultipleOf(5.0);
         $validator = $this->compileValidator('FloatMultipleOfFive', $mapperCompiler, $validatorCompiler);
 

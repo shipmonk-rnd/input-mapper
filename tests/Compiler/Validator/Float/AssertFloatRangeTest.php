@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapFloat;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -12,7 +12,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopFloatRangeValidator(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange();
         $validator = $this->compileValidator('NoopFloatRangeValidator', $mapperCompiler, $validatorCompiler);
 
@@ -23,7 +23,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithInclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange(gte: 5.0);
         $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -39,7 +39,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithExclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange(gt: 5.0);
         $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -54,7 +54,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithInclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange(lte: 5.0);
         $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -70,7 +70,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithExclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange(lt: 5.0);
         $validator = $this->compileValidator('FloatRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -85,7 +85,7 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
 
     public function testFloatRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
-        $mapperCompiler = new MapFloat();
+        $mapperCompiler = new FloatInputMapperCompiler();
         $validatorCompiler = new AssertFloatRange(gte: 5.0, lte: 10.0);
         $validator = $this->compileValidator('FloatRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 

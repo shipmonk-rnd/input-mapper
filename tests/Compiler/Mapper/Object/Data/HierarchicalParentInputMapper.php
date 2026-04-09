@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDiscriminatedObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -11,9 +11,9 @@ use function implode;
 use function is_array;
 
 /**
- * Generated mapper by {@see MapDiscriminatedObject}. Do not edit directly.
+ * Generated mapper by {@see DiscriminatedObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<HierarchicalParentInput>
+ * @implements Mapper<mixed, HierarchicalParentInput>
  */
 class HierarchicalParentInputMapper implements Mapper
 {
@@ -48,7 +48,7 @@ class HierarchicalParentInputMapper implements Mapper
      */
     private function mapChildOne(mixed $data, array $path = []): HierarchicalChildOneInput
     {
-        return $this->provider->get(HierarchicalChildOneInput::class)->map($data, $path);
+        return $this->provider->getInputMapper(HierarchicalChildOneInput::class)->map($data, $path);
     }
 
     /**
@@ -57,6 +57,6 @@ class HierarchicalParentInputMapper implements Mapper
      */
     private function mapChildTwo(mixed $data, array $path = []): HierarchicalChildTwoInput
     {
-        return $this->provider->get(HierarchicalChildTwoInput::class)->map($data, $path);
+        return $this->provider->getInputMapper(HierarchicalChildTwoInput::class)->map($data, $path);
     }
 }

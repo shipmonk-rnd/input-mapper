@@ -2,9 +2,9 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
@@ -13,7 +13,7 @@ class MapNullableTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapNullable(new MapInt());
+        $mapperCompiler = new NullableInputMapperCompiler(new IntInputMapperCompiler());
         $mapper = $this->compileMapper('NullableInt', $mapperCompiler);
 
         self::assertNull($mapper->map(null));
@@ -35,7 +35,7 @@ class MapNullableTest extends MapperCompilerTestCase
 
     public function testCompileWithMixed(): void
     {
-        $mapperCompiler = new MapNullable(new MapMixed());
+        $mapperCompiler = new NullableInputMapperCompiler(new MixedInputMapperCompiler());
         $mapper = $this->compileMapper('NullableMixed', $mapperCompiler);
 
         self::assertNull($mapper->map(null));

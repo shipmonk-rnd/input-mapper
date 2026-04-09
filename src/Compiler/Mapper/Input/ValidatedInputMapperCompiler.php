@@ -1,0 +1,84 @@
+<?php declare(strict_types = 1);
+
+namespace ShipMonk\InputMapper\Compiler\Mapper\Input;
+
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
+use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
+
+class ValidatedInputMapperCompiler implements MapperCompiler
+{
+
+    /**
+     * @param list<ValidatorCompiler> $validatorCompilers
+     */
+    public function __construct(
+        public readonly MapperCompiler $mapperCompiler,
+        public readonly array $validatorCompilers,
+    )
+    {
+    }
+
+    /**
+     * @throws CannotCompileMapperException
+     */
+    public function compile(
+        Expr $value,
+        Expr $path,
+        PhpCodeBuilder $builder,
+    ): CompiledExpr
+    {
+        $mapper = $this->mapperCompiler->compile($value, $path, $builder);
+        $mapperOutputType = $this->mapperCompiler->getOutputType();
+        $statements = $mapper->statements;
+
+        if ($mapper->expr instanceof Variable) {
+            $mapperVariable = $mapper->expr;
+
+        } else {
+            $mappedVariableName = $builder->uniqVariableName('mapped');
+            $mapperVariable = $builder->var($mappedVariableName);
+            $statements[] = $builder->assign($mapperVariable, $mapper->expr);
+        }
+
+        foreach ($this->validatorCompilers as $validatorCompiler) {
+            $validatorInputType = $validatorCompiler->getInputType();
+
+            if (!PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
+                throw CannotCompileMapperException::withIncompatibleValidator($validatorCompiler, $this->mapperCompiler);
+            }
+
+            foreach ($validatorCompiler->compile($mapperVariable, $mapperOutputType, $path, $builder) as $statement) {
+                $statements[] = $statement;
+            }
+        }
+
+        return new CompiledExpr($mapperVariable, $statements);
+    }
+
+    public function getInputType(): TypeNode
+    {
+        return $this->mapperCompiler->getInputType();
+    }
+
+    public function getOutputType(): TypeNode
+    {
+        $outputTypes = [$this->mapperCompiler->getOutputType()];
+
+        foreach ($this->validatorCompilers as $validatorCompiler) {
+            if ($validatorCompiler instanceof NarrowingValidatorCompiler) {
+                $outputTypes[] = $validatorCompiler->getNarrowedType();
+            }
+        }
+
+        return PhpDocTypeUtils::intersect(...$outputTypes);
+    }
+
+}

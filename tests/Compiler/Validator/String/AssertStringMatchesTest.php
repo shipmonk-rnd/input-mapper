@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringMatches;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -12,7 +12,7 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
 
     public function testUrlValidator(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringMatches('#^\d+\z#');
         $validator = $this->compileValidator('PatternValidator', $mapperCompiler, $validatorCompiler);
 
@@ -27,7 +27,7 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
 
     public function testUrlValidatorWithCustomPatternDescription(): void
     {
-        $mapperCompiler = new MapString();
+        $mapperCompiler = new StringInputMapperCompiler();
         $validatorCompiler = new AssertStringMatches('#^\d+\z#', 'numeric string');
         $validator = $this->compileValidator('PatternValidatorWithCustomPatternDescription', $mapperCompiler, $validatorCompiler);
 

@@ -2,16 +2,16 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
 /**
- * Generated mapper by {@see MapNullable}. Do not edit directly.
+ * Generated mapper by {@see NullableInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<?int>
+ * @implements Mapper<mixed, ?int>
  */
 class NullableIntMapper implements Mapper
 {

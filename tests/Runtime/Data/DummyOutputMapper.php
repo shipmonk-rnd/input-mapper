@@ -1,0 +1,21 @@
+<?php declare(strict_types = 1);
+
+namespace ShipMonk\InputMapperTests\Runtime\Data;
+
+use ShipMonk\InputMapper\Runtime\Mapper;
+
+/**
+ * @implements Mapper<mixed, mixed>
+ */
+class DummyOutputMapper implements Mapper
+{
+
+    /**
+     * @param list<string | int> $path
+     */
+    public function map(mixed $data, array $path = []): mixed
+    {
+        return $data;
+    }
+
+}

@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
 use DateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -13,9 +13,9 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable();
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler();
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateTimeImmutable', $mapperCompiler);
 
         self::assertSame('1985-04-12T23:20:50.000+00:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -43,9 +43,9 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(defaultTimezone: 'Europe/Prague', targetTimezone: 'Europe/Prague');
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(defaultTimezone: 'Europe/Prague', targetTimezone: 'Europe/Prague');
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateTimeImmutableWithTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-13T01:20:50.000+02:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -55,9 +55,9 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithTargetTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(targetTimezone: 'Europe/Prague');
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(targetTimezone: 'Europe/Prague');
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateTimeImmutableWithTargetTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-13T01:20:50.000+02:00', $mapper->map('1985-04-12T23:20:50Z')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -67,9 +67,9 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormat(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable('!Y-m-d', 'date string in Y-m-d format');
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler('!Y-m-d', 'date string in Y-m-d format');
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('Date', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000+00:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -95,14 +95,14 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(
             format: ['!Y-m-d'],
             formatDescription: 'date string in Y-m-d format',
             defaultTimezone: 'Europe/Prague',
             targetTimezone: 'Europe/Prague',
         );
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateWithTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000+02:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -110,13 +110,13 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndDefaultTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(
             format: ['!Y-m-d'],
             formatDescription: 'date string in Y-m-d format',
             defaultTimezone: 'America/New_York',
         );
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateWithDefaultTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-12T00:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -124,13 +124,13 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndTargetTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(
             format: ['!Y-m-d'],
             formatDescription: 'date string in Y-m-d format',
             targetTimezone: 'America/New_York',
         );
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateWithTargetTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-11T19:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));
@@ -138,14 +138,14 @@ class MapDateTimeImmutableTest extends MapperCompilerTestCase
 
     public function testCompileWithCustomFormatAndDistinctDefaultAndTargetTimeZone(): void
     {
-        $mapperCompiler = new MapDateTimeImmutable(
+        $mapperCompiler = new DateTimeImmutableInputMapperCompiler(
             format: ['!Y-m-d'],
             formatDescription: 'date string in Y-m-d format',
             defaultTimezone: 'Europe/Prague',
             targetTimezone: 'America/New_York',
         );
 
-        /** @var Mapper<DateTimeImmutable> $mapper */
+        /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileMapper('DateWithDistinctDefaultAndTargetTimeZone', $mapperCompiler);
 
         self::assertSame('1985-04-11T17:00:00.000-05:00', $mapper->map('1985-04-12')->format(DateTimeImmutable::RFC3339_EXTENDED));

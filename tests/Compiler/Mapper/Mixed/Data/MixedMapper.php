@@ -2,15 +2,15 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Mixed\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
- * Generated mapper by {@see MapMixed}. Do not edit directly.
+ * Generated mapper by {@see MixedInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<mixed>
+ * @implements Mapper<mixed, mixed>
  */
 class MixedMapper implements Mapper
 {

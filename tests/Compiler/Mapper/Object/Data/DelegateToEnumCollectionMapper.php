@@ -2,15 +2,15 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\DelegateMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 
 /**
- * Generated mapper by {@see DelegateMapperCompiler}. Do not edit directly.
+ * Generated mapper by {@see DelegateInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<CollectionInput<SuitEnum>>
+ * @implements Mapper<mixed, CollectionInput<SuitEnum>>
  */
 class DelegateToEnumCollectionMapper implements Mapper
 {
@@ -25,7 +25,7 @@ class DelegateToEnumCollectionMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): CollectionInput
     {
-        $innerMappers = [$this->provider->get(SuitEnum::class)];
-        return $this->provider->get(CollectionInput::class, $innerMappers)->map($data, $path);
+        $genericInnerMappers = [$this->provider->getInputMapper(SuitEnum::class)];
+        return $this->provider->getInputMapper(CollectionInput::class, $genericInnerMappers)->map($data, $path);
     }
 }

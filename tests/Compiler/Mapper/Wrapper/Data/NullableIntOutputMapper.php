@@ -1,0 +1,31 @@
+<?php declare (strict_types=1);
+
+namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
+
+use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
+
+/**
+ * Generated mapper by {@see NullableOutputMapperCompiler}. Do not edit directly.
+ *
+ * @implements Mapper<?int, mixed>
+ */
+class NullableIntOutputMapper implements Mapper
+{
+    public function __construct(private readonly MapperProvider $provider)
+    {
+    }
+
+    /**
+     * @param  ?int $data
+     * @param  list<string|int> $path
+     * @return ?int
+     * @throws MappingFailedException
+     */
+    public function map(mixed $data, array $path = []): mixed
+    {
+        return $data;
+    }
+}

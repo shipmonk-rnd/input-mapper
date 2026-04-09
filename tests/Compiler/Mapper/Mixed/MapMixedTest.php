@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Mixed;
 
 use DateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Mixed\MapMixed;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 
 class MapMixedTest extends MapperCompilerTestCase
@@ -11,7 +11,7 @@ class MapMixedTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapMixed();
+        $mapperCompiler = new MixedInputMapperCompiler();
         $mapper = $this->compileMapper('Mixed', $mapperCompiler);
 
         self::assertNull($mapper->map(null));

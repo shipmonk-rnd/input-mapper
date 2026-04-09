@@ -3,16 +3,16 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Object\Data;
 
 use DateTimeImmutable;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
- * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
+ * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<DateTimeImmutable>
+ * @implements Mapper<mixed, DateTimeImmutable>
  */
 class DateTimeRangeValidatorWithBothDateAndTimeMapper implements Mapper
 {

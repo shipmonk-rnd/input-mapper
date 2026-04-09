@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\MapperFactory\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
+use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 
 #[Discriminator(
     'type',

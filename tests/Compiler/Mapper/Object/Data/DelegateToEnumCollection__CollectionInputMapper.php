@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -15,17 +15,17 @@ use function is_array;
 use function is_int;
 
 /**
- * Generated mapper by {@see MapObject}. Do not edit directly.
+ * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
  * @template T
- * @implements Mapper<CollectionInput<T>>
+ * @implements Mapper<mixed, CollectionInput<T>>
  */
 class DelegateToEnumCollection__CollectionInputMapper implements Mapper
 {
     /**
-     * @param array{Mapper<T>} $innerMappers
+     * @param array{Mapper<mixed, T>} $genericInnerMappers
      */
-    public function __construct(private readonly MapperProvider $provider, private readonly array $innerMappers)
+    public function __construct(private readonly MapperProvider $provider, private readonly array $genericInnerMappers)
     {
     }
 
@@ -75,7 +75,7 @@ class DelegateToEnumCollection__CollectionInputMapper implements Mapper
         $mapped = [];
 
         foreach ($data as $index => $item) {
-            $mapped[] = $this->innerMappers[0]->map($item, [...$path, $index]);
+            $mapped[] = $this->genericInnerMappers[0]->map($item, [...$path, $index]);
         }
 
         return $mapped;

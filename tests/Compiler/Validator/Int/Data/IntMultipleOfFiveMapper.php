@@ -2,16 +2,16 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_int;
 
 /**
- * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
+ * Generated mapper by {@see ValidatedInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<int>
+ * @implements Mapper<mixed, int>
  */
 class IntMultipleOfFiveMapper implements Mapper
 {

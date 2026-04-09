@@ -4,16 +4,16 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapDateTimeImmutable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function is_string;
 
 /**
- * Generated mapper by {@see MapDateTimeImmutable}. Do not edit directly.
+ * Generated mapper by {@see DateTimeImmutableInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<DateTimeImmutable>
+ * @implements Mapper<mixed, DateTimeImmutable>
  */
 class DateWithTargetTimeZoneMapper implements Mapper
 {

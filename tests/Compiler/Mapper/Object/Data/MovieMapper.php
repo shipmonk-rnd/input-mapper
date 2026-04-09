@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -18,9 +18,9 @@ use function is_int;
 use function is_string;
 
 /**
- * Generated mapper by {@see MapObject}. Do not edit directly.
+ * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<MovieInput>
+ * @implements Mapper<mixed, MovieInput>
  */
 class MovieMapper implements Mapper
 {
@@ -163,7 +163,7 @@ class MovieMapper implements Mapper
      */
     private function mapDirector(mixed $data, array $path = []): PersonInput
     {
-        return $this->provider->get(PersonInput::class)->map($data, $path);
+        return $this->provider->getInputMapper(PersonInput::class)->map($data, $path);
     }
 
     /**
@@ -180,7 +180,7 @@ class MovieMapper implements Mapper
         $mapped = [];
 
         foreach ($data as $index => $item) {
-            $mapped[] = $this->provider->get(PersonInput::class)->map($item, [...$path, $index]);
+            $mapped[] = $this->provider->getInputMapper(PersonInput::class)->map($item, [...$path, $index]);
         }
 
         return $mapped;

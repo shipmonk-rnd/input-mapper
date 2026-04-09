@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SuitEnum;
@@ -13,7 +13,7 @@ class MapEnumTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapEnum(SuitEnum::class, new MapString());
+        $mapperCompiler = new EnumInputMapperCompiler(SuitEnum::class, new StringInputMapperCompiler());
         $mapper = $this->compileMapper('SuitEnum', $mapperCompiler);
 
         self::assertSame(SuitEnum::Clubs, $mapper->map('C'));

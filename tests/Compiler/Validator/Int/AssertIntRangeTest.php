@@ -3,7 +3,7 @@
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Validator\ValidatorCompilerTestCase;
@@ -15,7 +15,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopIntRangeValidator(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange();
         $validator = $this->compileValidator('NoopIntRangeValidator', $mapperCompiler, $validatorCompiler);
 
@@ -25,7 +25,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithInclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange(gte: 5);
         $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -41,7 +41,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithExclusiveLowerBound(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange(gt: 5);
         $validator = $this->compileValidator('IntRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -56,7 +56,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithInclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange(lte: 5);
         $validator = $this->compileValidator('IntRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -72,7 +72,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithExclusiveUpperBound(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange(lt: 5);
         $validator = $this->compileValidator('IntRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -87,7 +87,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
 
     public function testIntRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
-        $mapperCompiler = new MapInt();
+        $mapperCompiler = new IntInputMapperCompiler();
         $validatorCompiler = new AssertIntRange(gte: 5, lte: 10);
         $validator = $this->compileValidator('IntRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -114,7 +114,7 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
         string $expectedNarrowedType,
     ): void
     {
-        self::assertSame($expectedNarrowedType, $validatorCompiler->getNarrowedInputType()->__toString());
+        self::assertSame($expectedNarrowedType, $validatorCompiler->getNarrowedType()->__toString());
     }
 
     /**

@@ -17,7 +17,7 @@ class AssertNegativeInt extends AssertIntRange
         );
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         return new IdentifierTypeNode('negative-int');
     }

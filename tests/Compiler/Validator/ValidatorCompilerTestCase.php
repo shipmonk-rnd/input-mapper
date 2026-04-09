@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator;
 
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\ValidatedMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -12,7 +12,7 @@ abstract class ValidatorCompilerTestCase extends MapperCompilerTestCase
 {
 
     /**
-     * @return Mapper<mixed>
+     * @return Mapper<mixed, mixed>
      */
     protected function compileValidator(
         string $name,
@@ -20,7 +20,7 @@ abstract class ValidatorCompilerTestCase extends MapperCompilerTestCase
         ValidatorCompiler $validatorCompiler,
     ): Mapper
     {
-        $mapperCompiler = new ValidatedMapperCompiler($mapperCompiler, [$validatorCompiler]);
+        $mapperCompiler = new ValidatedInputMapperCompiler($mapperCompiler, [$validatorCompiler]);
         return $this->compileMapper($name, $mapperCompiler);
     }
 

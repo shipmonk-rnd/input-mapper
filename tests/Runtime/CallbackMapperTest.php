@@ -29,4 +29,10 @@ class CallbackMapperTest extends InputMapperTestCase
         );
     }
 
+    public function testOutputMapOk(): void
+    {
+        $mapper = new CallbackMapper(static fn (mixed $data) => ['value' => $data]);
+        self::assertSame(['value' => 123], $mapper->map(123));
+    }
+
 }

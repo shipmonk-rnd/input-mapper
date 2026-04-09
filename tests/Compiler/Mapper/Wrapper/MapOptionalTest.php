@@ -2,8 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapOptional;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -13,7 +13,7 @@ class MapOptionalTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapOptional(new MapInt());
+        $mapperCompiler = new OptionalInputMapperCompiler(new IntInputMapperCompiler());
         $mapper = $this->compileMapper('OptionalInt', $mapperCompiler);
 
         self::assertEquals(Optional::of(1), $mapper->map(1));

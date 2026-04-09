@@ -2,12 +2,12 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapEnum;
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapInt;
-use ShipMonk\InputMapper\Compiler\Mapper\Scalar\MapString;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapDefaultValue;
-use ShipMonk\InputMapper\Compiler\Mapper\Wrapper\MapNullable;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\Semaphore;
@@ -18,7 +18,7 @@ class MapDefaultValueTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = new MapDefaultValue(new MapInt(), null);
+        $mapperCompiler = new DefaultValueInputMapperCompiler(new IntInputMapperCompiler(), null);
         $mapper = $this->compileMapper('IntWithDefaultValue', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));
@@ -33,9 +33,9 @@ class MapDefaultValueTest extends MapperCompilerTestCase
 
     public function testCompileUndefined(): void
     {
-        $mapperCompiler = new MapObject(Semaphore::class, [
-            'color' => new MapDefaultValue(new MapEnum(SemaphoreColorEnum::class, new MapString()), SemaphoreColorEnum::Green),
-            'manufacturer' => new MapDefaultValue(new MapNullable(new MapString()), null),
+        $mapperCompiler = new ObjectInputMapperCompiler(Semaphore::class, [
+            'color' => new DefaultValueInputMapperCompiler(new EnumInputMapperCompiler(SemaphoreColorEnum::class, new StringInputMapperCompiler()), SemaphoreColorEnum::Green),
+            'manufacturer' => new DefaultValueInputMapperCompiler(new NullableInputMapperCompiler(new StringInputMapperCompiler()), null),
         ]);
 
         $mapper = $this->compileMapper('Semaphore', $mapperCompiler);

@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Optional;
+use ShipMonk\InputMapper\Compiler\Attribute\Optional;
 
 class Semaphore
 {

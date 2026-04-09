@@ -2,7 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data;
 
-use ShipMonk\InputMapper\Compiler\Mapper\Object\MapObject;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -16,9 +16,9 @@ use function is_array;
 use function is_string;
 
 /**
- * Generated mapper by {@see MapObject}. Do not edit directly.
+ * Generated mapper by {@see ObjectInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<Semaphore>
+ * @implements Mapper<mixed, Semaphore>
  */
 class SemaphoreMapper implements Mapper
 {
