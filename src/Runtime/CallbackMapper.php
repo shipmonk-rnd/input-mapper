@@ -6,9 +6,8 @@ use Closure;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
 /**
- * @implements Mapper<T>
- *
  * @template-covariant T
+ * @implements Mapper<T>
  */
 class CallbackMapper implements Mapper
 {
