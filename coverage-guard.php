@@ -5,7 +5,7 @@ use ShipMonk\CoverageGuard\Rule\EnforceCoverageForMethodsRule;
 
 $config = new Config();
 $config->addRule(new EnforceCoverageForMethodsRule(
-    requiredCoveragePercentage: 50,
+    requiredCoveragePercentage: 70,
     minExecutableLines: 5,
 ));
 

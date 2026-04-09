@@ -4,9 +4,12 @@ namespace ShipMonk\InputMapperTests\Compiler\Type;
 
 use ArrayObject;
 use Countable;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
+use PhpParser\Node\UnionType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Type\NativeTypeUtils;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
@@ -134,6 +137,49 @@ class NativeTypeUtilsTest extends InputMapperTestCase
         yield 'subtype eliminated reversed: Countable and ArrayObject' => [
             [new Name(Countable::class), new Name(ArrayObject::class)],
             new Name(ArrayObject::class),
+        ];
+    }
+
+    /**
+     * @param list<ComplexType|Identifier|Name> $members
+     */
+    #[DataProvider('provideCreateUnionData')]
+    public function testCreateUnion(
+        array $members,
+        ComplexType|Identifier|Name $expected,
+    ): void
+    {
+        self::assertEquals($expected, NativeTypeUtils::createUnion(...$members));
+    }
+
+    /**
+     * @return iterable<string, array{list<ComplexType|Identifier|Name>, ComplexType|Identifier|Name}>
+     */
+    public static function provideCreateUnionData(): iterable
+    {
+        yield 'empty returns never' => [
+            [],
+            new Identifier('never'),
+        ];
+
+        yield 'single identifier' => [
+            [new Identifier('int')],
+            new Identifier('int'),
+        ];
+
+        yield 'two identifiers' => [
+            [new Identifier('int'), new Identifier('string')],
+            new UnionType([new Identifier('int'), new Identifier('string')]),
+        ];
+
+        yield 'nullable type is flattened' => [
+            [new NullableType(new Identifier('int'))],
+            new UnionType([new Identifier('int'), new Identifier('null')]),
+        ];
+
+        yield 'nullable type combined with other' => [
+            [new NullableType(new Identifier('int')), new Identifier('string')],
+            new UnionType([new Identifier('int'), new Identifier('null'), new Identifier('string')]),
         ];
     }
 
