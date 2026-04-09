@@ -17,7 +17,7 @@ composer require shipmonk/input-mapper
 Input Mapper comes with built-in mappers for the following types:
 
 * `array`, `bool`, `float`, `int`, `mixed`, `string`, `list`
-* `positive-int`, `negative-int`, `int<TMin, TMax>`, `non-empty-list`
+* `positive-int`, `negative-int`, `int<TMin, TMax>`, `non-empty-string`, `non-empty-list`
 * `array<V>`, `array<K, V>`, `list<V>`, `non-empty-list<V>`
 * `array{K1: V1, ...}`
 * `?T`, `Optional<T>`

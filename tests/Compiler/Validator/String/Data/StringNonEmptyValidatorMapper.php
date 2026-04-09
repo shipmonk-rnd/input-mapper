@@ -12,7 +12,7 @@ use function preg_match;
 /**
  * Generated mapper by {@see ValidatedMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<string>
+ * @implements Mapper<non-empty-string>
  */
 class StringNonEmptyValidatorMapper implements Mapper
 {
@@ -22,6 +22,7 @@ class StringNonEmptyValidatorMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
+     * @return non-empty-string
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): string
@@ -30,7 +31,7 @@ class StringNonEmptyValidatorMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        if (preg_match('#\\S#', $data) !== 1) {
+        if ($data === '' || preg_match('#\\S#', $data) !== 1) {
             throw MappingFailedException::incorrectValue($data, $path, 'non-empty string');
         }
 
