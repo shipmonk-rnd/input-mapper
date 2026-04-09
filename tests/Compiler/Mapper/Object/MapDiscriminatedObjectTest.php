@@ -2,6 +2,8 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
@@ -11,6 +13,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\Optional;
@@ -171,6 +174,28 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /$type: Expected one of childOne, got "c"',
             static fn () => $parentInputMapper->map([...$childOneInputArray, '$type' => 'c']),
+        );
+    }
+
+    public function testGetOutputTypeWithGenericParameters(): void
+    {
+        $mapperCompiler = new DiscriminatedObjectInputMapperCompiler(
+            HierarchicalParentInput::class,
+            'type',
+            [
+                'childOne' => new DelegateInputMapperCompiler(HierarchicalChildOneInput::class),
+            ],
+            genericParameters: [
+                new GenericTypeParameter('T'),
+            ],
+        );
+
+        self::assertEquals(
+            new GenericTypeNode(
+                new IdentifierTypeNode(HierarchicalParentInput::class),
+                [new IdentifierTypeNode('T')],
+            ),
+            $mapperCompiler->getOutputType(),
         );
     }
 

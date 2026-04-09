@@ -76,7 +76,9 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EnumFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleDefaultValue;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleValidator;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
@@ -712,6 +714,18 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             EnumFilterInput::class . '<int>',
             [],
             'Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\EnumFilterInput<int>, because type int is not a subtype of BackedEnum',
+        ];
+
+        yield 'InputWithIncompatibleDefaultValue' => [
+            InputWithIncompatibleDefaultValue::class,
+            [],
+            "Cannot use mapper %s for parameter \$value of method %s::__construct, because default value of type 'string' is not compatible with parameter type 'int'",
+        ];
+
+        yield 'InputWithIncompatibleValidator' => [
+            InputWithIncompatibleValidator::class,
+            [],
+            'Cannot create mapper with validator %s, because mapper output type %s is not compatible with validator input type %s',
         ];
     }
 

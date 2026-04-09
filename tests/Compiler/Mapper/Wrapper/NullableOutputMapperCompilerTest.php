@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -40,6 +41,18 @@ class NullableOutputMapperCompilerTest extends MapperCompilerTestCase
         self::assertNull($mapper->map(null));
         self::assertSame('H', $mapper->map(SuitEnum::Hearts));
         self::assertSame('S', $mapper->map(SuitEnum::Spades));
+    }
+
+    public function testCompileWithInnerMapperThatHasStatements(): void
+    {
+        $mapperCompiler = new NullableOutputMapperCompiler(
+            new ListOutputMapperCompiler(new EnumOutputMapperCompiler(SuitEnum::class)),
+        );
+        $mapper = $this->compileOutputMapper('NullableEnumList', $mapperCompiler);
+
+        self::assertNull($mapper->map(null));
+        self::assertSame(['H', 'D'], $mapper->map([SuitEnum::Hearts, SuitEnum::Diamonds]));
+        self::assertSame([], $mapper->map([]));
     }
 
 }
