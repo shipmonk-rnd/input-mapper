@@ -37,10 +37,14 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
@@ -401,7 +405,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         yield 'non-empty-string' => [
             'non-empty-string',
             [],
-            new ValidatedMapperCompiler(new MapString(), [
+            new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [
                 new AssertStringNonEmpty(),
             ]),
         ];
@@ -582,6 +586,54 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                     'childTwo' => new DelegateOutputMapperCompiler(HierarchicalChildTwoInput::class),
                 ],
             ),
+        ];
+
+        yield '?int' => [
+            '?int',
+            [],
+            new NullableOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+        ];
+
+        yield 'int|null' => [
+            'int|null',
+            [],
+            new NullableOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int'))),
+        ];
+
+        yield 'ShipMonk\InputMapper\Runtime\Optional<string>' => [
+            'ShipMonk\InputMapper\Runtime\Optional<string>',
+            [],
+            new OptionalOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('string'))),
+        ];
+
+        yield 'ColorEnum' => [
+            ColorEnum::class,
+            [],
+            new EnumOutputMapperCompiler(ColorEnum::class),
+        ];
+
+        yield 'DateTimeImmutable' => [
+            DateTimeImmutable::class,
+            [],
+            new DateTimeImmutableOutputMapperCompiler(),
+        ];
+
+        yield 'DateTimeInterface' => [
+            DateTimeInterface::class,
+            [],
+            new DateTimeImmutableOutputMapperCompiler(),
+        ];
+
+        yield 'positive-int' => [
+            'positive-int',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
+        ];
+
+        yield 'int<0, 10>' => [
+            'int<0, 10>',
+            [],
+            new PassthroughMapperCompiler(new IdentifierTypeNode('int')),
         ];
     }
 

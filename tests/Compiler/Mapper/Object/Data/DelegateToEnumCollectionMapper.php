@@ -25,7 +25,7 @@ class DelegateToEnumCollectionMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): CollectionInput
     {
-        $innerMappers = [$this->provider->getInputMapper(SuitEnum::class)];
-        return $this->provider->getInputMapper(CollectionInput::class, $innerMappers)->map($data, $path);
+        $genericInnerMappers = [$this->provider->getInputMapper(SuitEnum::class)];
+        return $this->provider->getInputMapper(CollectionInput::class, $genericInnerMappers)->map($data, $path);
     }
 }

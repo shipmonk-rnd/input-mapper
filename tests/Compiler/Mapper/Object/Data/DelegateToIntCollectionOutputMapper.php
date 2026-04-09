@@ -26,8 +26,8 @@ class DelegateToIntCollectionOutputMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): mixed
     {
-        $innerMappers = [new CallbackMapper($this->mapInner0(...))];
-        return $this->provider->getOutputMapper(CollectionInput::class, $innerMappers)->map($data, $path);
+        $genericInnerMappers = [new CallbackMapper($this->mapInner0(...))];
+        return $this->provider->getOutputMapper(CollectionInput::class, $genericInnerMappers)->map($data, $path);
     }
 
     /**

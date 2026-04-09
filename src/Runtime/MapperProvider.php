@@ -65,39 +65,39 @@ class MapperProvider
 
     /**
      * @param class-string<T> $className
-     * @param list<Mapper<*, *>> $innerMappers
+     * @param list<Mapper<*, *>> $genericInnerMappers
      * @return Mapper<mixed, T>
      *
      * @template T of object
      */
     public function getInputMapper(
         string $className,
-        array $innerMappers = [],
+        array $genericInnerMappers = [],
     ): Mapper
     {
-        $key = $this->getCacheKey($className, $innerMappers);
+        $key = $this->getCacheKey($className, $genericInnerMappers);
 
         /** @var Mapper<mixed, T> $mapper */
-        $mapper = $this->inputMappers[$key] ??= $this->createMapper($className, $innerMappers, $this->inputMapperFactories, 'input');
+        $mapper = $this->inputMappers[$key] ??= $this->createMapper($className, $genericInnerMappers, $this->inputMapperFactories, 'input');
         return $mapper;
     }
 
     /**
      * @param class-string<T> $className
-     * @param list<Mapper<*, *>> $innerMappers
+     * @param list<Mapper<*, *>> $genericInnerMappers
      * @return Mapper<T, mixed>
      *
      * @template T of object
      */
     public function getOutputMapper(
         string $className,
-        array $innerMappers = [],
+        array $genericInnerMappers = [],
     ): Mapper
     {
-        $key = $this->getCacheKey($className, $innerMappers);
+        $key = $this->getCacheKey($className, $genericInnerMappers);
 
         /** @var Mapper<T, mixed> $mapper */
-        $mapper = $this->outputMappers[$key] ??= $this->createMapper($className, $innerMappers, $this->outputMapperFactories, 'output');
+        $mapper = $this->outputMappers[$key] ??= $this->createMapper($className, $genericInnerMappers, $this->outputMapperFactories, 'output');
         return $mapper;
     }
 
@@ -138,17 +138,17 @@ class MapperProvider
     }
 
     /**
-     * @param list<Mapper<*, *>> $innerMappers
+     * @param list<Mapper<*, *>> $genericInnerMappers
      */
     private function getCacheKey(
         string $className,
-        array $innerMappers,
+        array $genericInnerMappers,
     ): string
     {
         $key = $className;
 
-        if (count($innerMappers) > 0) {
-            $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $innerMappers)));
+        if (count($genericInnerMappers) > 0) {
+            $key .= '+' . md5(implode('+', array_map(spl_object_id(...), $genericInnerMappers)));
         }
 
         return $key;
@@ -156,7 +156,7 @@ class MapperProvider
 
     /**
      * @param class-string<T> $className
-     * @param list<Mapper<*, *>> $innerMappers
+     * @param list<Mapper<*, *>> $genericInnerMappers
      * @param array<class-string, callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>> $factories
      * @param 'input'|'output' $direction
      * @return Mapper<mixed, mixed>
@@ -165,7 +165,7 @@ class MapperProvider
      */
     private function createMapper(
         string $className,
-        array $innerMappers,
+        array $genericInnerMappers,
         array $factories,
         string $direction,
     ): Mapper
@@ -182,7 +182,7 @@ class MapperProvider
         foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($factories[$classLikeName])) {
                 $factory = $factories[$classLikeName];
-                return $factory($className, $innerMappers, $this);
+                return $factory($className, $genericInnerMappers, $this);
             }
         }
 
@@ -192,7 +192,7 @@ class MapperProvider
             $this->load($className, $mapperClassName, $direction);
         }
 
-        return new $mapperClassName($this, $innerMappers);
+        return new $mapperClassName($this, $genericInnerMappers);
     }
 
     /**

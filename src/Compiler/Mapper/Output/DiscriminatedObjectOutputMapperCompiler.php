@@ -8,10 +8,12 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
+use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function count;
 use function ucfirst;
@@ -41,6 +43,12 @@ class DiscriminatedObjectOutputMapperCompiler implements GenericMapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
+        foreach ($this->subtypeCompilers as $subtypeCompiler) {
+            if (!PhpDocTypeUtils::isSubTypeOf($subtypeCompiler->getInputType(), $this->getInputType())) {
+                throw CannotCompileMapperException::withIncompatibleSubtypeMapper($this, $subtypeCompiler, 'input');
+            }
+        }
+
         $subtypeMatchArms = [];
 
         foreach ($this->subtypeCompilers as $key => $subtypeCompiler) {

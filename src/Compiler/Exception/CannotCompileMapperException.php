@@ -4,7 +4,6 @@ namespace ShipMonk\InputMapper\Compiler\Exception;
 
 use LogicException;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use Throwable;
@@ -25,22 +24,18 @@ class CannotCompileMapperException extends LogicException
         return new self("Cannot compile mapper {$mapperCompilerClass}, because {$reason}", 0, $previous);
     }
 
-    /**
-     * @param DiscriminatedObjectInputMapperCompiler<T> $mapperCompiler
-     *
-     * @template T of object
-     */
     public static function withIncompatibleSubtypeMapper(
-        DiscriminatedObjectInputMapperCompiler $mapperCompiler,
+        MapperCompiler $mapperCompiler,
         MapperCompiler $subtypeMapperCompiler,
+        string $checkedDirection = 'output',
         ?Throwable $previous = null,
     ): self
     {
-        $mapperOutputType = $mapperCompiler->getOutputType();
+        $parentType = $checkedDirection === 'output' ? $mapperCompiler->getOutputType() : $mapperCompiler->getInputType();
         $subtypeMapperCompilerClass = $subtypeMapperCompiler::class;
-        $subtypeMapperOutputType = $subtypeMapperCompiler->getOutputType();
+        $subtypeType = $checkedDirection === 'output' ? $subtypeMapperCompiler->getOutputType() : $subtypeMapperCompiler->getInputType();
 
-        $reason = "its output type '{$subtypeMapperOutputType}' is not subtype of '{$mapperOutputType}'";
+        $reason = "its {$checkedDirection} type '{$subtypeType}' is not subtype of '{$parentType}'";
         return new self("Cannot compile mapper {$subtypeMapperCompilerClass} as subtype (#[Discriminator]) mapper, because {$reason}", 0, $previous);
     }
 

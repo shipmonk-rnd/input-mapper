@@ -115,7 +115,7 @@ abstract class AbstractDelegateMapperCompiler implements MapperCompiler
     {
         foreach ($builder->getGenericParameters() as $offset => $genericParameter) {
             if ($this->className === $genericParameter->name) {
-                $innerMappers = $builder->propertyFetch($builder->var('this'), 'innerMappers');
+                $innerMappers = $builder->propertyFetch($builder->var('this'), 'genericInnerMappers');
                 $innerMapper = $builder->arrayDimFetch($innerMappers, $builder->val($offset));
                 return new CompiledExpr($innerMapper);
             }
@@ -127,7 +127,7 @@ abstract class AbstractDelegateMapperCompiler implements MapperCompiler
         $innerMappers = $this->compileInnerMappers($builder);
 
         if (count($innerMappers) > 0) {
-            $innerMappersVarName = $builder->uniqVariableName('innerMappers');
+            $innerMappersVarName = $builder->uniqVariableName('genericInnerMappers');
             $statements[] = $builder->assign($builder->var($innerMappersVarName), $builder->val($innerMappers));
             $getArguments = [$classNameExpr, $builder->var($innerMappersVarName)];
 

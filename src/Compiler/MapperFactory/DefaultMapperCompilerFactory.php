@@ -53,7 +53,6 @@ use ShipMonk\InputMapper\Compiler\Attribute\MapValidated;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
-use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
@@ -324,7 +323,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
      * @param ReflectionClass<object> $classReflection
      * @param list<string> $genericParameterNames
      * @param array<string, mixed> $options
-     * @return array{array<string, InputMapperCompilerProvider>, bool} [constructorArgsProviders, allowExtraKeys]
+     * @return array{array<string, MapperCompilerProvider>, bool} [constructorArgsProviders, allowExtraKeys]
      */
     protected function createConstructorArgsProviders(
         ReflectionClass $classReflection,
@@ -503,25 +502,24 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         ReflectionParameter $parameterReflection,
         TypeNode $type,
         array $options,
-    ): InputMapperCompilerProvider
+    ): MapperCompilerProvider
     {
-        /** @var list<InputMapperCompilerProvider> $inputProviders */
-        $inputProviders = [];
+        /** @var list<MapperCompilerProvider> $providers */
+        $providers = [];
         $validators = [];
 
-        foreach ($parameterReflection->getAttributes(InputMapperCompilerProvider::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
-            $inputProviders[] = $attribute->newInstance();
+        foreach ($parameterReflection->getAttributes(MapperCompilerProvider::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            $providers[] = $attribute->newInstance();
         }
 
         foreach ($parameterReflection->getAttributes(ValidatorCompiler::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $validators[] = $attribute->newInstance();
         }
 
-        /** @var MapperCompilerProvider $provider */
-        $provider = match (count($inputProviders)) {
+        $provider = match (count($providers)) {
             0 => $this->createInner($type, $options),
-            1 => $inputProviders[0],
-            default => new MapChain($inputProviders),
+            1 => $providers[0],
+            default => new MapChain($providers),
         };
 
         foreach ($validators as $validator) {

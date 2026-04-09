@@ -23,9 +23,9 @@ use function is_int;
 class DelegateToIntCollection__CollectionInputMapper implements Mapper
 {
     /**
-     * @param array{Mapper<mixed, T>} $innerMappers
+     * @param array{Mapper<mixed, T>} $genericInnerMappers
      */
-    public function __construct(private readonly MapperProvider $provider, private readonly array $innerMappers)
+    public function __construct(private readonly MapperProvider $provider, private readonly array $genericInnerMappers)
     {
     }
 
@@ -75,7 +75,7 @@ class DelegateToIntCollection__CollectionInputMapper implements Mapper
         $mapped = [];
 
         foreach ($data as $index => $item) {
-            $mapped[] = $this->innerMappers[0]->map($item, [...$path, $index]);
+            $mapped[] = $this->genericInnerMappers[0]->map($item, [...$path, $index]);
         }
 
         return $mapped;

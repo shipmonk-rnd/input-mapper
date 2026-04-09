@@ -50,7 +50,7 @@ class AssertStringNonEmpty extends AssertStringMatches implements NarrowingValid
         ];
     }
 
-    public function getNarrowedInputType(): TypeNode
+    public function getNarrowedType(): TypeNode
     {
         return new IdentifierTypeNode('non-empty-string');
     }

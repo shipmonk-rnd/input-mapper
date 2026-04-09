@@ -16,9 +16,9 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 class DelegateToIntCollection__CollectionInputOutputMapper implements Mapper
 {
     /**
-     * @param array{Mapper<T, mixed>} $innerMappers
+     * @param array{Mapper<T, mixed>} $genericInnerMappers
      */
-    public function __construct(private readonly MapperProvider $provider, private readonly array $innerMappers)
+    public function __construct(private readonly MapperProvider $provider, private readonly array $genericInnerMappers)
     {
     }
 

@@ -34,7 +34,7 @@ class InputMapperProviderTest extends InputMapperTestCase
         $mapperProvider = $this->createMapperProvider();
         $mapperProvider->registerInputFactory(
             EmptyInput::class,
-            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+            static function (string $inputClassName, array $genericInnerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
                 self::assertSame(EmptyInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;
@@ -52,7 +52,7 @@ class InputMapperProviderTest extends InputMapperTestCase
         $mapperProvider = $this->createMapperProvider();
         $mapperProvider->registerInputFactory(
             InputInterface::class,
-            static function (string $inputClassName, array $innerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
+            static function (string $inputClassName, array $genericInnerMappers, MapperProvider $provider) use ($myCustomMapper, $mapperProvider): DummyMapper {
                 self::assertSame(InterfaceImplementationInput::class, $inputClassName);
                 self::assertSame($mapperProvider, $provider);
                 return $myCustomMapper;

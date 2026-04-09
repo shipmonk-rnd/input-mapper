@@ -27,6 +27,9 @@ class MapValidated implements MapperCompilerProvider
         return new ValidatedInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler(), $this->validatorCompilers);
     }
 
+    /**
+     * Validators are input-only, output mapping passes through without validation
+     */
     public function getOutputMapperCompiler(): MapperCompiler
     {
         return $this->mapperCompilerProvider->getOutputMapperCompiler();

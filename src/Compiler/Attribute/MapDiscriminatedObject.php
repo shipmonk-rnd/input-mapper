@@ -2,7 +2,6 @@
 
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
-use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
@@ -13,7 +12,6 @@ use function array_map;
 /**
  * @template T of object
  */
-#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapDiscriminatedObject implements MapperCompilerProvider
 {
 

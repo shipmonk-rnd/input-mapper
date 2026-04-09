@@ -15,9 +15,12 @@ use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\SimplePersonInput;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\AllOptionalInput;
 use ShipMonk\InputMapperTests\Runtime\Data\CardInput;
+use ShipMonk\InputMapperTests\Runtime\Data\DateOnlyInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EdgeValuesInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EventInput;
+use ShipMonk\InputMapperTests\Runtime\Data\NullableDateTimeInput;
+use ShipMonk\InputMapperTests\Runtime\Data\NullableEnumInput;
 use function sys_get_temp_dir;
 
 class RoundTripTest extends InputMapperTestCase
@@ -226,6 +229,36 @@ class RoundTripTest extends InputMapperTestCase
     {
         $data = ['zero' => 0, 'emptyString' => '', 'false' => false, 'zeroFloat' => 0.0];
         self::assertSame($data, $this->roundTrip(EdgeValuesInput::class, $data));
+    }
+
+    public function testNullableEnumWithValue(): void
+    {
+        $data = ['suit' => 'H'];
+        self::assertSame($data, $this->roundTrip(NullableEnumInput::class, $data));
+    }
+
+    public function testNullableEnumWithNull(): void
+    {
+        $data = ['suit' => null];
+        self::assertSame($data, $this->roundTrip(NullableEnumInput::class, $data));
+    }
+
+    public function testNullableDateTimeWithValue(): void
+    {
+        $data = ['date' => '2024-01-15T10:30:00+00:00'];
+        self::assertSame($data, $this->roundTrip(NullableDateTimeInput::class, $data));
+    }
+
+    public function testNullableDateTimeWithNull(): void
+    {
+        $data = ['date' => null];
+        self::assertSame($data, $this->roundTrip(NullableDateTimeInput::class, $data));
+    }
+
+    public function testDateOnlyRoundTrip(): void
+    {
+        $data = ['date' => '2024-01-15'];
+        self::assertSame($data, $this->roundTrip(DateOnlyInput::class, $data));
     }
 
     public function testDiscriminatedObjectOutputWithUnrecognizedSubtype(): void

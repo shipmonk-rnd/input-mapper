@@ -99,13 +99,13 @@ By default, any extra properties are not allowed. You can change that by adding 
 
 ### Map Input
 
-To map input data (e.g. JSON) to objects, use `InputMapperProvider`:
+To map input data (e.g. JSON) to objects, use `MapperProvider`:
 
 ```php
 $tempDir = sys_get_temp_dir() . '/input-mapper';
 $autoRefresh = true; // MUST be set to false in production
-$inputMapperProvider = new ShipMonk\InputMapper\Runtime\InputMapperProvider($tempDir, $autoRefresh);
-$mapper = $inputMapperProvider->get(Person::class);
+$mapperProvider = new ShipMonk\InputMapper\Runtime\MapperProvider($tempDir, $autoRefresh);
+$mapper = $mapperProvider->getInputMapper(Person::class);
 
 try {
     $person = $mapper->map([
@@ -134,11 +134,10 @@ try {
 
 ### Map Output
 
-To convert objects back to plain arrays (e.g. for JSON serialization), use `OutputMapperProvider`:
+To convert objects back to plain arrays (e.g. for JSON serialization), use the same `MapperProvider`:
 
 ```php
-$outputMapperProvider = new ShipMonk\InputMapper\Runtime\OutputMapperProvider($tempDir, $autoRefresh);
-$mapper = $outputMapperProvider->get(Person::class);
+$mapper = $mapperProvider->getOutputMapper(Person::class);
 
 $data = $mapper->map($person);
 // ['name' => 'John', 'age' => 30, 'email' => null, 'hobbies' => ['hiking', 'reading'], 'friends' => [...]]

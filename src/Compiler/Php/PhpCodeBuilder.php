@@ -574,7 +574,7 @@ class PhpCodeBuilder extends BuilderFactory
                 $genericParameter->name,
                 $genericParameter->variance,
                 $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
-                $genericParameter->default,
+                $genericParameter->default !== null ? $this->importType($genericParameter->default) : null,
             );
         }
 
@@ -607,7 +607,7 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperConstructorBuilder->addParam($providerParameter);
 
         if ($mapperCompiler instanceof GenericMapperCompiler && count($mapperCompiler->getGenericParameters()) > 0) {
-            $innerMappersParameter = $this->param('innerMappers')->setType('array')->getNode();
+            $innerMappersParameter = $this->param('genericInnerMappers')->setType('array')->getNode();
             $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
             $mapperConstructorBuilder->addParam($innerMappersParameter);
 
@@ -623,7 +623,7 @@ class PhpCodeBuilder extends BuilderFactory
             ));
 
             $innerMappersType = $this->importType($innerMappersType);
-            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
+            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$genericInnerMappers";
         }
 
         return $mapperConstructorBuilder
@@ -659,7 +659,13 @@ class PhpCodeBuilder extends BuilderFactory
 
         if ($mapperCompiler instanceof GenericMapperCompiler) {
             foreach ($mapperCompiler->getGenericParameters() as $genericParameter) {
-                $phpDocLines[] = $genericParameter->toPhpDocLine();
+                $importedParameter = new GenericTypeParameter(
+                    $genericParameter->name,
+                    $genericParameter->variance,
+                    $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
+                    $genericParameter->default !== null ? $this->importType($genericParameter->default) : null,
+                );
+                $phpDocLines[] = $importedParameter->toPhpDocLine();
             }
         }
 
@@ -724,6 +730,10 @@ class PhpCodeBuilder extends BuilderFactory
             if ($genericParameter->bound !== null) {
                 $this->importType($genericParameter->bound);
             }
+
+            if ($genericParameter->default !== null) {
+                $this->importType($genericParameter->default);
+            }
         }
 
         $inputTypeString = (string) $inputType;
@@ -755,7 +765,7 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperConstructorBuilder->addParam($providerParameter);
 
         if ($mapperCompiler instanceof GenericMapperCompiler && count($mapperCompiler->getGenericParameters()) > 0) {
-            $innerMappersParameter = $this->param('innerMappers')->setType('array')->getNode();
+            $innerMappersParameter = $this->param('genericInnerMappers')->setType('array')->getNode();
             $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
             $mapperConstructorBuilder->addParam($innerMappersParameter);
 
@@ -771,7 +781,7 @@ class PhpCodeBuilder extends BuilderFactory
             ));
 
             $innerMappersType = $this->importType($innerMappersType);
-            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$innerMappers";
+            $mapperConstructorPhpDocLines[] = "@param {$innerMappersType} \$genericInnerMappers";
         }
 
         return $mapperConstructorBuilder
@@ -807,7 +817,13 @@ class PhpCodeBuilder extends BuilderFactory
 
         if ($mapperCompiler instanceof GenericMapperCompiler) {
             foreach ($mapperCompiler->getGenericParameters() as $genericParameter) {
-                $phpDocLines[] = $genericParameter->toPhpDocLine();
+                $importedParameter = new GenericTypeParameter(
+                    $genericParameter->name,
+                    $genericParameter->variance,
+                    $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
+                    $genericParameter->default !== null ? $this->importType($genericParameter->default) : null,
+                );
+                $phpDocLines[] = $importedParameter->toPhpDocLine();
             }
         }
 
