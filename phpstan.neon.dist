@@ -49,11 +49,6 @@ parameters:
             count: 1
             path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
         -
-            message: "#^Method ShipMonk\\\\InputMapperTests\\\\Compiler\\\\Validator\\\\String\\\\Data\\\\StringNonEmptyValidatorMapper\\:\\:map\\(\\) should return non\\-empty\\-string but returns string\\.$#"
-            count: 1
-            path: tests/Compiler/Validator/String/Data/StringNonEmptyValidatorMapper.php
-
-        -
             identifier: method.internalClass
             path: tests/*
 
