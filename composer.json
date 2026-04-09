@@ -19,6 +19,7 @@
         "phpunit/phpunit": "^10.5.63",
         "shipmonk/coding-standard": "^0.2.1",
         "shipmonk/composer-dependency-analyser": "^1.8.4",
+        "shipmonk/coverage-guard": "^1.0",
         "shipmonk/dead-code-detector": "^0.15.0",
         "shipmonk/name-collision-detector": "^2.1.1",
         "shipmonk/phpstan-rules": "^4.3.5"
@@ -47,10 +48,14 @@
             "@check:ec",
             "@check:cs",
             "@check:types",
-            "@check:tests",
+            "@check:coverage",
             "@check:dependencies"
         ],
         "check:composer": "composer normalize --dry-run --no-check-lock --no-update-lock",
+        "check:coverage": [
+            "XDEBUG_MODE=coverage phpunit tests --coverage-clover=coverage.xml",
+            "coverage-guard check coverage.xml --config coverage-guard.php"
+        ],
         "check:cs": "phpcs",
         "check:dependencies": "composer-dependency-analyser",
         "check:ec": "ec src tests",

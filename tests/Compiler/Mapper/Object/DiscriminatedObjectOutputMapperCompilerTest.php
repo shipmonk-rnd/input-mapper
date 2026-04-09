@@ -2,12 +2,14 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Object;
 
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Optional;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
@@ -74,6 +76,27 @@ class DiscriminatedObjectOutputMapperCompilerTest extends MapperCompilerTestCase
         self::assertSame(
             ['id' => 2, 'name' => 'Bob', 'type' => 'childTwo', 'childTwoField' => 42],
             $mapper->map($childTwo),
+        );
+    }
+
+    public function testGetInputTypeWithGenericParameters(): void
+    {
+        $mapperCompiler = new DiscriminatedObjectOutputMapperCompiler(
+            HierarchicalParentInput::class,
+            [
+                'childOne' => new DelegateOutputMapperCompiler(HierarchicalChildOneInput::class),
+            ],
+            genericParameters: [
+                new GenericTypeParameter('T'),
+            ],
+        );
+
+        self::assertEquals(
+            new GenericTypeNode(
+                new IdentifierTypeNode(HierarchicalParentInput::class),
+                [new IdentifierTypeNode('T')],
+            ),
+            $mapperCompiler->getInputType(),
         );
     }
 
