@@ -19,7 +19,7 @@ class MapDefaultValueTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new DefaultValueInputMapperCompiler(new IntInputMapperCompiler(), null);
-        $mapper = $this->compileMapper('IntWithDefaultValue', $mapperCompiler);
+        $mapper = $this->compileInputMapper('IntWithDefaultValue', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));
         self::assertSame(2, $mapper->map(2));
@@ -38,7 +38,7 @@ class MapDefaultValueTest extends MapperCompilerTestCase
             'manufacturer' => new DefaultValueInputMapperCompiler(new NullableInputMapperCompiler(new StringInputMapperCompiler()), null),
         ]);
 
-        $mapper = $this->compileMapper('Semaphore', $mapperCompiler);
+        $mapper = $this->compileInputMapper('Semaphore', $mapperCompiler);
 
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Green, null), $mapper->map([]));
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Red, null), $mapper->map(['color' => 'red']));

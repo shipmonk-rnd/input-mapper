@@ -12,7 +12,7 @@ class MapBoolTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new BoolInputMapperCompiler();
-        $mapper = $this->compileMapper('Bool', $mapperCompiler);
+        $mapper = $this->compileInputMapper('Bool', $mapperCompiler);
 
         self::assertTrue($mapper->map(true));
         self::assertFalse($mapper->map(false));

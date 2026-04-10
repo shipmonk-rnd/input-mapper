@@ -16,14 +16,14 @@ class ValidatedInputMapperCompilerTest extends MapperCompilerTestCase
     public function testCompileWithEmptyValidatorList(): void
     {
         $mapperCompiler = new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), []);
-        $mapper = $this->compileMapper('NotValidatedIntMapper', $mapperCompiler);
+        $mapper = $this->compileInputMapper('NotValidatedIntMapper', $mapperCompiler);
         self::assertSame(1, $mapper->map(1));
     }
 
     public function testCompile(): void
     {
         $mapperCompiler = new ValidatedInputMapperCompiler(new IntInputMapperCompiler(), [new AssertPositiveInt()]);
-        $mapper = $this->compileMapper('PositiveIntMapper', $mapperCompiler);
+        $mapper = $this->compileInputMapper('PositiveIntMapper', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));
 
@@ -41,7 +41,7 @@ class ValidatedInputMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper with validator ShipMonk\InputMapper\Compiler\Validator\String\AssertUrl, because mapper output type \'int\' is not compatible with validator input type \'string\'',
-            fn () => $this->compileMapper('IntMapperWithIncompatibleValidator', $mapperCompiler),
+            fn () => $this->compileInputMapper('IntMapperWithIncompatibleValidator', $mapperCompiler),
         );
     }
 

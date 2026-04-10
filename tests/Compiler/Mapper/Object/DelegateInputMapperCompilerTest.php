@@ -22,7 +22,7 @@ class DelegateInputMapperCompilerTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $delegateMapper = $this->compileMapper('DelegateToPerson', new DelegateInputMapperCompiler(PersonInput::class), [
+        $delegateMapper = $this->compileInputMapper('DelegateToPerson', new DelegateInputMapperCompiler(PersonInput::class), [
             PersonInput::class => $this->createPersonMapperCompiler(),
         ]);
 
@@ -53,7 +53,7 @@ class DelegateInputMapperCompilerTest extends MapperCompilerTestCase
             ],
         );
 
-        $intCollectionDelegateMapper = $this->compileMapper(
+        $intCollectionDelegateMapper = $this->compileInputMapper(
             name: 'DelegateToIntCollection',
             mapperCompiler: new DelegateInputMapperCompiler(CollectionInput::class, [
                 new IntInputMapperCompiler(),
@@ -68,7 +68,7 @@ class DelegateInputMapperCompilerTest extends MapperCompilerTestCase
             $intCollectionDelegateMapper->map(['items' => [1, 2, 3], 'size' => 3]),
         );
 
-        $enumCollectionDelegateMapper = $this->compileMapper(
+        $enumCollectionDelegateMapper = $this->compileInputMapper(
             name: 'DelegateToEnumCollection',
             mapperCompiler: new DelegateInputMapperCompiler(CollectionInput::class, [
                 new DelegateInputMapperCompiler(SuitEnum::class),

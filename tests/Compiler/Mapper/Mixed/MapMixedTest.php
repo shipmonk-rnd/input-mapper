@@ -12,7 +12,7 @@ class MapMixedTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new MixedInputMapperCompiler();
-        $mapper = $this->compileMapper('Mixed', $mapperCompiler);
+        $mapper = $this->compileInputMapper('Mixed', $mapperCompiler);
 
         self::assertNull($mapper->map(null));
         self::assertSame(1, $mapper->map(1));

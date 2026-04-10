@@ -14,7 +14,7 @@ class MapListTest extends MapperCompilerTestCase
     {
         $itemMapperCompiler = new IntInputMapperCompiler();
         $mapperCompiler = new ListInputMapperCompiler($itemMapperCompiler);
-        $mapper = $this->compileMapper('GenericList', $mapperCompiler);
+        $mapper = $this->compileInputMapper('GenericList', $mapperCompiler);
 
         self::assertSame([], $mapper->map([]));
         self::assertSame([1], $mapper->map([1]));

@@ -26,42 +26,14 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
      * @param list<Mapper<mixed, mixed>> $genericInnerMappers
      * @return Mapper<mixed, mixed>
      */
-    protected function compileMapper(
+    protected function compileInputMapper(
         string $name,
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers = [],
         array $genericInnerMappers = [],
     ): Mapper
     {
-        $testCaseReflection = new ReflectionClass($this);
-
-        $mapperShortClassName = ucfirst($name) . 'Mapper';
-        $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
-        $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
-
-        $mapperDir = strtr(str_replace('ShipMonk\InputMapperTests', __DIR__ . '/../..', $mapperNamespace), '\\', '/');
-        $mapperPath = "{$mapperDir}/{$mapperShortClassName}.php";
-
-        $builder = new PhpCodeBuilder();
-        $printer = new PhpCodePrinter();
-        $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
-        self::assertSnapshot($mapperPath, $mapperCode);
-
-        if (!class_exists($mapperClassName, autoload: false)) {
-            require $mapperPath;
-        }
-
-        $mapperProvider = $this->createMock(MapperProvider::class);
-
-        $mapperProvider->expects(self::any())->method('getInputMapper')->willReturnCallback(
-            function (string $inputClassName, array $genericInnerMappers = []) use ($name, $providedMapperCompilers): Mapper {
-                /** @var list<Mapper<mixed, mixed>> $genericInnerMappers */
-                return $this->compileMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $genericInnerMappers);
-            },
-        );
-
-        assert(is_a($mapperClassName, Mapper::class, true));
-        return new $mapperClassName($mapperProvider, $genericInnerMappers);
+        return $this->doCompileMapper($name, 'Mapper', 'getInputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers);
     }
 
     /**
@@ -76,9 +48,26 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         array $genericInnerMappers = [],
     ): Mapper
     {
+        return $this->doCompileMapper($name, 'OutputMapper', 'getOutputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers);
+    }
+
+    /**
+     * @param array<class-string, MapperCompiler> $providedMapperCompilers
+     * @param list<Mapper<mixed, mixed>> $genericInnerMappers
+     * @return Mapper<mixed, mixed>
+     */
+    private function doCompileMapper(
+        string $name,
+        string $classNameSuffix,
+        string $providerMethodName,
+        MapperCompiler $mapperCompiler,
+        array $providedMapperCompilers,
+        array $genericInnerMappers,
+    ): Mapper
+    {
         $testCaseReflection = new ReflectionClass($this);
 
-        $mapperShortClassName = ucfirst($name) . 'OutputMapper';
+        $mapperShortClassName = ucfirst($name) . $classNameSuffix;
         $mapperNamespace = $testCaseReflection->getNamespaceName() . '\\Data';
         $mapperClassName = "{$mapperNamespace}\\{$mapperShortClassName}";
 
@@ -96,10 +85,10 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $mapperProvider = $this->createMock(MapperProvider::class);
 
-        $mapperProvider->expects(self::any())->method('getOutputMapper')->willReturnCallback(
-            function (string $inputClassName, array $genericInnerMappers = []) use ($name, $providedMapperCompilers): Mapper {
+        $mapperProvider->expects(self::any())->method($providerMethodName)->willReturnCallback(
+            function (string $inputClassName, array $genericInnerMappers = []) use ($name, $classNameSuffix, $providerMethodName, $providedMapperCompilers): Mapper {
                 /** @var list<Mapper<mixed, mixed>> $genericInnerMappers */
-                return $this->compileOutputMapper($name . '__' . $this->toShortClassName($inputClassName), $providedMapperCompilers[$inputClassName], [], $genericInnerMappers);
+                return $this->doCompileMapper($name . '__' . $this->toShortClassName($inputClassName), $classNameSuffix, $providerMethodName, $providedMapperCompilers[$inputClassName], [], $genericInnerMappers);
             },
         );
 
