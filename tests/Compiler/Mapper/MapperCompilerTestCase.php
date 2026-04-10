@@ -44,7 +44,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $builder = new PhpCodeBuilder();
         $printer = new PhpCodePrinter();
-        $mapperCode = $printer->prettyPrintFile($builder->inputMapperFile($mapperClassName, $mapperCompiler));
+        $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
         self::assertSnapshot($mapperPath, $mapperCode);
 
         if (!class_exists($mapperClassName, autoload: false)) {
@@ -87,7 +87,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
 
         $builder = new PhpCodeBuilder();
         $printer = new PhpCodePrinter();
-        $mapperCode = $printer->prettyPrintFile($builder->outputMapperFile($mapperClassName, $mapperCompiler));
+        $mapperCode = $printer->prettyPrintFile($builder->mapperFile($mapperClassName, $mapperCompiler));
         self::assertSnapshot($mapperPath, $mapperCode);
 
         if (!class_exists($mapperClassName, autoload: false)) {

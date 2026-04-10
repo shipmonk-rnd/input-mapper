@@ -259,13 +259,11 @@ class MapperProvider
         $codeBuilder = new PhpCodeBuilder();
         $codePrinter = new PhpCodePrinter();
 
-        if ($direction === 'input') {
-            $mapperCompiler = $mapperCompilerFactory->create($type)->getInputMapperCompiler();
-            return $codePrinter->prettyPrintFile($codeBuilder->inputMapperFile($mapperClassName, $mapperCompiler));
-        }
+        $mapperCompiler = $direction === 'input'
+            ? $mapperCompilerFactory->create($type)->getInputMapperCompiler()
+            : $mapperCompilerFactory->create($type)->getOutputMapperCompiler();
 
-        $mapperCompiler = $mapperCompilerFactory->create($type)->getOutputMapperCompiler();
-        return $codePrinter->prettyPrintFile($codeBuilder->outputMapperFile($mapperClassName, $mapperCompiler));
+        return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
     }
 
     /**

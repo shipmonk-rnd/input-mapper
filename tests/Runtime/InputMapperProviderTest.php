@@ -134,7 +134,7 @@ class InputMapperProviderTest extends InputMapperTestCase
 
             $codeBuilder = new PhpCodeBuilder();
             $codePrinter = new PhpCodePrinter();
-            $code = $codePrinter->prettyPrintFile($codeBuilder->inputMapperFile($mapperClassName, $mapperCompiler));
+            $code = $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
             FileSystem::write($filePath, $code);
 
             // Now load from cache with autoRefresh=false

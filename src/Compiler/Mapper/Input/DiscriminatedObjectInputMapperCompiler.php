@@ -10,12 +10,14 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCompileMapperException;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperParameter;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function array_keys;
+use function array_map;
 use function count;
 use function ucfirst;
 
@@ -146,12 +148,9 @@ class DiscriminatedObjectInputMapperCompiler implements GenericMapperCompiler
         );
     }
 
-    /**
-     * @return list<GenericTypeParameter>
-     */
     public function getGenericParameters(): array
     {
-        return $this->genericParameters;
+        return array_map(GenericMapperParameter::input(...), $this->genericParameters);
     }
 
 }
