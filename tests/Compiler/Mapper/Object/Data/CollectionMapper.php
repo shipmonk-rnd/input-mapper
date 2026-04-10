@@ -55,10 +55,7 @@ class CollectionMapper implements Mapper
             throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
-        return new CollectionInput(
-            $this->mapItems($data['items'], [...$path, 'items']),
-            $this->mapSize($data['size'], [...$path, 'size']),
-        );
+        return new CollectionInput($this->mapItems($data['items'], [...$path, 'items']), $this->mapSize($data['size'], [...$path, 'size']));
     }
 
     /**

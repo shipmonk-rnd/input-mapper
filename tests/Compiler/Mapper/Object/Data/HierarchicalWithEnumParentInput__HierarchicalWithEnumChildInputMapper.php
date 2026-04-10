@@ -52,10 +52,7 @@ class HierarchicalWithEnumParentInput__HierarchicalWithEnumChildInputMapper impl
             throw MappingFailedException::extraKeys($path, array_keys($extraKeys));
         }
 
-        return new HierarchicalWithEnumChildInput(
-            $this->mapId($data['id'], [...$path, 'id']),
-            $this->mapType($data['type'], [...$path, 'type']),
-        );
+        return new HierarchicalWithEnumChildInput($this->mapId($data['id'], [...$path, 'id']), $this->mapType($data['type'], [...$path, 'type']));
     }
 
     /**

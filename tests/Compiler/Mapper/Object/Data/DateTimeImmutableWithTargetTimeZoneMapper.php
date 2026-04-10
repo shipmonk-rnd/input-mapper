@@ -31,10 +31,10 @@ class DateTimeImmutableWithTargetTimeZoneMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:sP', $data);
+        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sP', $data);
 
         if ($mapped === false) {
-            $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:s.vP', $data);
+            $mapped = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.vP', $data);
         }
 
         if ($mapped === false) {

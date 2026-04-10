@@ -30,7 +30,7 @@ class PatternValidatorWithCustomPatternDescriptionMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        if (preg_match('#^\\d+\\z#', $data) !== 1) {
+        if (preg_match('#^\d+\z#', $data) !== 1) {
             throw MappingFailedException::incorrectValue($data, $path, 'numeric string');
         }
 

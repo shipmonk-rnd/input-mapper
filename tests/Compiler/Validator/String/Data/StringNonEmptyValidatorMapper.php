@@ -31,7 +31,7 @@ class StringNonEmptyValidatorMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        if ($data === '' || preg_match('#\\S#', $data) !== 1) {
+        if ($data === '' || preg_match('#\S#', $data) !== 1) {
             throw MappingFailedException::incorrectValue($data, $path, 'non-empty string');
         }
 
