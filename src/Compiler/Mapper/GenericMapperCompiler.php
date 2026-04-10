@@ -2,13 +2,11 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper;
 
-use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
-
 interface GenericMapperCompiler extends MapperCompiler
 {
 
     /**
-     * @return list<GenericTypeParameter>
+     * @return list<GenericMapperParameter>
      */
     public function getGenericParameters(): array;
 

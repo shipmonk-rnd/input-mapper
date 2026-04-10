@@ -11,9 +11,11 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperParameter;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
+use function array_map;
 use function count;
 use function ucfirst;
 
@@ -153,12 +155,9 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
         return ArrayShapeNode::createSealed($items);
     }
 
-    /**
-     * @return list<GenericTypeParameter>
-     */
     public function getGenericParameters(): array
     {
-        return $this->genericParameters;
+        return array_map(GenericMapperParameter::output(...), $this->genericParameters);
     }
 
 }
