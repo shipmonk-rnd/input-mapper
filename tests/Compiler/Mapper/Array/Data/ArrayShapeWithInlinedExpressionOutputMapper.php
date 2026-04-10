@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ArrayShapeOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<array{name: string, suit: SuitEnum}, mixed>
+ * @implements Mapper<array{name: string, suit: SuitEnum}, array{name: string, suit: string}>
  */
 class ArrayShapeWithInlinedExpressionOutputMapper implements Mapper
 {
@@ -25,7 +25,7 @@ class ArrayShapeWithInlinedExpressionOutputMapper implements Mapper
      * @return array{name: string, suit: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         return ['name' => $data['name'], 'suit' => $data['suit']->value];
     }

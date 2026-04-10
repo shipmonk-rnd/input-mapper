@@ -12,7 +12,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see DateTimeImmutableOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<DateTimeImmutable, mixed>
+ * @implements Mapper<DateTimeImmutable, string>
  */
 class DateTimeImmutableWithTimezoneOutputMapper implements Mapper
 {
@@ -23,10 +23,9 @@ class DateTimeImmutableWithTimezoneOutputMapper implements Mapper
     /**
      * @param  DateTimeImmutable $data
      * @param  list<string|int> $path
-     * @return string
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): string
     {
         return $data->setTimezone(new DateTimeZone('Europe/Prague'))->format('Y-m-d\\TH:i:sP');
     }

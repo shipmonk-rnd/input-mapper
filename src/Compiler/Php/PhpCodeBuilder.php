@@ -553,50 +553,6 @@ class PhpCodeBuilder extends BuilderFactory
         return "/**\n * " . implode("\n * ", $lines) . "\n */";
     }
 
-    public function inputMapperMethod(
-        string $methodName,
-        MapperCompiler $mapperCompiler,
-    ): Method
-    {
-        $mapper = $this->withVariableScope(function () use ($mapperCompiler, &$dataVarName, &$pathVarName): CompiledExpr {
-            [$dataVarName, $pathVarName] = $this->uniqVariableNames('data', 'path');
-            return $mapperCompiler->compile($this->var($dataVarName), $this->var($pathVarName), $this);
-        });
-
-        assert($dataVarName !== null && $pathVarName !== null);
-        $inputType = $this->importType($mapperCompiler->getInputType());
-        $outputType = $this->importType($mapperCompiler->getOutputType());
-
-        $clonedGenericParameters = [];
-
-        foreach ($this->genericParameters as $genericParameter) {
-            $clonedGenericParameters[] = new GenericTypeParameter(
-                $genericParameter->name,
-                $genericParameter->variance,
-                $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
-                $genericParameter->default !== null ? $this->importType($genericParameter->default) : null,
-            );
-        }
-
-        $nativeInputType = PhpDocTypeUtils::toNativeType($inputType, $clonedGenericParameters, $phpDocInputTypeUseful);
-        $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $clonedGenericParameters, $phpDocOutputTypeUseful);
-
-        $phpDoc = $this->phpDoc([
-            $phpDocInputTypeUseful !== false ? "@param  {$inputType} \${$dataVarName}" : null,
-            "@param  list<string|int> \${$pathVarName}",
-            $phpDocOutputTypeUseful !== false ? "@return {$outputType}" : null,
-            '@throws ' . $this->importClass(MappingFailedException::class),
-        ]);
-
-        return $this->method($methodName)
-            ->setDocComment($phpDoc)
-            ->addParam($this->param($dataVarName)->setType($nativeInputType))
-            ->addParam($this->param($pathVarName)->setType('array')->setDefault($this->array([])))
-            ->setReturnType($nativeOutputType)
-            ->addStmts($mapper->statements)
-            ->addStmt($this->return($mapper->expr));
-    }
-
     public function inputMapperClassConstructor(MapperCompiler $mapperCompiler): ClassMethod
     {
         $mapperConstructorPhpDocLines = [];
@@ -639,17 +595,18 @@ class PhpCodeBuilder extends BuilderFactory
     {
         $mapperConstructor = $this->inputMapperClassConstructor($mapperCompiler);
 
-        $mapMethod = $this->inputMapperMethod('map', $mapperCompiler)
+        $mapMethod = $this->mapperMethod('map', $mapperCompiler)
             ->makePublic()
             ->getNode();
 
+        $inputType = $this->importType($mapperCompiler->getInputType());
         $outputType = $this->importType($mapperCompiler->getOutputType());
 
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
         $implementsType = new GenericTypeNode(
             new IdentifierTypeNode($this->importClass(Mapper::class)),
-            [new IdentifierTypeNode('mixed'), $outputType],
+            [$inputType, $outputType],
         );
 
         $phpDocLines = [
@@ -712,7 +669,7 @@ class PhpCodeBuilder extends BuilderFactory
         return $this->file($namespaceName, [$mapperClass]);
     }
 
-    public function outputMapperMethod(
+    public function mapperMethod(
         string $methodName,
         MapperCompiler $mapperCompiler,
     ): Method
@@ -726,23 +683,25 @@ class PhpCodeBuilder extends BuilderFactory
         $inputType = $this->importType($mapperCompiler->getInputType());
         $outputType = $this->importType($mapperCompiler->getOutputType());
 
-        foreach ($this->genericParameters as $genericParameter) {
-            if ($genericParameter->bound !== null) {
-                $this->importType($genericParameter->bound);
-            }
+        $clonedGenericParameters = [];
 
-            if ($genericParameter->default !== null) {
-                $this->importType($genericParameter->default);
-            }
+        foreach ($this->genericParameters as $genericParameter) {
+            $clonedGenericParameters[] = new GenericTypeParameter(
+                $genericParameter->name,
+                $genericParameter->variance,
+                $genericParameter->bound !== null ? $this->importType($genericParameter->bound) : null,
+                $genericParameter->default !== null ? $this->importType($genericParameter->default) : null,
+            );
         }
 
+        $nativeOutputType = PhpDocTypeUtils::toNativeType($outputType, $clonedGenericParameters, $phpDocOutputTypeUseful);
+
         $inputTypeString = (string) $inputType;
-        $outputTypeString = (string) $outputType;
 
         $phpDoc = $this->phpDoc([
             $inputTypeString !== 'mixed' ? "@param  {$inputType} \${$dataVarName}" : null,
             "@param  list<string|int> \${$pathVarName}",
-            $outputTypeString !== 'mixed' ? "@return {$outputType}" : null,
+            $phpDocOutputTypeUseful !== false ? "@return {$outputType}" : null,
             '@throws ' . $this->importClass(MappingFailedException::class),
         ]);
 
@@ -750,7 +709,7 @@ class PhpCodeBuilder extends BuilderFactory
             ->setDocComment($phpDoc)
             ->addParam($this->param($dataVarName)->setType('mixed'))
             ->addParam($this->param($pathVarName)->setType('array')->setDefault($this->array([])))
-            ->setReturnType('mixed')
+            ->setReturnType($nativeOutputType)
             ->addStmts($mapper->statements)
             ->addStmt($this->return($mapper->expr));
     }
@@ -797,17 +756,18 @@ class PhpCodeBuilder extends BuilderFactory
     {
         $mapperConstructor = $this->outputMapperClassConstructor($mapperCompiler);
 
-        $mapMethod = $this->outputMapperMethod('map', $mapperCompiler)
+        $mapMethod = $this->mapperMethod('map', $mapperCompiler)
             ->makePublic()
             ->getNode();
 
         $inputType = $this->importType($mapperCompiler->getInputType());
+        $outputType = $this->importType($mapperCompiler->getOutputType());
 
         $mapperCompilerType = $this->importClass($mapperCompiler::class);
 
         $implementsType = new GenericTypeNode(
             new IdentifierTypeNode($this->importClass(Mapper::class)),
-            [$inputType, new IdentifierTypeNode('mixed')],
+            [$inputType, $outputType],
         );
 
         $phpDocLines = [

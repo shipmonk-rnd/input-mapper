@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see NullableOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<?SuitEnum, mixed>
+ * @implements Mapper<?SuitEnum, ?string>
  */
 class NullableEnumOutputMapper implements Mapper
 {
@@ -22,10 +22,9 @@ class NullableEnumOutputMapper implements Mapper
     /**
      * @param  ?SuitEnum $data
      * @param  list<string|int> $path
-     * @return ?string
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): ?string
     {
         return $data === null ? null : $data->value;
     }

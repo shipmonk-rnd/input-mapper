@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see NullableOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<?int, mixed>
+ * @implements Mapper<?int, ?int>
  */
 class NullableIntOutputMapper implements Mapper
 {
@@ -21,10 +21,9 @@ class NullableIntOutputMapper implements Mapper
     /**
      * @param  ?int $data
      * @param  list<string|int> $path
-     * @return ?int
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): ?int
     {
         return $data;
     }

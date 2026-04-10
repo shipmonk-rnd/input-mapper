@@ -95,7 +95,7 @@ class DiscriminatedObjectInputMapperCompiler implements GenericMapperCompiler
 
         foreach ($this->subtypeCompilers as $key => $subtypeCompiler) {
             $subtypeMapperMethodName = $builder->uniqMethodName('map' . ucfirst($key));
-            $subtypeMapperMethod = $builder->inputMapperMethod($subtypeMapperMethodName, $subtypeCompiler)->makePrivate()->getNode();
+            $subtypeMapperMethod = $builder->mapperMethod($subtypeMapperMethodName, $subtypeCompiler)->makePrivate()->getNode();
 
             $builder->addMethod($subtypeMapperMethod);
             $subtypeMapperMethodCall = $builder->methodCall($builder->var('this'), $subtypeMapperMethodName, [$value, $path]);

@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<HierarchicalChildOneInput, mixed>
+ * @implements Mapper<HierarchicalChildOneInput, array{id: int, name: string, age?: int, type: string, childOneField: string}>
  */
 class HierarchicalParent__HierarchicalChildOneInputOutputMapper implements Mapper
 {
@@ -24,7 +24,7 @@ class HierarchicalParent__HierarchicalChildOneInputOutputMapper implements Mappe
      * @return array{id: int, name: string, age?: int, type: string, childOneField: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         $output = [];
         $output['id'] = $data->id;

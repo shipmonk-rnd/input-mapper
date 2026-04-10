@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ListOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<list<int>, mixed>
+ * @implements Mapper<list<int>, list<int>>
  */
 class ListOfIntsOutputMapper implements Mapper
 {
@@ -24,7 +24,7 @@ class ListOfIntsOutputMapper implements Mapper
      * @return list<int>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         return $data;
     }

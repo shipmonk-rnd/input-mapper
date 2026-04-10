@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ArrayShapeOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<array{a: int, ...}, mixed>
+ * @implements Mapper<array{a: int, ...}, array{a: int, ...}>
  */
 class UnsealedArrayShapeOutputMapper implements Mapper
 {
@@ -24,7 +24,7 @@ class UnsealedArrayShapeOutputMapper implements Mapper
      * @return array{a: int, ...}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         return ['a' => $data['a']];
     }

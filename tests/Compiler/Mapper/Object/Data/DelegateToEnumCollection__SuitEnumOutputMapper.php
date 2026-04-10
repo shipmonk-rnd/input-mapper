@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see EnumOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<SuitEnum, mixed>
+ * @implements Mapper<SuitEnum, string>
  */
 class DelegateToEnumCollection__SuitEnumOutputMapper implements Mapper
 {
@@ -21,10 +21,9 @@ class DelegateToEnumCollection__SuitEnumOutputMapper implements Mapper
     /**
      * @param  SuitEnum $data
      * @param  list<string|int> $path
-     * @return string
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): string
     {
         return $data->value;
     }

@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<PersonWithSourceKeyInput, mixed>
+ * @implements Mapper<PersonWithSourceKeyInput, array{id: int, full_name: string}>
  */
 class PersonWithSourceKeyOutputMapper implements Mapper
 {
@@ -24,7 +24,7 @@ class PersonWithSourceKeyOutputMapper implements Mapper
      * @return array{id: int, full_name: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         return ['id' => $data->id, 'full_name' => $data->name];
     }
