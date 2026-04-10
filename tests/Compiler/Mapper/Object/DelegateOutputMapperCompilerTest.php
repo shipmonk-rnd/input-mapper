@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
@@ -42,7 +43,7 @@ class DelegateOutputMapperCompilerTest extends MapperCompilerTestCase
         $collectionOutputMapperCompiler = new ObjectOutputMapperCompiler(
             className: CollectionInput::class,
             propertyMapperCompilers: [
-                'items' => ['items', new PassthroughMapperCompiler(new IdentifierTypeNode('mixed'))],
+                'items' => ['items', new ListOutputMapperCompiler(new DelegateOutputMapperCompiler('T'))],
                 'size' => ['size', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
             ],
             genericParameters: [
@@ -77,7 +78,7 @@ class DelegateOutputMapperCompilerTest extends MapperCompilerTestCase
         );
 
         self::assertSame(
-            ['items' => [SuitEnum::Diamonds], 'size' => 3],
+            ['items' => ['D'], 'size' => 3],
             $enumCollectionDelegateMapper->map(new CollectionInput([SuitEnum::Diamonds], 3)),
         );
     }
