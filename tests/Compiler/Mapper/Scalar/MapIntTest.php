@@ -12,7 +12,7 @@ class MapIntTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new IntInputMapperCompiler();
-        $mapper = $this->compileMapper('Int', $mapperCompiler);
+        $mapper = $this->compileInputMapper('Int', $mapperCompiler);
 
         self::assertSame(1, $mapper->map(1));
         self::assertSame(2, $mapper->map(2));

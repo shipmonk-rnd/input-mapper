@@ -12,7 +12,7 @@ class MapStringTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new StringInputMapperCompiler();
-        $mapper = $this->compileMapper('String', $mapperCompiler);
+        $mapper = $this->compileInputMapper('String', $mapperCompiler);
 
         self::assertSame('', $mapper->map(''));
         self::assertSame('abc', $mapper->map('abc'));

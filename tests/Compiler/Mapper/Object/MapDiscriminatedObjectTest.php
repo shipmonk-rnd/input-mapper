@@ -33,7 +33,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $parentInputMapper = $this->compileMapper('HierarchicalParentInput', $this->createParentInputMapperCompiler(), [
+        $parentInputMapper = $this->compileInputMapper('HierarchicalParentInput', $this->createParentInputMapperCompiler(), [
             HierarchicalChildOneInput::class => $this->createHierarchicalChildOneInputMapperCompiler(),
             HierarchicalChildTwoInput::class => $this->createHierarchicalChildTwoInputMapperCompiler(),
         ]);
@@ -116,7 +116,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithEnumAsType(): void
     {
-        $parentInputMapper = $this->compileMapper('HierarchicalWithEnumParentInput', $this->createParentInputWithEnumMapperCompiler(), [
+        $parentInputMapper = $this->compileInputMapper('HierarchicalWithEnumParentInput', $this->createParentInputWithEnumMapperCompiler(), [
             HierarchicalWithEnumChildInput::class => $this->createHierarchicalChildWithEnumMapperCompiler(),
         ]);
 
@@ -147,7 +147,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 
     public function testCompileWithNoTypeFieldMapping(): void
     {
-        $parentInputMapper = $this->compileMapper('HierarchicalWithNoTypeFieldInput', $this->createParentInputWithNoTypeFieldMapperCompiler(), [
+        $parentInputMapper = $this->compileInputMapper('HierarchicalWithNoTypeFieldInput', $this->createParentInputWithNoTypeFieldMapperCompiler(), [
             HierarchicalWithNoTypeFieldChildInput::class => $this->createHierarchicalChildWithNoTypeFieldMapperCompiler(),
         ]);
 
@@ -213,7 +213,7 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler as subtype (#[Discriminator]) mapper, because its output type \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput\' is not subtype of \'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput\'',
-            fn (): Mapper => $this->compileMapper('InvalidHierarchyMapper', $mapperCompiler),
+            fn (): Mapper => $this->compileInputMapper('InvalidHierarchyMapper', $mapperCompiler),
         );
     }
 

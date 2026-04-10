@@ -23,7 +23,7 @@ class MapObjectTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $personInputMapperCompiler = $this->createPersonInputMapperCompiler();
-        $movieInputMapper = $this->compileMapper('Movie', $this->createMovieInputMapperCompiler(), [PersonInput::class => $personInputMapperCompiler]);
+        $movieInputMapper = $this->compileInputMapper('Movie', $this->createMovieInputMapperCompiler(), [PersonInput::class => $personInputMapperCompiler]);
 
         $movieInputObject = new MovieInput(
             id: 1,
@@ -100,7 +100,7 @@ class MapObjectTest extends MapperCompilerTestCase
             allowExtraKeys: true,
         );
 
-        $mapper = $this->compileMapper('PersonWithAllowedExtraProperties', $mapperCompiler);
+        $mapper = $this->compileInputMapper('PersonWithAllowedExtraProperties', $mapperCompiler);
 
         self::assertEquals(
             new PersonInput(1, 'John', Optional::none([], 'age')),
@@ -121,12 +121,12 @@ class MapObjectTest extends MapperCompilerTestCase
             ],
         );
 
-        $intCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
-            $this->compileMapper('CollectionInnerInt', new IntInputMapperCompiler()),
+        $intCollectionMapper = $this->compileInputMapper('Collection', $collectionMapperCompiler, [], [
+            $this->compileInputMapper('CollectionInnerInt', new IntInputMapperCompiler()),
         ]);
 
-        $stringCollectionMapper = $this->compileMapper('Collection', $collectionMapperCompiler, [], [
-            $this->compileMapper('CollectionInnerString', new StringInputMapperCompiler()),
+        $stringCollectionMapper = $this->compileInputMapper('Collection', $collectionMapperCompiler, [], [
+            $this->compileInputMapper('CollectionInnerString', new StringInputMapperCompiler()),
         ]);
 
         self::assertEquals(
@@ -148,7 +148,7 @@ class MapObjectTest extends MapperCompilerTestCase
             'AGE' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
         ]);
 
-        $mapper = $this->compileMapper('PersonWithRenamedSourceKeys', $mapperCompiler);
+        $mapper = $this->compileInputMapper('PersonWithRenamedSourceKeys', $mapperCompiler);
 
         self::assertEquals(
             new PersonInput(1, 'John', Optional::none([], 'AGE')),

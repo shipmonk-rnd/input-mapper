@@ -16,7 +16,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new ChainMapperCompiler([new IntInputMapperCompiler(), new MapToDouble()]);
-        $mapper = $this->compileMapper('DoubleInt', $mapperCompiler);
+        $mapper = $this->compileInputMapper('DoubleInt', $mapperCompiler);
 
         self::assertSame(2, $mapper->map(1));
         self::assertSame(4, $mapper->map(2));
@@ -36,7 +36,7 @@ class ChainMapperCompilerTest extends MapperCompilerTestCase
         self::assertException(
             CannotCompileMapperException::class,
             'Cannot compile mapper ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\MapToDouble, because its input type \'int\' is not super type of \'string\'',
-            fn () => $this->compileMapper('DoubleIntIncompatible', $mapperCompiler),
+            fn () => $this->compileInputMapper('DoubleIntIncompatible', $mapperCompiler),
         );
     }
 

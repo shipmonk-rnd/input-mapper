@@ -26,6 +26,6 @@ class DateTimeImmutableDefaultOutputMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): string
     {
-        return $data->format('Y-m-d\\TH:i:sP');
+        return $data->format('Y-m-d\TH:i:sP');
     }
 }

@@ -14,7 +14,7 @@ class MapOptionalTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new OptionalInputMapperCompiler(new IntInputMapperCompiler());
-        $mapper = $this->compileMapper('OptionalInt', $mapperCompiler);
+        $mapper = $this->compileInputMapper('OptionalInt', $mapperCompiler);
 
         self::assertEquals(Optional::of(1), $mapper->map(1));
         self::assertEquals(Optional::of(2), $mapper->map(2));

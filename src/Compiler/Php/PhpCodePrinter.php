@@ -4,27 +4,17 @@ namespace ShipMonk\InputMapper\Compiler\Php;
 
 use Nette\Utils\Strings;
 use PhpParser\Node;
-use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\Node\Stmt\Nop;
 use PhpParser\PrettyPrinter\Standard;
-use function addcslashes;
-use function count;
+use function strlen;
 
 /**
  * @phpcs:disable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
  */
 class PhpCodePrinter extends Standard
 {
-
-    public function __construct()
-    {
-        parent::__construct(['shortArraySyntax' => true]);
-    }
 
     /**
      * @param array<Node> $stmts
@@ -40,61 +30,14 @@ class PhpCodePrinter extends Standard
         return $code . "\n";
     }
 
+    protected function pComments(array $comments): string
+    {
+        return $this->nl . parent::pComments($comments);
+    }
+
     protected function pStmt_ClassConst(ClassConst $node): string
     {
-        return parent::pStmt_ClassConst($node) . "\n";
-    }
-
-    protected function pStmt_ClassMethod(ClassMethod $node): string
-    {
-        return $this->pAttrGroups($node->attrGroups)
-            . $this->pModifiers($node->flags)
-            . 'function ' . ($node->byRef ? '&' : '') . $node->name
-            . '(' . $this->pMaybeMultiline($node->params) . ')'
-            . ($node->returnType !== null ? ': ' . $this->p($node->returnType) : '')
-            . ($node->stmts !== null
-                ? $this->nl . '{' . $this->pStmts($node->stmts) . $this->nl . '}'
-                : ';');
-    }
-
-    protected function pStmt_Nop(Nop $node): string
-    {
-        return "\n";
-    }
-
-    /**
-     * @param array<Node> $nodes
-     */
-    protected function pStmts(
-        array $nodes,
-        bool $indent = true,
-    ): string
-    {
-        if ($indent) {
-            $this->indent();
-        }
-
-        $result = '';
-
-        foreach ($nodes as $node) {
-            $comments = $node->getComments();
-
-            if (count($comments) > 0) {
-                $result .= "\n" . $this->nl . $this->pComments($comments);
-
-                if ($node instanceof Nop) {
-                    continue;
-                }
-            }
-
-            $result .= $this->nl . $this->p($node);
-        }
-
-        if ($indent) {
-            $this->outdent();
-        }
-
-        return $result;
+        return $this->nl . parent::pStmt_ClassConst($node) . "\n";
     }
 
     protected function pStmt_If(If_ $node): string
@@ -107,24 +50,20 @@ class PhpCodePrinter extends Standard
         return $this->nl . parent::pStmt_Foreach($node) . "\n";
     }
 
-    protected function pExpr_New(New_ $node): string
+    protected function pMaybeMultiline(
+        array $nodes,
+        bool $trailingComma = true,
+    ): string
     {
-        $argsFormatted = match (count($node->args)) {
-            0 => '()',
-            1 => '(' . $this->p($node->args[0]) . ')',
-            default => '(' . $this->pCommaSeparatedMultiline($node->args, true) . "{$this->nl})",
-        };
+        if (!$this->hasNodeWithComments($nodes)) {
+            $singleLine = $this->pCommaSeparated($nodes);
 
-        if ($node->class instanceof Class_) {
-            return 'new ' . $this->pClassCommon($node->class, $argsFormatted);
+            if (strlen($singleLine) <= 120) {
+                return $singleLine;
+            }
         }
 
-        return 'new ' . $this->pDereferenceLhs($node->class) . $argsFormatted;
-    }
-
-    protected function pSingleQuotedString(string $string): string
-    {
-        return '\'' . addcslashes($string, '\'\\') . '\'';
+        return $this->pCommaSeparatedMultiline($nodes, $trailingComma) . $this->nl;
     }
 
 }

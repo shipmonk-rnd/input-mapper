@@ -14,7 +14,7 @@ class MapFloatTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new FloatInputMapperCompiler();
-        $mapper = $this->compileMapper('Float', $mapperCompiler);
+        $mapper = $this->compileInputMapper('Float', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
         self::assertSame(1.2, $mapper->map(1.2));
@@ -84,7 +84,7 @@ class MapFloatTest extends MapperCompilerTestCase
     public function testCompileWithAllowedInfinity(): void
     {
         $mapperCompiler = new FloatInputMapperCompiler(allowInfinity: true);
-        $mapper = $this->compileMapper('FloatWithAllowedInfinity', $mapperCompiler);
+        $mapper = $this->compileInputMapper('FloatWithAllowedInfinity', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
         self::assertSame(1.0, $mapper->map(1));
@@ -102,7 +102,7 @@ class MapFloatTest extends MapperCompilerTestCase
     public function testCompileWithAllowedNan(): void
     {
         $mapperCompiler = new FloatInputMapperCompiler(allowNan: true);
-        $mapper = $this->compileMapper('FloatWithAllowedNan', $mapperCompiler);
+        $mapper = $this->compileInputMapper('FloatWithAllowedNan', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
         self::assertSame(1.0, $mapper->map(1));
@@ -125,7 +125,7 @@ class MapFloatTest extends MapperCompilerTestCase
     public function testCompileWithAllowedInfinityAndNan(): void
     {
         $mapperCompiler = new FloatInputMapperCompiler(allowInfinity: true, allowNan: true);
-        $mapper = $this->compileMapper('FloatWithAllowedInfinityAndNan', $mapperCompiler);
+        $mapper = $this->compileInputMapper('FloatWithAllowedInfinityAndNan', $mapperCompiler);
 
         self::assertSame(1.0, $mapper->map(1.0));
         self::assertSame(1.0, $mapper->map(1));

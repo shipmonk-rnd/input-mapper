@@ -32,10 +32,10 @@ class DateTimeImmutableWithTimeZoneMapper implements Mapper
         }
 
         $timezone = new DateTimeZone('Europe/Prague');
-        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:sP', $data, $timezone);
+        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sP', $data, $timezone);
 
         if ($mapped === false) {
-            $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:s.vP', $data, $timezone);
+            $mapped = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.vP', $data, $timezone);
         }
 
         if ($mapped === false) {

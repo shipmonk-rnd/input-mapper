@@ -21,7 +21,7 @@ abstract class ValidatorCompilerTestCase extends MapperCompilerTestCase
     ): Mapper
     {
         $mapperCompiler = new ValidatedInputMapperCompiler($mapperCompiler, [$validatorCompiler]);
-        return $this->compileMapper($name, $mapperCompiler);
+        return $this->compileInputMapper($name, $mapperCompiler);
     }
 
 }

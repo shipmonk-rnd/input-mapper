@@ -11,7 +11,7 @@ class MapRuntimeTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new MapMultiplyBySeven();
-        $mapper = $this->compileMapper('MultiplyBySeven', $mapperCompiler);
+        $mapper = $this->compileInputMapper('MultiplyBySeven', $mapperCompiler);
 
         self::assertSame(7, $mapper->map(1));
         self::assertSame(14, $mapper->map(2));

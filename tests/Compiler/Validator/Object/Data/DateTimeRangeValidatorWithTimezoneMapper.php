@@ -40,10 +40,7 @@ class DateTimeRangeValidatorWithTimezoneMapper implements Mapper
 
         $timezone2 = new DateTimeZone('America/New_York');
 
-        if ($mapped < new DateTimeImmutable(
-            '2000-01-05',
-            $timezone2,
-        )) {
+        if ($mapped < new DateTimeImmutable('2000-01-05', $timezone2)) {
             throw MappingFailedException::incorrectValue($mapped, $path, 'value greater than or equal to 2000-01-05 (in America/New_York timezone)');
         }
 

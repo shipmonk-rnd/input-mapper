@@ -14,7 +14,7 @@ class MapNullableTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new NullableInputMapperCompiler(new IntInputMapperCompiler());
-        $mapper = $this->compileMapper('NullableInt', $mapperCompiler);
+        $mapper = $this->compileInputMapper('NullableInt', $mapperCompiler);
 
         self::assertNull($mapper->map(null));
         self::assertSame(1, $mapper->map(1));
@@ -36,7 +36,7 @@ class MapNullableTest extends MapperCompilerTestCase
     public function testCompileWithMixed(): void
     {
         $mapperCompiler = new NullableInputMapperCompiler(new MixedInputMapperCompiler());
-        $mapper = $this->compileMapper('NullableMixed', $mapperCompiler);
+        $mapper = $this->compileInputMapper('NullableMixed', $mapperCompiler);
 
         self::assertNull($mapper->map(null));
         self::assertSame(1, $mapper->map(1));

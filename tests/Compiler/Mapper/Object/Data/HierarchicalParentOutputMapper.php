@@ -28,7 +28,7 @@ class HierarchicalParentOutputMapper implements Mapper
         return match (true) {
             $data instanceof HierarchicalChildOneInput => $this->mapChildOne($data, $path),
             $data instanceof HierarchicalChildTwoInput => $this->mapChildTwo($data, $path),
-            default => throw MappingFailedException::incorrectType($data, $path, 'ShipMonk\\InputMapperTests\\Compiler\\Mapper\\Object\\Data\\HierarchicalParentInput'),
+            default => throw MappingFailedException::incorrectType($data, $path, 'ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalParentInput'),
         };
     }
 

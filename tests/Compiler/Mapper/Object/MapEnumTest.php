@@ -14,7 +14,7 @@ class MapEnumTest extends MapperCompilerTestCase
     public function testCompile(): void
     {
         $mapperCompiler = new EnumInputMapperCompiler(SuitEnum::class, new StringInputMapperCompiler());
-        $mapper = $this->compileMapper('SuitEnum', $mapperCompiler);
+        $mapper = $this->compileInputMapper('SuitEnum', $mapperCompiler);
 
         self::assertSame(SuitEnum::Clubs, $mapper->map('C'));
         self::assertSame(SuitEnum::Spades, $mapper->map('S'));

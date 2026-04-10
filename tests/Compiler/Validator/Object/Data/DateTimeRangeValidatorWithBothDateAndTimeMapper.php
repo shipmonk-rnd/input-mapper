@@ -30,7 +30,7 @@ class DateTimeRangeValidatorWithBothDateAndTimeMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\\TH:i:sP', $data);
+        $mapped = DateTimeImmutable::createFromFormat('Y-m-d\TH:i:sP', $data);
 
         if ($mapped === false) {
             throw MappingFailedException::incorrectValue($data, $path, 'date-time string in RFC 3339 format');

@@ -62,7 +62,15 @@ class MovieMapper implements Mapper
             throw MappingFailedException::missingKey($path, 'actors');
         }
 
-        $knownKeys = ['id' => true, 'title' => true, 'description' => true, 'year' => true, 'genres' => true, 'director' => true, 'actors' => true];
+        $knownKeys = [
+            'id' => true,
+            'title' => true,
+            'description' => true,
+            'year' => true,
+            'genres' => true,
+            'director' => true,
+            'actors' => true,
+        ];
         $extraKeys = array_diff_key($data, $knownKeys);
 
         if (count($extraKeys) > 0) {
