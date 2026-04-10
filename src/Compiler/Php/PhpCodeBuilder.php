@@ -7,6 +7,7 @@ use Nette\Utils\Arrays;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
+use PhpParser\Modifiers;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\DeclareItem;
@@ -32,7 +33,6 @@ use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Class_ as ClassNode;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
@@ -560,12 +560,12 @@ class PhpCodeBuilder extends BuilderFactory
         $mapperConstructorBuilder = $this->method('__construct');
 
         $providerParameter = $this->param('provider')->setType($this->importClass(MapperProvider::class))->getNode();
-        $providerParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+        $providerParameter->flags = Modifiers::PRIVATE | Modifiers::READONLY;
         $mapperConstructorBuilder->addParam($providerParameter);
 
         if ($mapperCompiler instanceof GenericMapperCompiler && count($mapperCompiler->getGenericParameters()) > 0) {
             $innerMappersParameter = $this->param('genericInnerMappers')->setType('array')->getNode();
-            $innerMappersParameter->flags = ClassNode::MODIFIER_PRIVATE | ClassNode::MODIFIER_READONLY;
+            $innerMappersParameter->flags = Modifiers::PRIVATE | Modifiers::READONLY;
             $mapperConstructorBuilder->addParam($innerMappersParameter);
 
             $innerMappersType = ArrayShapeNode::createSealed(Arrays::map(
