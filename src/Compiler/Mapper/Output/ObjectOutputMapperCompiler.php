@@ -115,7 +115,7 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
         }
 
         $propertyMapperMethodName = $builder->uniqMethodName('map' . ucfirst($propertyName));
-        $propertyMapperMethod = $builder->outputMapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
+        $propertyMapperMethod = $builder->mapperMethod($propertyMapperMethodName, $propertyMapperCompiler)->makePrivate()->getNode();
         $builder->addMethod($propertyMapperMethod);
 
         return $builder->methodCall($builder->var('this'), $propertyMapperMethodName, [$propertyAccess, $propertyPath]);

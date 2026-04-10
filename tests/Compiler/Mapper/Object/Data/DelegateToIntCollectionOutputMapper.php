@@ -33,10 +33,9 @@ class DelegateToIntCollectionOutputMapper implements Mapper
     /**
      * @param  int $data
      * @param  list<string|int> $path
-     * @return int
      * @throws MappingFailedException
      */
-    private function mapInner0(mixed $data, array $path = []): mixed
+    private function mapInner0(mixed $data, array $path = []): int
     {
         return $data;
     }

@@ -33,7 +33,7 @@ class DelegateInputMapperCompiler extends AbstractDelegateMapperCompiler
         PhpCodeBuilder $builder,
     ): Method
     {
-        return $builder->inputMapperMethod($methodName, $mapperCompiler);
+        return $builder->mapperMethod($methodName, $mapperCompiler);
     }
 
 }

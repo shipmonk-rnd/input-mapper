@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<SimplePersonInput, mixed>
+ * @implements Mapper<SimplePersonInput, array{id: int, name: string}>
  */
 class SimplePersonOutputMapper implements Mapper
 {
@@ -24,7 +24,7 @@ class SimplePersonOutputMapper implements Mapper
      * @return array{id: int, name: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         return ['id' => $data->id, 'name' => $data->name];
     }

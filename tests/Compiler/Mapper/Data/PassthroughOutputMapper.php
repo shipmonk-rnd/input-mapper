@@ -10,7 +10,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see PassthroughMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<int, mixed>
+ * @implements Mapper<int, int>
  */
 class PassthroughOutputMapper implements Mapper
 {
@@ -21,10 +21,9 @@ class PassthroughOutputMapper implements Mapper
     /**
      * @param  int $data
      * @param  list<string|int> $path
-     * @return int
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): int
     {
         return $data;
     }

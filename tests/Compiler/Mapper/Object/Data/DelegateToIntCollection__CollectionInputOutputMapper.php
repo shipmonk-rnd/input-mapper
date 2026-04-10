@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
  * Generated mapper by {@see ObjectOutputMapperCompiler}. Do not edit directly.
  *
  * @template T
- * @implements Mapper<CollectionInput<T>, mixed>
+ * @implements Mapper<CollectionInput<T>, array{items: list<mixed>, size: int}>
  */
 class DelegateToIntCollection__CollectionInputOutputMapper implements Mapper
 {
@@ -25,11 +25,28 @@ class DelegateToIntCollection__CollectionInputOutputMapper implements Mapper
     /**
      * @param  CollectionInput<T> $data
      * @param  list<string|int> $path
-     * @return array{items: mixed, size: int}
+     * @return array{items: list<mixed>, size: int}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
-        return ['items' => $data->items, 'size' => $data->size];
+        return ['items' => $this->mapItems($data->items, [...$path, 'items']), 'size' => $data->size];
+    }
+
+    /**
+     * @param  list<T> $data
+     * @param  list<string|int> $path
+     * @return list<mixed>
+     * @throws MappingFailedException
+     */
+    private function mapItems(mixed $data, array $path = []): array
+    {
+        $mapped = [];
+
+        foreach ($data as $index => $item) {
+            $mapped[] = $this->genericInnerMappers[0]->map($item, [...$path, $index]);
+        }
+
+        return $mapped;
     }
 }

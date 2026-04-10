@@ -11,7 +11,7 @@ use function array_key_exists;
 /**
  * Generated mapper by {@see ArrayShapeOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<array{a: int, b?: string}, mixed>
+ * @implements Mapper<array{a: int, b?: string}, array{a: int, b?: string}>
  */
 class SealedArrayShapeOutputMapper implements Mapper
 {
@@ -25,7 +25,7 @@ class SealedArrayShapeOutputMapper implements Mapper
      * @return array{a: int, b?: string}
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         $mapped = [];
         $mapped['a'] = $data['a'];

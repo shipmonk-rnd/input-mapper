@@ -73,7 +73,7 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
         }
 
         $itemMapperMethodName = $builder->uniqMethodName('map' . ucfirst($itemMapping['key']));
-        $itemMapperMethod = $builder->outputMapperMethod($itemMapperMethodName, $itemMapping['mapper'])->makePrivate()->getNode();
+        $itemMapperMethod = $builder->mapperMethod($itemMapperMethodName, $itemMapping['mapper'])->makePrivate()->getNode();
         $builder->addMethod($itemMapperMethod);
 
         return $builder->methodCall($builder->var('this'), $itemMapperMethodName, [$itemValue, $itemPath]);

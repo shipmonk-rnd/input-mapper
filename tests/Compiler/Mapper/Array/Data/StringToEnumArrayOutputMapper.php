@@ -11,7 +11,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 /**
  * Generated mapper by {@see ArrayOutputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<array<string, SuitEnum>, mixed>
+ * @implements Mapper<array<string, SuitEnum>, array<string, string>>
  */
 class StringToEnumArrayOutputMapper implements Mapper
 {
@@ -25,7 +25,7 @@ class StringToEnumArrayOutputMapper implements Mapper
      * @return array<string, string>
      * @throws MappingFailedException
      */
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): array
     {
         $mapped = [];
 
