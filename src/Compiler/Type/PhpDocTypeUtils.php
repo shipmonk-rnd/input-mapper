@@ -539,6 +539,16 @@ class PhpDocTypeUtils
 
                 'never' => $a instanceof IdentifierTypeNode && $a->name === 'never',
 
+                'non-empty-string' => match (true) {
+                    $a instanceof IdentifierTypeNode => $a->name === 'non-empty-string',
+                    $a instanceof ConstTypeNode => match (true) {
+                        $a->constExpr instanceof ConstExprStringNode => $a->constExpr->value !== '',
+                        $a->constExpr instanceof ConstFetchNode => is_string($constValue = constant((string) $a->constExpr)) && $constValue !== '',
+                        default => false,
+                    },
+                    default => false,
+                },
+
                 'non-empty-list' => match (true) {
                     $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)
                         && Arrays::some($a->items, static fn (ArrayShapeItemNode $item) => !$item->optional),
