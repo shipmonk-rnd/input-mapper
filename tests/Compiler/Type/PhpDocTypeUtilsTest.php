@@ -1330,6 +1330,20 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             ],
         ];
 
+        yield 'non-empty-string' => [
+            'true' => [
+                'non-empty-string',
+                '"abc"',
+                'DateTimeImmutable::RFC3339',
+            ],
+
+            'false' => [
+                'string',
+                '""',
+                'int',
+            ],
+        ];
+
         yield 'true' => [
             'true' => [
                 'true',
