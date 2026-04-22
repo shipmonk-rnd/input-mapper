@@ -744,7 +744,7 @@ class PhpDocTypeUtils
 
         $targetTypeDef = self::getGenericTypeDefinition(new IdentifierTypeNode($targetTypeName));
 
-        foreach ($targetTypeDef->extends ?? [] as $possibleTarget => $value) {
+        foreach ($targetTypeDef->extends as $possibleTarget => $value) {
             $innerPath = self::findDownCastPath($sourceTypeName, $possibleTarget);
 
             if ($innerPath !== null) {
@@ -774,7 +774,7 @@ class PhpDocTypeUtils
             throw new LogicException('Invalid downcast path');
         }
 
-        $targetTypeParameters = Arrays::map($targetTypeDef->parameters ?? [], static function (GenericTypeParameter $parameter): TypeNode {
+        $targetTypeParameters = Arrays::map($targetTypeDef->parameters, static function (GenericTypeParameter $parameter): TypeNode {
             return $parameter->default ?? $parameter->bound ?? new IdentifierTypeNode('mixed');
         });
 
@@ -794,7 +794,7 @@ class PhpDocTypeUtils
     {
         if (strcasecmp($a->type->name, $b->type->name) === 0) {
             $typeDef = self::getGenericTypeDefinition($a->type);
-            return Arrays::every($typeDef->parameters ?? [], static function (GenericTypeParameter $parameter, int $idx) use ($a, $b): bool {
+            return Arrays::every($typeDef->parameters, static function (GenericTypeParameter $parameter, int $idx) use ($a, $b): bool {
                 $genericTypeA = self::getGenericTypeParameter($a, $idx);
                 $genericTypeB = self::getGenericTypeParameter($b, $idx);
 
