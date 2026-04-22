@@ -9,7 +9,10 @@ use function strtolower;
 class CamelToSnakeCasePropertyNameTransformer implements PropertyNameTransformer
 {
 
-    public function transform(string $propertyName): string
+    public function transform(
+        string $propertyName,
+        string $className,
+    ): string
     {
         $result = preg_replace('/(?<=[a-z0-9])([A-Z])|(?<=[A-Z])([A-Z][a-z])/', '_$1$2', $propertyName);
 

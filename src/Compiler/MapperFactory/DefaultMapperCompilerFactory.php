@@ -355,7 +355,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             if (count($sourceKeyAttributes) > 0) {
                 $name = $sourceKeyAttributes[0]->newInstance()->key;
             } elseif ($this->propertyNameTransformer !== null) {
-                $name = $this->propertyNameTransformer->transform($parameterName);
+                $name = $this->propertyNameTransformer->transform($parameterName, $classReflection->getName());
             } else {
                 $name = $parameterName;
             }
@@ -413,7 +413,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             if (count($sourceKeyAttributes) > 0) {
                 $outputKey = $sourceKeyAttributes[0]->newInstance()->key;
             } elseif ($this->propertyNameTransformer !== null) {
-                $outputKey = $this->propertyNameTransformer->transform($propertyName);
+                $outputKey = $this->propertyNameTransformer->transform($propertyName, $classReflection->getName());
             } else {
                 $outputKey = $propertyName;
             }

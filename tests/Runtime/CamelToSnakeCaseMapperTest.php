@@ -5,11 +5,13 @@ namespace ShipMonk\InputMapperTests\Runtime;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\AcronymCasedInput;
 use ShipMonk\InputMapperTests\Runtime\Data\CamelCasePropertiesInput;
 use ShipMonk\InputMapperTests\Runtime\Data\CamelCaseWithSourceKeyInput;
+use ShipMonk\InputMapperTests\Runtime\Data\PerClassOverrideInput;
 use function sys_get_temp_dir;
 
 class CamelToSnakeCaseMapperTest extends InputMapperTestCase
@@ -22,7 +24,7 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
     ): void
     {
         $transformer = new CamelToSnakeCasePropertyNameTransformer();
-        self::assertSame($expected, $transformer->transform($input));
+        self::assertSame($expected, $transformer->transform($input, CamelCasePropertiesInput::class));
     }
 
     /**
@@ -132,6 +134,39 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
         self::assertSame('Alice', $object->firstName);
 
         self::assertSame($data, $provider->getOutputMapper(CamelCaseWithSourceKeyInput::class)->map($object));
+    }
+
+    public function testTransformerReceivesClassNameAndCanOverridePerClass(): void
+    {
+        $provider = new MapperProvider(
+            sys_get_temp_dir(),
+            autoRefresh: true,
+            mapperCompilerFactoryProvider: new DefaultMapperCompilerFactoryProvider(
+                new class implements PropertyNameTransformer {
+
+                    public function transform(
+                        string $propertyName,
+                        string $className,
+                    ): string
+                    {
+                        if ($className === PerClassOverrideInput::class) {
+                            return $propertyName;
+                        }
+
+                        return (new CamelToSnakeCasePropertyNameTransformer())->transform($propertyName, $className);
+                    }
+
+                },
+            ),
+        );
+
+        $data = ['userId' => 1, 'firstName' => 'John'];
+        $object = $provider->getInputMapper(PerClassOverrideInput::class)->map($data);
+
+        self::assertSame(1, $object->userId);
+        self::assertSame('John', $object->firstName);
+
+        self::assertSame($data, $provider->getOutputMapper(PerClassOverrideInput::class)->map($object));
     }
 
     private function createProvider(): MapperProvider
