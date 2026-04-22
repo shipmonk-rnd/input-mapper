@@ -7,11 +7,18 @@ use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
 
 class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvider
 {
 
     private ?MapperCompilerFactory $mapperCompilerFactory = null;
+
+    public function __construct(
+        private readonly ?PropertyNameTransformer $propertyNameTransformer = null,
+    )
+    {
+    }
 
     public function get(): MapperCompilerFactory
     {
@@ -21,7 +28,11 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
     protected function create(): MapperCompilerFactory
     {
         $config = $this->createParserConfig();
-        return new DefaultMapperCompilerFactory($this->createPhpDocLexer($config), $this->createPhpDocParser($config));
+        return new DefaultMapperCompilerFactory(
+            $this->createPhpDocLexer($config),
+            $this->createPhpDocParser($config),
+            propertyNameTransformer: $this->propertyNameTransformer,
+        );
     }
 
     protected function createPhpDocLexer(ParserConfig $config): Lexer
