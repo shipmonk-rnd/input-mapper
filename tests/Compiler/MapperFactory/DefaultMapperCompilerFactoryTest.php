@@ -77,6 +77,7 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\ColorEnum;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EnumFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConflictingPropertySourceKeys;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConflictingSourceKeys;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleDefaultValue;
@@ -743,6 +744,12 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             InputWithSourceKeyCollidingWithPlainProperty::class,
             [],
             "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithSourceKeyCollidingWithPlainProperty, because multiple constructor parameters map to source key 'value'",
+        ];
+
+        yield 'InputWithConflictingPropertySourceKeys' => [
+            InputWithConflictingPropertySourceKeys::class,
+            [],
+            "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithConflictingPropertySourceKeys, because multiple properties map to source key 'value'",
         ];
     }
 
