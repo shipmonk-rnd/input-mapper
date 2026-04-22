@@ -56,6 +56,7 @@ use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
@@ -91,6 +92,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         protected readonly Lexer $phpDocLexer,
         protected readonly PhpDocParser $phpDocParser,
         protected array $mapperCompilerFactories = [],
+        protected readonly ?PropertyNameTransformer $propertyNameTransformer = null,
     )
     {
         $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompilerProvider(...));
@@ -346,11 +348,16 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $constructorParameterTypes = $this->getConstructorParameterTypes($constructor, $genericParameterNames);
 
         foreach ($constructor->getParameters() as $parameter) {
-            $name = $parameter->getName();
-            $type = $constructorParameterTypes[$name];
+            $parameterName = $parameter->getName();
+            $type = $constructorParameterTypes[$parameterName];
+            $sourceKeyAttributes = $parameter->getAttributes(SourceKey::class);
 
-            foreach ($parameter->getAttributes(SourceKey::class) as $attribute) {
-                $name = $attribute->newInstance()->key;
+            if (count($sourceKeyAttributes) > 0) {
+                $name = $sourceKeyAttributes[0]->newInstance()->key;
+            } elseif ($this->propertyNameTransformer !== null) {
+                $name = $this->propertyNameTransformer->transform($parameterName, $classReflection->getName());
+            } else {
+                $name = $parameterName;
             }
 
             $constructorArgsProviders[$name] = $this->createParameterMapperCompilerProvider($parameter, $type, $options);
@@ -401,10 +408,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $type = $constructorTypesByClass[$declaringClassName][$propertyName]
                 ?? throw CannotCreateMapperCompilerException::fromType($inputType, "cannot determine type for property {$propertyName}");
 
-            $outputKey = $propertyName;
+            $sourceKeyAttributes = $property->getAttributes(SourceKey::class);
 
-            foreach ($property->getAttributes(SourceKey::class) as $attribute) {
-                $outputKey = $attribute->newInstance()->key;
+            if (count($sourceKeyAttributes) > 0) {
+                $outputKey = $sourceKeyAttributes[0]->newInstance()->key;
+            } elseif ($this->propertyNameTransformer !== null) {
+                $outputKey = $this->propertyNameTransformer->transform($propertyName, $classReflection->getName());
+            } else {
+                $outputKey = $propertyName;
             }
 
             $provider = $this->createPropertyMapperCompilerProvider($property, $type, $options);
