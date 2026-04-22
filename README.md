@@ -181,6 +181,26 @@ class Person
 }
 ```
 
+To rename keys globally — e.g. camelCase PHP properties ↔ snake_case wire keys — configure a `PropertyNameTransformer`
+on the `DefaultMapperCompilerFactoryProvider`. The transform is applied in both directions (input lookup and output emission),
+and `#[SourceKey]` always takes precedence over it on properties where it is set:
+
+```php
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
+
+$provider = new MapperProvider(
+    tempDir: __DIR__ . '/temp',
+    mapperCompilerFactoryProvider: new DefaultMapperCompilerFactoryProvider(
+        new CamelToSnakeCasePropertyNameTransformer(),
+    ),
+);
+```
+
+The built-in `CamelToSnakeCasePropertyNameTransformer` handles common acronym boundaries (`HTTPServer` → `http_server`,
+`parseURL` → `parse_url`). Implement `PropertyNameTransformer` yourself for other conventions.
+
 ### Parsing polymorphic classes (subtypes with a common parent)
 
 If you need to parse a hierarchy of classes, you can use the `#[Discriminator]` attribute.
