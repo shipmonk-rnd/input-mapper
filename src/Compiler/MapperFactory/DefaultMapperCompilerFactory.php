@@ -360,6 +360,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                 $name = $parameterName;
             }
 
+            if (isset($constructorArgsProviders[$name])) {
+                throw CannotCreateMapperCompilerException::fromType($inputType, "multiple constructor parameters map to source key '{$name}'");
+            }
+
             $constructorArgsProviders[$name] = $this->createParameterMapperCompilerProvider($parameter, $type, $options);
         }
 
@@ -385,6 +389,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $constructorTypesByClass = [];
 
         $propertyProviders = [];
+        $outputKeys = [];
 
         foreach ($classReflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isReadOnly()) {
@@ -417,6 +422,12 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             } else {
                 $outputKey = $propertyName;
             }
+
+            if (isset($outputKeys[$outputKey])) {
+                throw CannotCreateMapperCompilerException::fromType($inputType, "multiple properties map to source key '{$outputKey}'");
+            }
+
+            $outputKeys[$outputKey] = true;
 
             $provider = $this->createPropertyMapperCompilerProvider($property, $type, $options);
 

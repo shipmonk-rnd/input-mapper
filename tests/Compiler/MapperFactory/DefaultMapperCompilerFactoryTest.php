@@ -47,6 +47,8 @@ use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\PassthroughMapperCompiler;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
+use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Validator\Array\AssertListLength;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertInt32;
@@ -75,6 +77,7 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\ColorEnum;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EnumFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConflictingSourceKeys;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleDefaultValue;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
@@ -82,6 +85,8 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleV
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithSourceKeyCollidingWithPlainProperty;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithTransformerCollidingKeys;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
@@ -727,6 +732,30 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             [],
             'Cannot create mapper with validator %s, because mapper output type %s is not compatible with validator input type %s',
         ];
+
+        yield 'InputWithConflictingSourceKeys' => [
+            InputWithConflictingSourceKeys::class,
+            [],
+            "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithConflictingSourceKeys, because multiple constructor parameters map to source key 'value'",
+        ];
+
+        yield 'InputWithSourceKeyCollidingWithPlainProperty' => [
+            InputWithSourceKeyCollidingWithPlainProperty::class,
+            [],
+            "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithSourceKeyCollidingWithPlainProperty, because multiple constructor parameters map to source key 'value'",
+        ];
+    }
+
+    public function testCreateErrorWithPropertyNameTransformerCollision(): void
+    {
+        $factory = self::createFactory(new CamelToSnakeCasePropertyNameTransformer());
+        $phpDocType = self::parseType(InputWithTransformerCollidingKeys::class);
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithTransformerCollidingKeys, because multiple constructor parameters map to source key 'foo_bar'",
+            static fn () => $factory->create($phpDocType),
+        );
     }
 
     public function testCreateWithCustomFactory(): void
@@ -746,7 +775,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         self::assertSame($customProvider, $factory->create($phpDocType));
     }
 
-    private static function createFactory(): DefaultMapperCompilerFactory
+    private static function createFactory(?PropertyNameTransformer $propertyNameTransformer = null): DefaultMapperCompilerFactory
     {
         $config = new ParserConfig([]);
         $phpDocLexer = new Lexer($config);
@@ -754,7 +783,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $phpDocTypeParser = new TypeParser($config, $phpDocConstExprParser);
         $phpDocParser = new PhpDocParser($config, $phpDocTypeParser, $phpDocConstExprParser);
 
-        return new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser);
+        return new DefaultMapperCompilerFactory($phpDocLexer, $phpDocParser, propertyNameTransformer: $propertyNameTransformer);
     }
 
     private static function parseType(string $type): TypeNode
