@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Runtime;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -14,36 +15,95 @@ use function sys_get_temp_dir;
 class CamelToSnakeCaseMapperTest extends InputMapperTestCase
 {
 
-    public function testCamelToSnakeCaseTransformerConvertsSimpleNames(): void
+    #[DataProvider('provideTransformData')]
+    public function testTransform(
+        string $input,
+        string $expected,
+    ): void
     {
         $transformer = new CamelToSnakeCasePropertyNameTransformer();
-        self::assertSame('first_name', $transformer->transform('firstName'));
-        self::assertSame('user_id', $transformer->transform('userId'));
-        self::assertSame('id', $transformer->transform('id'));
-        self::assertSame('url', $transformer->transform('url'));
-        self::assertSame('a', $transformer->transform('a'));
+        self::assertSame($expected, $transformer->transform($input));
     }
 
-    public function testCamelToSnakeCaseTransformerHandlesAcronyms(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function provideTransformData(): iterable
     {
-        $transformer = new CamelToSnakeCasePropertyNameTransformer();
-        self::assertSame('http_server', $transformer->transform('HTTPServer'));
-        self::assertSame('user_id_value', $transformer->transform('userIDValue'));
-        self::assertSame('parse_url', $transformer->transform('parseURL'));
+        // simple camelCase
+        yield 'camelCase' => ['camelCase', 'camel_case'];
+        yield 'firstName' => ['firstName', 'first_name'];
+        yield 'userId' => ['userId', 'user_id'];
+        yield 'userName' => ['userName', 'user_name'];
+
+        // leading uppercase (PascalCase)
+        yield 'FirstName' => ['FirstName', 'first_name'];
+
+        // already lowercase / single word
+        yield 'id' => ['id', 'id'];
+        yield 'url' => ['url', 'url'];
+        yield 'a' => ['a', 'a'];
+
+        // single uppercase letter
+        yield 'A' => ['A', 'a'];
+
+        // whole identifier is an acronym
+        yield 'ID' => ['ID', 'id'];
+        yield 'API' => ['API', 'api'];
+
+        // acronym followed by a Word
+        yield 'HTTPServer' => ['HTTPServer', 'http_server'];
+        yield 'URLParser' => ['URLParser', 'url_parser'];
+
+        // word followed by trailing acronym
+        yield 'parseURL' => ['parseURL', 'parse_url'];
+        yield 'userID' => ['userID', 'user_id'];
+
+        // acronym in the middle
+        yield 'userIDValue' => ['userIDValue', 'user_id_value'];
+
+        // two-letter acronym at start
+        yield 'IOError' => ['IOError', 'io_error'];
+
+        // trailing digit glued to preceding word
+        yield 'htmlParser5' => ['htmlParser5', 'html_parser5'];
+
+        // adjacent acronyms collapse — no information to split on
+        yield 'getHTTPURL' => ['getHTTPURL', 'get_httpurl'];
+
+        // empty string
+        yield 'empty' => ['', ''];
     }
 
-    public function testRoundTripAppliesSnakeCaseInBothDirections(): void
+    /**
+     * @param class-string $className
+     * @param array<string, mixed> $snakeCaseData
+     */
+    #[DataProvider('provideRoundTripData')]
+    public function testRoundTrip(
+        string $className,
+        array $snakeCaseData,
+    ): void
     {
         $provider = $this->createProvider();
+        $object = $provider->getInputMapper($className)->map($snakeCaseData);
+        self::assertSame($snakeCaseData, $provider->getOutputMapper($className)->map($object));
+    }
 
-        $snakeCaseData = ['user_id' => 1, 'first_name' => 'John', 'last_name' => 'Doe'];
-        $object = $provider->getInputMapper(CamelCasePropertiesInput::class)->map($snakeCaseData);
+    /**
+     * @return iterable<string, array{class-string, array<string, mixed>}>
+     */
+    public static function provideRoundTripData(): iterable
+    {
+        yield 'plain camelCase properties' => [
+            CamelCasePropertiesInput::class,
+            ['user_id' => 1, 'first_name' => 'John', 'last_name' => 'Doe'],
+        ];
 
-        self::assertSame(1, $object->userId);
-        self::assertSame('John', $object->firstName);
-        self::assertSame('Doe', $object->lastName);
-
-        self::assertSame($snakeCaseData, $provider->getOutputMapper(CamelCasePropertiesInput::class)->map($object));
+        yield 'properties with embedded acronyms' => [
+            AcronymCasedInput::class,
+            ['http_server' => 'nginx', 'user_id_value' => 7],
+        ];
     }
 
     public function testSourceKeyOverrideIsNotTransformed(): void
@@ -57,19 +117,6 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
         self::assertSame('Alice', $object->firstName);
 
         self::assertSame($data, $provider->getOutputMapper(CamelCaseWithSourceKeyInput::class)->map($object));
-    }
-
-    public function testAcronymProperties(): void
-    {
-        $provider = $this->createProvider();
-
-        $data = ['http_server' => 'nginx', 'user_id_value' => 7];
-        $object = $provider->getInputMapper(AcronymCasedInput::class)->map($data);
-
-        self::assertSame('nginx', $object->HTTPServer);
-        self::assertSame(7, $object->userIDValue);
-
-        self::assertSame($data, $provider->getOutputMapper(AcronymCasedInput::class)->map($object));
     }
 
     private function createProvider(): MapperProvider
