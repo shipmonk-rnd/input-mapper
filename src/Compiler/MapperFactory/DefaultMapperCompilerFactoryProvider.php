@@ -31,7 +31,8 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
         return new DefaultMapperCompilerFactory(
             $this->createPhpDocLexer($config),
             $this->createPhpDocParser($config),
-            propertyNameTransformer: $this->propertyNameTransformer,
+            [],
+            $this->propertyNameTransformer,
         );
     }
 

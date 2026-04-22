@@ -67,9 +67,24 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
 
         // trailing digit glued to preceding word
         yield 'htmlParser5' => ['htmlParser5', 'html_parser5'];
+        yield 'Version2' => ['Version2', 'version2'];
+
+        // digit treated as lowercase — splits before subsequent uppercase
+        yield 'html5Parser' => ['html5Parser', 'html5_parser'];
+
+        // digit-letter acronym is ambiguous — `3D` is split because `3` behaves like lowercase
+        yield 'load3DModel' => ['load3DModel', 'load3_d_model'];
 
         // adjacent acronyms collapse — no information to split on
         yield 'getHTTPURL' => ['getHTTPURL', 'get_httpurl'];
+
+        // already snake_case stays as-is
+        yield 'already_snake' => ['already_snake', 'already_snake'];
+        yield 'foo_bar_baz' => ['foo_bar_baz', 'foo_bar_baz'];
+
+        // non-ASCII letters are not recognised as word characters by the regex
+        yield 'unicode lowercase preceding uppercase is not a boundary' => ['žlutýString', 'žlutýstring'];
+        yield 'ASCII lowercase preceding uppercase still splits around unicode' => ['čauString', 'čau_string'];
 
         // empty string
         yield 'empty' => ['', ''];
