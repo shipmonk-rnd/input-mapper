@@ -44,14 +44,6 @@ parameters:
             message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
             paths: [tests/**/*Test.php]
         -
-            message: "#^Method ShipMonk\\\\InputMapperTests\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
-            count: 1
-            path: tests/Compiler/Validator/Array/Data/ListItemValidatorMapper.php
-        -
-            message: "#^Method ShipMonk\\\\InputMapperTests\\\\Compiler\\\\Validator\\\\Array\\\\Data\\\\ListItemValidatorWithMultipleValidatorsMapper\\:\\:map\\(\\) should return list\\<int\\<1, max\\>\\> but returns list\\<int\\>\\.$#"
-            count: 1
-            path: tests/Compiler/Validator/Array/Data/ListItemValidatorWithMultipleValidatorsMapper.php
-        -
             identifier: method.internalClass
             path: tests/*
 

@@ -195,6 +195,26 @@ class PhpDocTypeUtils
     }
 
     /**
+     * Builds an array shape type node, normalizing an empty unsealed shape to `array<mixed>`,
+     * because `array{...}` does not specify a value type (missingType.iterableValue).
+     *
+     * @param list<ArrayShapeItemNode> $items
+     */
+    public static function createArrayShape(
+        array $items,
+        bool $sealed,
+    ): TypeNode
+    {
+        if (!$sealed && $items === []) {
+            return new GenericTypeNode(new IdentifierTypeNode('array'), [new IdentifierTypeNode('mixed')]);
+        }
+
+        return $sealed
+            ? ArrayShapeNode::createSealed($items)
+            : ArrayShapeNode::createUnsealed($items, null);
+    }
+
+    /**
      * @param list<GenericTypeParameter> $genericParameters
      */
     public static function toNativeType(

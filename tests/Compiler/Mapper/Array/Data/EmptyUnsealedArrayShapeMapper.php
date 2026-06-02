@@ -11,7 +11,7 @@ use function is_array;
 /**
  * Generated mapper by {@see ArrayShapeInputMapperCompiler}. Do not edit directly.
  *
- * @implements Mapper<mixed, array{...}>
+ * @implements Mapper<mixed, array<mixed>>
  */
 class EmptyUnsealedArrayShapeMapper implements Mapper
 {
@@ -21,7 +21,7 @@ class EmptyUnsealedArrayShapeMapper implements Mapper
 
     /**
      * @param  list<string|int> $path
-     * @return array{...}
+     * @return array<mixed>
      * @throws MappingFailedException
      */
     public function map(mixed $data, array $path = []): array
