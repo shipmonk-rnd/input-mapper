@@ -5,12 +5,12 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Input;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
-use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function array_fill_keys;
 use function array_map;
@@ -109,9 +109,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
             );
         }
 
-        return $this->sealed
-            ? ArrayShapeNode::createSealed($items)
-            : ArrayShapeNode::createUnsealed($items, null);
+        return PhpDocTypeUtils::createArrayShape($items, $this->sealed);
     }
 
     /**

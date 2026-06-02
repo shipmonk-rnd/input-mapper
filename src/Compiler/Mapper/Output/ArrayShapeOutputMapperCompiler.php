@@ -4,12 +4,12 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
-use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use function ucfirst;
 
 class ArrayShapeOutputMapperCompiler implements MapperCompiler
@@ -122,9 +122,7 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
             );
         }
 
-        return $this->sealed
-            ? ArrayShapeNode::createSealed($items)
-            : ArrayShapeNode::createUnsealed($items, null);
+        return PhpDocTypeUtils::createArrayShape($items, $this->sealed);
     }
 
     public function getOutputType(): TypeNode
@@ -139,9 +137,7 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
             );
         }
 
-        return $this->sealed
-            ? ArrayShapeNode::createSealed($items)
-            : ArrayShapeNode::createUnsealed($items, null);
+        return PhpDocTypeUtils::createArrayShape($items, $this->sealed);
     }
 
 }
