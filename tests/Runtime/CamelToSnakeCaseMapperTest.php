@@ -3,7 +3,9 @@
 namespace ShipMonk\InputMapperTests\Runtime;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -167,6 +169,38 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
         self::assertSame('John', $object->firstName);
 
         self::assertSame($data, $provider->getOutputMapper(PerClassOverrideInput::class)->map($object));
+    }
+
+    public function testSubclassCreateOverrideCanForwardTransformer(): void
+    {
+        $compilerFactoryProvider = new class (new CamelToSnakeCasePropertyNameTransformer()) extends DefaultMapperCompilerFactoryProvider {
+
+            protected function create(): MapperCompilerFactory
+            {
+                $config = $this->createParserConfig();
+
+                return new DefaultMapperCompilerFactory(
+                    $this->createPhpDocLexer($config),
+                    $this->createPhpDocParser($config),
+                    [],
+                    $this->propertyNameTransformer,
+                );
+            }
+
+        };
+
+        $provider = new MapperProvider(
+            sys_get_temp_dir(),
+            autoRefresh: true,
+            mapperCompilerFactoryProvider: $compilerFactoryProvider,
+        );
+
+        $data = ['user_id' => 1, 'first_name' => 'John', 'last_name' => 'Doe'];
+        $object = $provider->getInputMapper(CamelCasePropertiesInput::class)->map($data);
+
+        self::assertSame(1, $object->userId);
+        self::assertSame('John', $object->firstName);
+        self::assertSame('Doe', $object->lastName);
     }
 
     private function createProvider(): MapperProvider

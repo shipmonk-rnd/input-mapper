@@ -15,7 +15,7 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
     private ?MapperCompilerFactory $mapperCompilerFactory = null;
 
     public function __construct(
-        private readonly ?PropertyNameTransformer $propertyNameTransformer = null,
+        protected readonly ?PropertyNameTransformer $propertyNameTransformer = null,
     )
     {
     }
