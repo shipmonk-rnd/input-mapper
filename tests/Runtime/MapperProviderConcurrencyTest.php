@@ -15,6 +15,7 @@ use function glob;
 use function implode;
 use function is_resource;
 use function md5;
+use function microtime;
 use function mkdir;
 use function proc_close;
 use function proc_get_status;
@@ -72,6 +73,12 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
             // Now collect each child's result.
             foreach ($processes as $i => $process) {
                 $pipes = $pipesByIndex[$i];
+
+                if (!self::waitForExit($process)) {
+                    proc_terminate($process);
+                    self::fail("Child $i did not finish in time — possible deadlock in MapperProvider::load().");
+                }
+
                 $stdout = stream_get_contents($pipes[1]);
                 $stderr = stream_get_contents($pipes[2]);
                 fclose($pipes[1]);
@@ -168,6 +175,11 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
             fclose($lockHandle);
             $lockHandle = null;
 
+            if (!self::waitForExit($process)) {
+                proc_terminate($process);
+                self::fail('Child did not finish in time after lock release — possible deadlock in MapperProvider::load().');
+            }
+
             $stdout = stream_get_contents($pipes[1]);
             $stderr = stream_get_contents($pipes[2]);
             fclose($pipes[1]);
@@ -235,6 +247,29 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
         $exitCode = proc_close($process);
 
         return [$exitCode, ($stdout === false ? '' : $stdout) . ($stderr === false ? '' : $stderr)];
+    }
+
+    /**
+     * Bounded watchdog: returns true once the process exits, or false if it is still running after
+     * a generous timeout. Guards the blocking pipe reads so a regression that deadlocks a child
+     * (e.g. broken locking) fails the test fast instead of hanging CI. A healthy child exits in well
+     * under the timeout, so this can never cause a false failure on slow CI.
+     *
+     * @param resource $process
+     */
+    private static function waitForExit($process): bool
+    {
+        $deadline = microtime(true) + 30.0;
+
+        while (proc_get_status($process)['running']) {
+            if (microtime(true) >= $deadline) {
+                return false;
+            }
+
+            usleep(10_000);
+        }
+
+        return true;
     }
 
     /**
