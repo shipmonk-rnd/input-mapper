@@ -73,7 +73,7 @@ Optional fields can either be marked with `#[Optional]` attribute (allowing you 
 or if you need to distinguish between default and missing values, you can wrap the type with `ShipMonk\InputMapper\Runtime\Optional` class.
 
 ```php
-use ShipMonk\InputMapper\Compiler\Mapper\Optional;
+use ShipMonk\InputMapper\Compiler\Attribute\Optional;
 
 class Person
 {
@@ -102,7 +102,7 @@ By default, any extra properties are not allowed. You can change that by adding 
 To map input data (e.g. JSON) to objects, use `MapperProvider`:
 
 ```php
-$tempDir = sys_get_temp_dir() . '/input-mapper';
+$tempDir = __DIR__ . '/temp/input-mapper'; // writable, project-local directory
 $autoRefresh = true; // MUST be set to false in production
 $mapperProvider = new ShipMonk\InputMapper\Runtime\MapperProvider($tempDir, $autoRefresh);
 $mapper = $mapperProvider->getInputMapper(Person::class);
@@ -131,6 +131,8 @@ try {
     // ...
 }
 ```
+
+Generated mappers are PHP files that get `include`d — point `tempDir` at a directory owned by your application, not a shared world-writable location such as the system temporary directory, so that no other local user can pre-create it and plant files that your application would then execute.
 
 ### Map Output
 
@@ -170,7 +172,7 @@ class Person
 If the input keys do not match the property names, you can use the `#[SourceKey]` attribute to specify the key name:
 
 ```php
-use ShipMonk\InputMapper\Compiler\Mapper\Object\SourceKey;
+use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 
 class Person
 {
@@ -207,7 +209,7 @@ If you need to parse a hierarchy of classes, you can use the `#[Discriminator]` 
 (The discriminator field does not need to be mapped to a property if `#[AllowExtraKeys]` is used.)
 
 ```php
-use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
+use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 
 #[Discriminator(
     key: 'type', // key to use for mapping
@@ -248,7 +250,7 @@ class Truck extends Vehicle {
 or, with enum:
 
 ```php
-use ShipMonk\InputMapper\Compiler\Mapper\Object\Discriminator;
+use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
 
 enum VehicleType: string {
     case Car = 'car';
@@ -293,41 +295,41 @@ class Truck extends Vehicle {
 
 ### Using custom mappers
 
-To map classes with your custom mapper, you need to implement the `InputMapper` or `OutputMapper` interface and register it with the corresponding provider:
+To map a class with your own hand-written mapper, implement the `Mapper` interface and register a factory for the class with `MapperProvider`:
 
 ```php
-class MyCustomInputMapper implements ShipMonk\InputMapper\Runtime\InputMapper
+use ShipMonk\InputMapper\Runtime\Mapper;
+use ShipMonk\InputMapper\Runtime\MapperProvider;
+
+/**
+ * @implements Mapper<mixed, MyCustomClass>
+ */
+class MyCustomClassInputMapper implements Mapper
 {
-    public function map(mixed $data, array $path = []): mixed
+    public function map(mixed $data, array $path = []): MyCustomClass
     {
         return MyCustomClass::createFrom($data);
     }
 }
 
-$inputMapperProvider->registerFactory(MyCustomClass::class, function () {
-    return new MyCustomInputMapper();
+$mapperProvider->registerInputFactory(MyCustomClass::class, function () {
+    return new MyCustomClassInputMapper();
 });
 ```
+
+Use `registerOutputFactory()` the same way to customize the output direction. The factory callable receives the concrete class name, the list of generic inner mappers, and the `MapperProvider` instance, so it can delegate to other mappers if needed. A factory may also be registered for an interface or parent class — it then applies to all of its implementations.
 
 ### Customizing default mappers inferred from types
 
 To customize how default mappers are inferred from types, you need to implement `ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory` and `MapperCompilerFactoryProvider`.
 
-Then register your factory provider with the corresponding provider:
+Then pass your factory provider to the `MapperProvider` — the same provider serves both the input and output directions:
 
 ```php
-$mapperCompilerFactoryProvider = new MyCustomMapperCompilerFactoryProvider();
-
-$inputMapperProvider = new ShipMonk\InputMapper\Runtime\InputMapperProvider(
+$mapperProvider = new ShipMonk\InputMapper\Runtime\MapperProvider(
     tempDir: $tempDir,
     autoRefresh: $autoRefresh,
-    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
-);
-
-$outputMapperProvider = new ShipMonk\InputMapper\Runtime\OutputMapperProvider(
-    tempDir: $tempDir,
-    autoRefresh: $autoRefresh,
-    mapperCompilerFactoryProvider: $mapperCompilerFactoryProvider,
+    mapperCompilerFactoryProvider: new MyCustomMapperCompilerFactoryProvider(),
 );
 ```
 
