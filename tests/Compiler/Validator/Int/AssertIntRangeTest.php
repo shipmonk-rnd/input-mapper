@@ -191,6 +191,16 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
             new AssertIntRange(gte: PHP_INT_MIN, lte: PHP_INT_MAX),
             'int',
         ];
+
+        yield [
+            new AssertIntRange(gt: PHP_INT_MAX),
+            'int<9223372036854775807, max>',
+        ];
+
+        yield [
+            new AssertIntRange(lt: PHP_INT_MIN),
+            'int<min, -9223372036854775808>',
+        ];
     }
 
 }

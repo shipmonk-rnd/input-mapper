@@ -109,11 +109,11 @@ class AssertIntRange implements NarrowingValidatorCompiler
         }
 
         if ($this->gt !== null) {
-            $inclusiveLowerBounds[] = $this->gt + 1;
+            $inclusiveLowerBounds[] = $this->gt === PHP_INT_MAX ? PHP_INT_MAX : $this->gt + 1;
         }
 
         if ($this->lt !== null) {
-            $inclusiveUpperBounds[] = $this->lt - 1;
+            $inclusiveUpperBounds[] = $this->lt === PHP_INT_MIN ? PHP_INT_MIN : $this->lt - 1;
         }
 
         if ($this->lte !== null) {
