@@ -74,7 +74,9 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
             foreach ($processes as $i => $process) {
                 $pipes = $pipesByIndex[$i];
 
-                if (!self::waitForExit($process)) {
+                $exitCode = self::waitForExit($process);
+
+                if ($exitCode === null) {
                     proc_terminate($process);
                     self::fail("Child $i did not finish in time — possible deadlock in MapperProvider::load().");
                 }
@@ -84,7 +86,7 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
                 fclose($pipes[1]);
                 fclose($pipes[2]);
                 unset($pipesByIndex[$i]);
-                $exitCode = proc_close($process);
+                proc_close($process);
                 unset($processes[$i]);
 
                 $stdout = $stdout === false ? '' : $stdout;
@@ -175,7 +177,9 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
             fclose($lockHandle);
             $lockHandle = null;
 
-            if (!self::waitForExit($process)) {
+            $exitCode = self::waitForExit($process);
+
+            if ($exitCode === null) {
                 proc_terminate($process);
                 self::fail('Child did not finish in time after lock release — possible deadlock in MapperProvider::load().');
             }
@@ -184,7 +188,7 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
             $stderr = stream_get_contents($pipes[2]);
             fclose($pipes[1]);
             fclose($pipes[2]);
-            $exitCode = proc_close($process);
+            proc_close($process);
             $process = null;
 
             $stdout = $stdout === false ? '' : $stdout;
@@ -250,26 +254,34 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
     }
 
     /**
-     * Bounded watchdog: returns true once the process exits, or false if it is still running after
-     * a generous timeout. Guards the blocking pipe reads so a regression that deadlocks a child
-     * (e.g. broken locking) fails the test fast instead of hanging CI. A healthy child exits in well
-     * under the timeout, so this can never cause a false failure on slow CI.
+     * Bounded watchdog: polls until the process exits and returns its exit code, or null if it is
+     * still running after a generous timeout. Guards the blocking pipe reads so a regression that
+     * deadlocks a child (e.g. broken locking) fails the test fast instead of hanging CI. A healthy
+     * child exits in well under the timeout, so this can never cause a false failure on slow CI.
+     *
+     * The exit code is read from proc_get_status() rather than proc_close(): on PHP < 8.3 the first
+     * proc_get_status() that observes the exit reaps the child without caching the code, so a later
+     * proc_close() would return -1. Capturing it here is correct across all supported versions.
      *
      * @param resource $process
      */
-    private static function waitForExit($process): bool
+    private static function waitForExit($process): ?int
     {
         $deadline = microtime(true) + 30.0;
 
-        while (proc_get_status($process)['running']) {
+        while (true) {
+            $status = proc_get_status($process);
+
+            if (!$status['running']) {
+                return $status['exitcode'];
+            }
+
             if (microtime(true) >= $deadline) {
-                return false;
+                return null;
             }
 
             usleep(10_000);
         }
-
-        return true;
     }
 
     /**
