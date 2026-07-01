@@ -27,7 +27,7 @@ Input Mapper comes with built-in mappers for the following types:
 
 All built-in mappers support both input (array → object) and output (object → array) directions.
 
-The `int<TMin, TMax>` boundaries may be integer literals (`int<1, 10>`), the `min`/`max` keywords, or integer constants — both class constants (`int<1, Foo::MAX>`) and global constants (`int<0, PHP_INT_MAX>`).
+The `int<TMin, TMax>` boundaries may be integer literals (`int<1, 10>`), the `min`/`max` keywords, or integer class constants (`int<1, Foo::MAX>`). Global constants (e.g. `int<0, PHP_INT_MAX>`) are not supported.
 
 You can write your own mappers or replace the default mappers with your own.
 
