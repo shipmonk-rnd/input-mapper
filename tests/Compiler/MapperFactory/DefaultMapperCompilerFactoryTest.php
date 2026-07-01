@@ -79,6 +79,7 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConflictingPropertySourceKeys;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConflictingSourceKeys;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithConstantIntRange;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleDefaultValue;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
@@ -88,6 +89,7 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstr
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithSourceKeyCollidingWithPlainProperty;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithTransformerCollidingKeys;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\IntRangeLimit;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
@@ -163,6 +165,20 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                     ),
                 ],
                 allowExtraKeys: true,
+            ),
+        ];
+
+        yield 'InputWithConstantIntRange' => [
+            InputWithConstantIntRange::class,
+            [],
+            new ObjectInputMapperCompiler(
+                InputWithConstantIntRange::class,
+                [
+                    'quantity' => new ValidatedInputMapperCompiler(
+                        new IntInputMapperCompiler(),
+                        [new AssertIntRange(gte: 1, lte: IntRangeLimit::MAX)],
+                    ),
+                ],
             ),
         ];
 
@@ -714,6 +730,12 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             'int<foo, bar>',
             [],
             'Cannot create mapper for type int<foo, bar>, because integer boundary foo is not supported',
+        ];
+
+        yield 'int<1, DateTimeInterface::ATOM>' => [
+            'int<1, DateTimeInterface::ATOM>',
+            [],
+            'Cannot create mapper for type int<1, DateTimeInterface::ATOM>, because integer boundary DateTimeInterface::ATOM is not supported',
         ];
 
         yield 'EnumFilterInput<int>' => [

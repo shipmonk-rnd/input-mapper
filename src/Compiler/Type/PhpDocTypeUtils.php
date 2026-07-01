@@ -56,6 +56,7 @@ use function array_values;
 use function class_exists;
 use function constant;
 use function count;
+use function defined;
 use function get_debug_type;
 use function get_object_vars;
 use function in_array;
@@ -357,6 +358,10 @@ class PhpDocTypeUtils
         } elseif ($type instanceof ArrayShapeItemNode) {
             self::resolve($type->valueType, $context, $genericParameterNames); // intentionally not resolving key type
 
+        } elseif ($type instanceof ConstFetchNode) {
+            if ($type->className !== '' && !in_array($type->className, $genericParameterNames, true)) {
+                $type->className = Reflection::expandClassName($type->className, $context); // @phpstan-ignore argument.type (expandClassName expects ReflectionClass<object>, ReflectionClass<covariant object> given; Nette should use covariant too)
+            }
         } elseif (is_object($type)) {
             foreach (get_object_vars($type) as $item) {
                 self::resolve($item, $context, $genericParameterNames);
@@ -1167,6 +1172,18 @@ class PhpDocTypeUtils
     {
         if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
             return (int) $boundaryType->constExpr->value;
+        }
+
+        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstFetchNode) {
+            $constantName = (string) $boundaryType->constExpr;
+
+            if (defined($constantName)) {
+                $constantValue = constant($constantName);
+
+                if (is_int($constantValue)) {
+                    return $constantValue;
+                }
+            }
         }
 
         if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {

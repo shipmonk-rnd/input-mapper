@@ -8,6 +8,7 @@ use DateTimeInterface;
 use LogicException;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
@@ -73,9 +74,12 @@ use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
+use function constant;
 use function count;
+use function defined;
 use function interface_exists;
 use function is_array;
+use function is_int;
 use function strtolower;
 use function substr;
 
@@ -665,6 +669,18 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     {
         if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
             return (int) $boundaryType->constExpr->value;
+        }
+
+        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstFetchNode) {
+            $constantName = (string) $boundaryType->constExpr;
+
+            if (defined($constantName)) {
+                $constantValue = constant($constantName);
+
+                if (is_int($constantValue)) {
+                    return $constantValue;
+                }
+            }
         }
 
         if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {
