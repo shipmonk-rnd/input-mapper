@@ -6,16 +6,13 @@ use BackedEnum;
 use DateTimeImmutable;
 use DateTimeInterface;
 use LogicException;
-use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
-use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
@@ -74,12 +71,9 @@ use function array_map;
 use function class_exists;
 use function class_implements;
 use function class_parents;
-use function constant;
 use function count;
-use function defined;
 use function interface_exists;
 use function is_array;
-use function is_int;
 use function strtolower;
 use function substr;
 
@@ -667,20 +661,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         string $extremeName,
     ): ?int
     {
-        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
-            return (int) $boundaryType->constExpr->value;
-        }
+        $boundaryValue = PhpDocTypeUtils::tryResolveIntegerBoundary($boundaryType);
 
-        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstFetchNode) {
-            $constantName = (string) $boundaryType->constExpr;
-
-            if (defined($constantName)) {
-                $constantValue = constant($constantName);
-
-                if (is_int($constantValue)) {
-                    return $constantValue;
-                }
-            }
+        if ($boundaryValue !== null) {
+            return $boundaryValue;
         }
 
         if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {

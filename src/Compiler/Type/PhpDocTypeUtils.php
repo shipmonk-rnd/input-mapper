@@ -1164,26 +1164,41 @@ class PhpDocTypeUtils
         return $type;
     }
 
+    /**
+     * Resolves an integer literal or integer class constant boundary of `int<min, max>` to its value.
+     */
+    public static function tryResolveIntegerBoundary(TypeNode $boundaryType): ?int
+    {
+        if (!$boundaryType instanceof ConstTypeNode) {
+            return null;
+        }
+
+        if ($boundaryType->constExpr instanceof ConstExprIntegerNode) {
+            return (int) $boundaryType->constExpr->value;
+        }
+
+        if ($boundaryType->constExpr instanceof ConstFetchNode) {
+            $constantName = (string) $boundaryType->constExpr;
+
+            if (defined($constantName)) {
+                $constantValue = constant($constantName);
+                return is_int($constantValue) ? $constantValue : null;
+            }
+        }
+
+        return null;
+    }
+
     private static function resolveIntegerBoundary(
         TypeNode $boundaryType,
         string $extremeName,
         int $extremeValue,
     ): int
     {
-        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstExprIntegerNode) {
-            return (int) $boundaryType->constExpr->value;
-        }
+        $boundaryValue = self::tryResolveIntegerBoundary($boundaryType);
 
-        if ($boundaryType instanceof ConstTypeNode && $boundaryType->constExpr instanceof ConstFetchNode) {
-            $constantName = (string) $boundaryType->constExpr;
-
-            if (defined($constantName)) {
-                $constantValue = constant($constantName);
-
-                if (is_int($constantValue)) {
-                    return $constantValue;
-                }
-            }
+        if ($boundaryValue !== null) {
+            return $boundaryValue;
         }
 
         if ($boundaryType instanceof IdentifierTypeNode && $boundaryType->name === $extremeName) {
