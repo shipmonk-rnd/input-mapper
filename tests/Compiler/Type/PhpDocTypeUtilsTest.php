@@ -10,9 +10,12 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\UnionType;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
+use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
@@ -560,6 +563,16 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             new ReflectionClass(self::class),
             ['T'],
             '(T | string)',
+        ];
+
+        yield 'int<1, TestCase::CONSTANT>' => [
+            new GenericTypeNode(new IdentifierTypeNode('int'), [
+                new ConstTypeNode(new ConstExprIntegerNode('1')),
+                new ConstTypeNode(new ConstFetchNode('TestCase', 'CONSTANT')),
+            ]),
+            new ReflectionClass(self::class),
+            [],
+            'int<1, PHPUnit\\Framework\\TestCase::CONSTANT>',
         ];
     }
 
