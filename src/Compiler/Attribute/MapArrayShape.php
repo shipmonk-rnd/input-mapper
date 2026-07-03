@@ -6,8 +6,8 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapArrayShape implements MapperCompilerProvider

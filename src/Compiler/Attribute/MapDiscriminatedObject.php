@@ -5,8 +5,8 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function array_map;
 

@@ -1656,6 +1656,85 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             0,
             'Countable & Traversable',
         ];
+
+        yield 'Codec with 2 params: DI (param 0), via plain identifier type' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            0,
+            'array{currency: string, cents: int}',
+        ];
+
+        yield 'Codec with 2 params: EI (param 1)' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            1,
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyValue',
+        ];
+
+        yield 'Codec with 2 params: DO (param 2) defaults to EI' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            2,
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyValue',
+        ];
+
+        yield 'Codec with 2 params: EO (param 3) defaults to DI' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            3,
+            'array{currency: string, cents: int}',
+        ];
+
+        yield 'Asymmetric codec: DI (param 0)' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\DateTimeInterfaceCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            0,
+            'string',
+        ];
+
+        yield 'Asymmetric codec: EI (param 1) differs from DO' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\DateTimeInterfaceCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            1,
+            'DateTimeInterface',
+        ];
+
+        yield 'Asymmetric codec: DO (param 2)' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\DateTimeInterfaceCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            2,
+            'DateTimeImmutable',
+        ];
+
+        yield 'Asymmetric codec: EO (param 3) explicit' => [
+            'ShipMonk\InputMapperTests\Runtime\Data\DateTimeInterfaceCodec',
+            'ShipMonk\InputMapper\Runtime\Codec',
+            3,
+            'string',
+        ];
+    }
+
+    public function testParameterOffsetMappingDerivedFromTemplateDefaults(): void
+    {
+        $codecType = new IdentifierTypeNode('ShipMonk\InputMapper\Runtime\Codec');
+        $definition = PhpDocTypeUtils::getGenericTypeDefinition($codecType);
+
+        self::assertCount(4, $definition->parameters);
+        self::assertSame('DI', $definition->parameters[0]->name);
+        self::assertSame('EI', $definition->parameters[1]->name);
+        self::assertSame('DO', $definition->parameters[2]->name);
+        self::assertSame('EO', $definition->parameters[3]->name);
+
+        // when 2 params provided: DO defaults to EI (index 1), EO defaults to DI (index 0)
+        self::assertArrayHasKey(2, $definition->parameterOffsetMapping);
+        self::assertSame([0, 1, 1, 0], $definition->parameterOffsetMapping[2]);
+
+        // when 3 params provided: EO defaults to DI (index 0)
+        self::assertArrayHasKey(3, $definition->parameterOffsetMapping);
+        self::assertSame([0, 1, 2, 0], $definition->parameterOffsetMapping[3]);
+
+        // no mapping needed for 4 params
+        self::assertArrayNotHasKey(4, $definition->parameterOffsetMapping);
     }
 
     private function parseType(string $type): TypeNode

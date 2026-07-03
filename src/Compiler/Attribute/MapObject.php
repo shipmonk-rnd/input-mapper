@@ -6,9 +6,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function array_map;
 

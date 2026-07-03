@@ -35,7 +35,7 @@ abstract class AbstractInlineCodecMapperCompiler implements MapperCompiler
      */
     protected function compileCodecAccess(PhpCodeBuilder $builder): CompiledExpr
     {
-        $codecPropertyName = $builder->uniqVariableName('codec');
+        $codecPropertyName = $builder->uniqPropertyName('codec');
 
         $codecShortName = $builder->importClass($this->codecClassName);
         $codecProperty = $builder->property($codecPropertyName)
