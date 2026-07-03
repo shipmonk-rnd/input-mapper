@@ -6,6 +6,7 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapDefaultValue implements MapperCompilerProvider
@@ -18,14 +19,20 @@ class MapDefaultValue implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new DefaultValueInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler(), $this->defaultValue);
+        return new DefaultValueInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options), $this->defaultValue);
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return $this->mapperCompilerProvider->getOutputMapperCompiler();
+        return $this->mapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options);
     }
 
 }

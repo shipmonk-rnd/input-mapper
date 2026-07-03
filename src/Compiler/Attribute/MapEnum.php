@@ -8,6 +8,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\EnumOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
@@ -24,12 +25,18 @@ class MapEnum implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new EnumInputMapperCompiler($this->enumName, $this->backingValueMapperCompilerProvider->getInputMapperCompiler());
+        return new EnumInputMapperCompiler($this->enumName, $this->backingValueMapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options));
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new EnumOutputMapperCompiler($this->enumName);
     }

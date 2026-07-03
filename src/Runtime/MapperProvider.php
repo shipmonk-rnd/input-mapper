@@ -260,8 +260,8 @@ class MapperProvider
         $codePrinter = new PhpCodePrinter();
 
         $mapperCompiler = $direction === 'input'
-            ? $mapperCompilerFactory->create($type)->getInputMapperCompiler()
-            : $mapperCompilerFactory->create($type)->getOutputMapperCompiler();
+            ? $mapperCompilerFactory->create($type)->getInputMapperCompiler($mapperCompilerFactory, [])
+            : $mapperCompilerFactory->create($type)->getOutputMapperCompiler($mapperCompilerFactory, []);
 
         return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
     }

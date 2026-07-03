@@ -723,6 +723,10 @@ class PhpDocTypeUtils
             ));
         }
 
+        if ($type instanceof IdentifierTypeNode && !self::isKeyword($type)) {
+            return self::inferGenericParameter(new GenericTypeNode($type, []), $typeName, $parameter);
+        }
+
         if ($type instanceof GenericTypeNode) {
             if (strcasecmp($type->type->name, $typeName) === 0) {
                 return self::getGenericTypeParameter($type, $parameter);
@@ -1005,7 +1009,62 @@ class PhpDocTypeUtils
         return new GenericTypeDefinition(
             extends: $extends,
             parameters: array_values($genericParameters),
+            parameterOffsetMapping: self::deriveParameterOffsetMapping($genericParameters, $genericParameterOffsets),
         );
+    }
+
+    /**
+     * Derives which parameter offsets to use when fewer generic arguments are provided than there are parameters,
+     * based on template defaults referencing other template parameters (e.g. `@template DO = EI`).
+     *
+     * @param array<string, GenericTypeParameter> $genericParameters
+     * @param array<string, int> $genericParameterOffsets
+     * @return array<int, list<?int>>
+     */
+    private static function deriveParameterOffsetMapping(
+        array $genericParameters,
+        array $genericParameterOffsets,
+    ): array
+    {
+        $parameterList = array_values($genericParameters);
+        $totalParams = count($parameterList);
+        $parameterOffsetMapping = [];
+
+        for ($count = $totalParams - 1; $count >= 1; $count--) {
+            // all params at index >= $count must have defaults for this count to be valid
+            $allDefaultable = true;
+
+            for ($i = $count; $i < $totalParams; $i++) {
+                if ($parameterList[$i]->default === null) {
+                    $allDefaultable = false;
+                    break;
+                }
+            }
+
+            if (!$allDefaultable) {
+                break;
+            }
+
+            $mapping = [];
+
+            for ($i = 0; $i < $totalParams; $i++) {
+                if ($i < $count) {
+                    $mapping[] = $i;
+                } else {
+                    $default = $parameterList[$i]->default;
+
+                    if ($default instanceof IdentifierTypeNode && isset($genericParameterOffsets[$default->name])) {
+                        $mapping[] = $genericParameterOffsets[$default->name];
+                    } else {
+                        $mapping[] = null;
+                    }
+                }
+            }
+
+            $parameterOffsetMapping[$count] = $mapping;
+        }
+
+        return $parameterOffsetMapping;
     }
 
     private static function parsePhpDoc(string $phpDoc): PhpDocNode

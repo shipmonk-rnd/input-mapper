@@ -5,6 +5,7 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function array_map;
@@ -29,25 +30,31 @@ class MapDiscriminatedObject implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new DiscriminatedObjectInputMapperCompiler(
             $this->className,
             $this->discriminatorKeyName,
             array_map(
-                static fn (MapperCompilerProvider $provider): MapperCompiler => $provider->getInputMapperCompiler(),
+                static fn (MapperCompilerProvider $provider): MapperCompiler => $provider->getInputMapperCompiler($mapperCompilerFactory, $options),
                 $this->subtypeProviders,
             ),
             $this->genericParameters,
         );
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new DiscriminatedObjectOutputMapperCompiler(
             $this->className,
             array_map(
-                static fn (MapperCompilerProvider $provider): MapperCompiler => $provider->getOutputMapperCompiler(),
+                static fn (MapperCompilerProvider $provider): MapperCompiler => $provider->getOutputMapperCompiler($mapperCompilerFactory, $options),
                 $this->subtypeProviders,
             ),
             $this->genericParameters,

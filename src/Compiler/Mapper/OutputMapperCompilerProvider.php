@@ -2,9 +2,17 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper;
 
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
+
 interface OutputMapperCompilerProvider
 {
 
-    public function getOutputMapperCompiler(): MapperCompiler;
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler;
 
 }

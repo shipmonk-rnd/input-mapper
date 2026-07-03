@@ -6,6 +6,7 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
@@ -22,17 +23,23 @@ class MapValidated implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new ValidatedInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler(), $this->validatorCompilers);
+        return new ValidatedInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options), $this->validatorCompilers);
     }
 
     /**
      * Validators are input-only, output mapping passes through without validation
      */
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return $this->mapperCompilerProvider->getOutputMapperCompiler();
+        return $this->mapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options);
     }
 
 }

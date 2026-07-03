@@ -7,6 +7,7 @@ use DateTimeInterface;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DateTimeImmutableOutputMapperCompiler;
 use function is_array;
 use function ltrim;
@@ -29,12 +30,18 @@ class MapDateTimeImmutable implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new DateTimeImmutableInputMapperCompiler($this->format, $this->formatDescription, $this->defaultTimezone, $this->targetTimezone);
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         $outputFormat = is_array($this->format) ? $this->format[0] : $this->format;
         $outputFormat = ltrim($outputFormat, '!');

@@ -6,6 +6,7 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
@@ -18,14 +19,20 @@ class MapList implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new ListInputMapperCompiler($this->itemMapperCompilerProvider->getInputMapperCompiler());
+        return new ListInputMapperCompiler($this->itemMapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options));
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new ListOutputMapperCompiler($this->itemMapperCompilerProvider->getOutputMapperCompiler());
+        return new ListOutputMapperCompiler($this->itemMapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options));
     }
 
 }

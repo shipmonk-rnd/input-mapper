@@ -543,14 +543,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         };
 
         foreach ($validators as $validator) {
-            $provider = $this->addValidatorProvider($provider, $validator);
+            $provider = $this->addValidatorProvider($provider, $validator, $options);
         }
 
         foreach ($parameterReflection->getAttributes(OptionalAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $provider = new MapDefaultValue($provider, $attribute->newInstance()->default);
         }
 
-        $mapper = $provider->getInputMapperCompiler();
+        $mapper = $provider->getInputMapperCompiler($this, $options);
 
         if (!PhpDocTypeUtils::isSubTypeOf($mapper->getOutputType(), $type)) {
             throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mapper, $parameterReflection, $type);
@@ -588,38 +588,42 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         };
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     protected function addValidatorProvider(
         MapperCompilerProvider $provider,
         ValidatorCompiler $validatorCompiler,
+        array $options,
     ): MapperCompilerProvider
     {
         if ($provider instanceof MapDefaultValue) {
             return new MapDefaultValue(
-                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler, $options),
                 $provider->defaultValue,
             );
         }
 
         if ($provider instanceof MapOptional) {
             return new MapOptional(
-                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler, $options),
             );
         }
 
         if ($provider instanceof MapNullable) {
             return new MapNullable(
-                $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler, $options),
             );
         }
 
-        $mapperOutputType = $provider->getInputMapperCompiler()->getOutputType();
+        $mapperOutputType = $provider->getInputMapperCompiler($this, $options)->getOutputType();
         $validatorInputType = $validatorCompiler->getInputType();
 
         if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
             return new MapValidated($provider, [$validatorCompiler]);
         }
 
-        throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $provider->getInputMapperCompiler());
+        throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $provider->getInputMapperCompiler($this, $options));
     }
 
     /**

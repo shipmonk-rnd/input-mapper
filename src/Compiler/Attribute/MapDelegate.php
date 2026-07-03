@@ -6,6 +6,7 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use function array_map;
 
@@ -24,19 +25,25 @@ class MapDelegate implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new DelegateInputMapperCompiler(
             $this->className,
-            array_map(static fn (MapperCompilerProvider $p): MapperCompiler => $p->getInputMapperCompiler(), $this->innerMapperCompilerProviders),
+            array_map(static fn (MapperCompilerProvider $p): MapperCompiler => $p->getInputMapperCompiler($mapperCompilerFactory, $options), $this->innerMapperCompilerProviders),
         );
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new DelegateOutputMapperCompiler(
             $this->className,
-            array_map(static fn (MapperCompilerProvider $p): MapperCompiler => $p->getOutputMapperCompiler(), $this->innerMapperCompilerProviders),
+            array_map(static fn (MapperCompilerProvider $p): MapperCompiler => $p->getOutputMapperCompiler($mapperCompilerFactory, $options), $this->innerMapperCompilerProviders),
         );
     }
 

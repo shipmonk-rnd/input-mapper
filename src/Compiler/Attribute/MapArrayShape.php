@@ -6,6 +6,7 @@ use Attribute;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayShapeInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayShapeOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
@@ -22,23 +23,29 @@ class MapArrayShape implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         $compilerItems = [];
 
         foreach ($this->items as $item) {
-            $compilerItems[] = ['key' => $item->key, 'mapper' => $item->mapper->getInputMapperCompiler(), 'optional' => $item->optional];
+            $compilerItems[] = ['key' => $item->key, 'mapper' => $item->mapper->getInputMapperCompiler($mapperCompilerFactory, $options), 'optional' => $item->optional];
         }
 
         return new ArrayShapeInputMapperCompiler($compilerItems, $this->sealed);
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         $compilerItems = [];
 
         foreach ($this->items as $item) {
-            $compilerItems[] = ['key' => $item->key, 'mapper' => $item->mapper->getOutputMapperCompiler(), 'optional' => $item->optional];
+            $compilerItems[] = ['key' => $item->key, 'mapper' => $item->mapper->getOutputMapperCompiler($mapperCompilerFactory, $options), 'optional' => $item->optional];
         }
 
         return new ArrayShapeOutputMapperCompiler($compilerItems, $this->sealed);
