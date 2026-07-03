@@ -8,11 +8,14 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
+use ShipMonk\InputMapper\Runtime\CodecRegistry;
 
 class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvider
 {
 
     private ?MapperCompilerFactory $mapperCompilerFactory = null;
+
+    private ?CodecRegistry $lastCodecRegistry = null;
 
     public function __construct(
         protected readonly ?PropertyNameTransformer $propertyNameTransformer = null,
@@ -20,12 +23,17 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
     {
     }
 
-    public function get(): MapperCompilerFactory
+    public function get(?CodecRegistry $codecRegistry = null): MapperCompilerFactory
     {
-        return $this->mapperCompilerFactory ??= $this->create();
+        if ($this->mapperCompilerFactory === null || $codecRegistry !== $this->lastCodecRegistry) {
+            $this->lastCodecRegistry = $codecRegistry;
+            $this->mapperCompilerFactory = $this->create($codecRegistry);
+        }
+
+        return $this->mapperCompilerFactory;
     }
 
-    protected function create(): MapperCompilerFactory
+    protected function create(?CodecRegistry $codecRegistry = null): MapperCompilerFactory
     {
         $config = $this->createParserConfig();
         return new DefaultMapperCompilerFactory(
@@ -33,6 +41,7 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
             $this->createPhpDocParser($config),
             [],
             $this->propertyNameTransformer,
+            $codecRegistry ?? new CodecRegistry(),
         );
     }
 

@@ -55,12 +55,16 @@ class MapperProvider
      */
     private array $outputMapperFactories = [];
 
+    private readonly CodecRegistry $codecRegistry;
+
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
         private readonly MapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultMapperCompilerFactoryProvider(),
+        ?CodecRegistry $codecRegistry = null,
     )
     {
+        $this->codecRegistry = $codecRegistry ?? new CodecRegistry();
     }
 
     /**
@@ -135,6 +139,54 @@ class MapperProvider
         }
 
         $this->outputMapperFactories[$className] = $mapperFactory; // @phpstan-ignore assign.propertyType
+    }
+
+    /**
+     * Registers a codec instance used for both input and output mapping of its domain classes.
+     *
+     * Note that codecs must be registered before the first mapper is compiled and that compiled mappers
+     * are cached on disk, so with `autoRefresh: false` changing codec registrations does not invalidate
+     * previously compiled mappers.
+     *
+     * @param Codec<*, *, *, *> $codec
+     */
+    public function registerCodec(
+        Codec $codec,
+    ): void
+    {
+        $this->codecRegistry->register($codec);
+    }
+
+    /**
+     * Registers a factory creating codec instances lazily, once per domain class.
+     * Useful for generic codecs that handle a family of classes (the factory receives the concrete domain class name).
+     *
+     * @param class-string<T> $codecClassName
+     * @param callable(class-string, CodecRegistry): T $factory
+     *
+     * @template T of Codec<*, *, *, *>
+     */
+    public function registerCodecFactory(
+        string $codecClassName,
+        callable $factory,
+    ): void
+    {
+        $this->codecRegistry->registerFactory($codecClassName, $factory);
+    }
+
+    /**
+     * @param class-string<T> $codecClassName
+     * @param class-string $domainClassName
+     * @return T
+     *
+     * @template T of Codec<*, *, *, *>
+     */
+    public function getCodec(
+        string $codecClassName,
+        string $domainClassName,
+    ): Codec
+    {
+        return $this->codecRegistry->get($codecClassName, $domainClassName);
     }
 
     /**
@@ -253,7 +305,7 @@ class MapperProvider
         string $direction,
     ): string
     {
-        $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
+        $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get($this->codecRegistry);
         $type = new IdentifierTypeNode($className);
 
         $codeBuilder = new PhpCodeBuilder();

@@ -8,6 +8,7 @@ use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProv
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\CamelToSnakeCasePropertyNameTransformer;
 use ShipMonk\InputMapper\Compiler\PropertyNameTransformer\PropertyNameTransformer;
+use ShipMonk\InputMapper\Runtime\CodecRegistry;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\AcronymCasedInput;
@@ -175,7 +176,7 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
     {
         $compilerFactoryProvider = new class (new CamelToSnakeCasePropertyNameTransformer()) extends DefaultMapperCompilerFactoryProvider {
 
-            protected function create(): MapperCompilerFactory
+            protected function create(?CodecRegistry $codecRegistry = null): MapperCompilerFactory
             {
                 $config = $this->createParserConfig();
 
@@ -184,6 +185,7 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
                     $this->createPhpDocParser($config),
                     [],
                     $this->propertyNameTransformer,
+                    $codecRegistry ?? new CodecRegistry(),
                 );
             }
 

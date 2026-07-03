@@ -2,9 +2,11 @@
 
 namespace ShipMonk\InputMapper\Compiler\MapperFactory;
 
+use ShipMonk\InputMapper\Runtime\CodecRegistry;
+
 interface MapperCompilerFactoryProvider
 {
 
-    public function get(): MapperCompilerFactory;
+    public function get(?CodecRegistry $codecRegistry = null): MapperCompilerFactory;
 
 }
