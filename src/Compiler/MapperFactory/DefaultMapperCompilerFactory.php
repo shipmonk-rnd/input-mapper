@@ -53,7 +53,6 @@ use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Codec\CodecMapperCompilerProvider;
-use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
@@ -85,13 +84,12 @@ use function substr;
 class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
-    final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
-    final public const GENERIC_PARAMETERS = 'genericParameters';
-
     /**
      * @var array<string, class-string<Codec<*, *, *, *>>>|null
      */
     private ?array $codecDomainClassMap = null;
+
+    private int $codecDomainClassMapFactoryCount = 0;
 
     /**
      * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompilerProvider> $mapperCompilerFactories
@@ -551,7 +549,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         foreach ($parameterReflection->getAttributes(Codec::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $codec = $attribute->newInstance();
 
-            if (!$codec instanceof InputMapperCompilerProvider) {
+            if (!$codec instanceof MapperCompilerProvider) {
                 $providers[] = new MapCodec($codec);
             }
         }
@@ -613,11 +611,25 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             }
         }
 
-        return match (count($outputProviders)) {
-            0 => $this->createInner($type, $options),
-            1 => $outputProviders[0],
-            default => throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName()),
-        };
+        if (count($outputProviders) === 0) {
+            return $this->createInner($type, $options);
+        }
+
+        if (count($outputProviders) === 1) {
+            return $outputProviders[0];
+        }
+
+        $chainableProviders = [];
+
+        foreach ($outputProviders as $outputProvider) {
+            if (!$outputProvider instanceof MapperCompilerProvider) {
+                throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName());
+            }
+
+            $chainableProviders[] = $outputProvider;
+        }
+
+        return new MapChain($chainableProviders);
     }
 
     /**
@@ -694,30 +706,55 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
     /**
      * Maps domain classes (the codec EI and DO generic parameters) to codec classes registered in the codec registry.
      *
+     * The map is rebuilt when the registry gains new codec registrations, so codecs registered late are picked up
+     * by mappers that are not compiled yet.
+     *
      * @return array<string, class-string<Codec<*, *, *, *>>>
      */
     protected function getCodecDomainClassMap(): array
     {
-        if ($this->codecDomainClassMap === null) {
-            $this->codecDomainClassMap = [];
+        $codecFactories = $this->codecRegistry->getFactories();
 
-            foreach ($this->codecRegistry->getFactories() as $codecClassName => $factory) {
+        if ($this->codecDomainClassMap === null || count($codecFactories) !== $this->codecDomainClassMapFactoryCount) {
+            $codecDomainClassMap = [];
+
+            foreach ($codecFactories as $codecClassName => $factory) {
                 $codecType = new IdentifierTypeNode($codecClassName);
+                $domainClassNames = [];
 
                 foreach ([1, 2] as $parameter) {
-                    $domainType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, $parameter);
+                    try {
+                        $domainType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, $parameter);
+                    } catch (LogicException $e) {
+                        throw new LogicException("Unable to infer domain class of codec '{$codecClassName}', check its @implements annotation: {$e->getMessage()}", 0, $e);
+                    }
 
-                    if ($domainType instanceof IdentifierTypeNode && !PhpDocTypeUtils::isKeyword($domainType)) {
-                        $conflictingCodecClassName = $this->codecDomainClassMap[$domainType->name] ?? null;
-
-                        if ($conflictingCodecClassName !== null && $conflictingCodecClassName !== $codecClassName) {
-                            throw new LogicException("Multiple codecs registered for domain class '{$domainType->name}': {$conflictingCodecClassName}, {$codecClassName}.");
-                        }
-
-                        $this->codecDomainClassMap[$domainType->name] = $codecClassName;
+                    if (
+                        $domainType instanceof IdentifierTypeNode
+                        && !PhpDocTypeUtils::isKeyword($domainType)
+                        && (class_exists($domainType->name) || interface_exists($domainType->name))
+                    ) {
+                        $domainClassNames[$domainType->name] = true;
                     }
                 }
+
+                if (count($domainClassNames) === 0) {
+                    throw new LogicException("Codec '{$codecClassName}' does not declare any class or interface as its domain type, check its @implements annotation.");
+                }
+
+                foreach ($domainClassNames as $domainClassName => $true) {
+                    $conflictingCodecClassName = $codecDomainClassMap[$domainClassName] ?? null;
+
+                    if ($conflictingCodecClassName !== null && $conflictingCodecClassName !== $codecClassName) {
+                        throw new LogicException("Multiple codecs registered for domain class '{$domainClassName}': {$conflictingCodecClassName}, {$codecClassName}.");
+                    }
+
+                    $codecDomainClassMap[$domainClassName] = $codecClassName;
+                }
             }
+
+            $this->codecDomainClassMap = $codecDomainClassMap;
+            $this->codecDomainClassMapFactoryCount = count($codecFactories);
         }
 
         return $this->codecDomainClassMap;

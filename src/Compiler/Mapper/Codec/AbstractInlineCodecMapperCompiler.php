@@ -10,11 +10,16 @@ use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Runtime\Codec;
+use WeakMap;
 use function array_map;
-use function array_values;
 
 abstract class AbstractInlineCodecMapperCompiler implements MapperCompiler
 {
+
+    /**
+     * @var WeakMap<PhpCodeBuilder, string>|null property name per generated class, so repeated compilation does not duplicate properties
+     */
+    private ?WeakMap $codecPropertyNames = null;
 
     /**
      * @param class-string<Codec<*, *, *, *>> $codecClassName
@@ -35,8 +40,21 @@ abstract class AbstractInlineCodecMapperCompiler implements MapperCompiler
      */
     protected function compileCodecAccess(PhpCodeBuilder $builder): CompiledExpr
     {
-        $codecPropertyName = $builder->uniqPropertyName('codec');
+        $this->codecPropertyNames ??= new WeakMap();
+        $codecPropertyName = $this->codecPropertyNames[$builder] ??= $this->addCodecProperty($builder);
 
+        $codecShortName = $builder->importClass($this->codecClassName);
+        $argExprs = array_map($builder->val(...), $this->constructorArgs);
+        $newCodec = $builder->new($codecShortName, $argExprs);
+        $codecAccess = $builder->propertyFetch($builder->var('this'), $codecPropertyName);
+        $coalesceAssign = new Coalesce($codecAccess, $newCodec);
+
+        return new CompiledExpr($codecAccess, [new Expression($coalesceAssign)]);
+    }
+
+    private function addCodecProperty(PhpCodeBuilder $builder): string
+    {
+        $codecPropertyName = $builder->uniqPropertyName('codec');
         $codecShortName = $builder->importClass($this->codecClassName);
         $codecProperty = $builder->property($codecPropertyName)
             ->makePrivate()
@@ -45,12 +63,7 @@ abstract class AbstractInlineCodecMapperCompiler implements MapperCompiler
             ->getNode();
         $builder->addProperty($codecProperty);
 
-        $argExprs = array_map($builder->val(...), array_values($this->constructorArgs));
-        $newCodec = $builder->new($codecShortName, $argExprs);
-        $codecAccess = $builder->propertyFetch($builder->var('this'), $codecPropertyName);
-        $coalesceAssign = new Coalesce($codecAccess, $newCodec);
-
-        return new CompiledExpr($codecAccess, [new Expression($coalesceAssign)]);
+        return $codecPropertyName;
     }
 
 }

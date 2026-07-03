@@ -8,6 +8,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\Codec\InlineCodecInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Codec\InlineCodecOutputMapperCompiler;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Codec\Data\CurrencyPrefixCodec;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Codec\Data\ObjectArgCodec;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Codec\Data\ParentPrivatePropCodec;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Codec\Data\StaticPropCodec;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Codec\Data\UninitPropCodec;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use ShipMonk\InputMapperTests\Runtime\Data\MoneyValue;
 
@@ -48,6 +51,41 @@ class MapCodecTest extends InputMapperTestCase
             'Cannot compile codec %s inline, because constructor argument $money must be a scalar or null value, got %s',
             static fn () => (new MapCodec($codec))->getInputMapperCompiler($factory, []),
         );
+    }
+
+    public function testStaticPropertyConstructorArgumentIsRejected(): void
+    {
+        $factory = self::createMapperCompilerFactory();
+        $codec = new StaticPropCodec('local');
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            'Cannot compile codec %s inline, because constructor argument $mode matches a static property',
+            static fn () => (new MapCodec($codec))->getInputMapperCompiler($factory, []),
+        );
+    }
+
+    public function testUninitializedPropertyConstructorArgumentIsRejected(): void
+    {
+        $factory = self::createMapperCompilerFactory();
+        $codec = new UninitPropCodec('local');
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            'Cannot compile codec %s inline, because constructor argument $mode matches an uninitialized property',
+            static fn () => (new MapCodec($codec))->getInputMapperCompiler($factory, []),
+        );
+    }
+
+    public function testPrivatePropertyOfParentClassIsExtracted(): void
+    {
+        $factory = self::createMapperCompilerFactory();
+        $mapCodec = new MapCodec(new ParentPrivatePropCodec('shh-'));
+
+        $mapperCompiler = $mapCodec->getInputMapperCompiler($factory, []);
+
+        self::assertInstanceOf(InlineCodecInputMapperCompiler::class, $mapperCompiler);
+        self::assertSame(['secret' => 'shh-'], $mapperCompiler->constructorArgs);
     }
 
 }

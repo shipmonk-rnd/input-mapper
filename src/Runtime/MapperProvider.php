@@ -15,6 +15,7 @@ use function class_implements;
 use function class_parents;
 use function count;
 use function dirname;
+use function fclose;
 use function file_put_contents;
 use function flock;
 use function fopen;
@@ -55,16 +56,12 @@ class MapperProvider
      */
     private array $outputMapperFactories = [];
 
-    private readonly CodecRegistry $codecRegistry;
-
     public function __construct(
         private readonly string $tempDir,
         private readonly bool $autoRefresh = false,
         private readonly MapperCompilerFactoryProvider $mapperCompilerFactoryProvider = new DefaultMapperCompilerFactoryProvider(),
-        ?CodecRegistry $codecRegistry = null,
     )
     {
-        $this->codecRegistry = $codecRegistry ?? new CodecRegistry();
     }
 
     /**
@@ -144,9 +141,8 @@ class MapperProvider
     /**
      * Registers a codec instance used for both input and output mapping of its domain classes.
      *
-     * Note that codecs must be registered before the first mapper is compiled and that compiled mappers
-     * are cached on disk, so with `autoRefresh: false` changing codec registrations does not invalidate
-     * previously compiled mappers.
+     * Register codecs before compiling mappers: mappers already compiled (loaded in this process,
+     * or cached on disk when `autoRefresh` is disabled) do not observe later registrations.
      *
      * @param Codec<*, *, *, *> $codec
      */
@@ -154,7 +150,7 @@ class MapperProvider
         Codec $codec,
     ): void
     {
-        $this->codecRegistry->register($codec);
+        $this->mapperCompilerFactoryProvider->getCodecRegistry()->register($codec);
     }
 
     /**
@@ -171,7 +167,7 @@ class MapperProvider
         callable $factory,
     ): void
     {
-        $this->codecRegistry->registerFactory($codecClassName, $factory);
+        $this->mapperCompilerFactoryProvider->getCodecRegistry()->registerFactory($codecClassName, $factory);
     }
 
     /**
@@ -186,7 +182,7 @@ class MapperProvider
         string $domainClassName,
     ): Codec
     {
-        return $this->codecRegistry->get($codecClassName, $domainClassName);
+        return $this->mapperCompilerFactoryProvider->getCodecRegistry()->get($codecClassName, $domainClassName);
     }
 
     /**
@@ -278,20 +274,23 @@ class MapperProvider
             throw new RuntimeException("Unable to acquire exclusive lock '$path.lock'.");
         }
 
-        if (!is_file($path) || $this->autoRefresh) {
-            $code = $this->compile($className, $mapperClassName, $direction);
+        try {
+            if (!is_file($path) || $this->autoRefresh) {
+                $code = $this->compile($className, $mapperClassName, $direction);
 
-            if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
-                @unlink("$path.tmp"); // @ file may not exist
-                throw new RuntimeException("Unable to create '$path'.");
+                if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
+                    @unlink("$path.tmp"); // @ file may not exist
+                    throw new RuntimeException("Unable to create '$path'.");
+                }
             }
-        }
 
-        if ((@include $path) === false) { // @ error escalated to exception
-            throw new RuntimeException("Unable to load '$path'.");
+            if ((@include $path) === false) { // @ error escalated to exception
+                throw new RuntimeException("Unable to load '$path'.");
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
         }
-
-        flock($handle, LOCK_UN);
     }
 
     /**
@@ -305,7 +304,7 @@ class MapperProvider
         string $direction,
     ): string
     {
-        $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get($this->codecRegistry);
+        $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
         $type = new IdentifierTypeNode($className);
 
         $codeBuilder = new PhpCodeBuilder();

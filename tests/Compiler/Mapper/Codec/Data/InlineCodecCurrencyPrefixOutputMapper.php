@@ -27,7 +27,7 @@ class InlineCodecCurrencyPrefixOutputMapper implements Mapper
      */
     public function map(mixed $data, array $path = []): string
     {
-        $this->codec ??= new CurrencyPrefixCodec('USD', ':');
+        $this->codec ??= new CurrencyPrefixCodec(prefix: 'USD', separator: ':');
         $encoded = $this->codec->encode($data, $path);
         return $encoded;
     }

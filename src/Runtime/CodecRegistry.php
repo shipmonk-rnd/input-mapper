@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Runtime;
 
 use LogicException;
+use function str_starts_with;
 
 class CodecRegistry
 {
@@ -38,6 +39,12 @@ class CodecRegistry
         callable $factory,
     ): void
     {
+        foreach ($this->codecs as $key => $codec) {
+            if (str_starts_with($key, $codecClassName . ':')) {
+                unset($this->codecs[$key]);
+            }
+        }
+
         $this->codecFactories[$codecClassName] = $factory;
     }
 

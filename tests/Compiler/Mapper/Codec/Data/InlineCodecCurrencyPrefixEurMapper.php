@@ -31,7 +31,7 @@ class InlineCodecCurrencyPrefixEurMapper implements Mapper
             throw MappingFailedException::incorrectType($data, $path, 'string');
         }
 
-        $this->codec ??= new CurrencyPrefixCodec('EUR', '-');
+        $this->codec ??= new CurrencyPrefixCodec(prefix: 'EUR', separator: '-');
         return $this->codec->decode($data, $path);
     }
 }

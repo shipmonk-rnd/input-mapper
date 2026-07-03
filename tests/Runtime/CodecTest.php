@@ -4,6 +4,8 @@ namespace ShipMonk\InputMapperTests\Runtime;
 
 use DateTimeImmutable;
 use LogicException;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Runtime\CodecRegistry;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
@@ -13,14 +15,21 @@ use ShipMonk\InputMapperTests\Runtime\Data\AlternativeMoneyCodec;
 use ShipMonk\InputMapperTests\Runtime\Data\CodecConflictProbeInput;
 use ShipMonk\InputMapperTests\Runtime\Data\Duration;
 use ShipMonk\InputMapperTests\Runtime\Data\DurationCodec;
+use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
+use ShipMonk\InputMapperTests\Runtime\Data\FactoryProbeInput;
 use ShipMonk\InputMapperTests\Runtime\Data\FixedDuration;
+use ShipMonk\InputMapperTests\Runtime\Data\HexColor;
+use ShipMonk\InputMapperTests\Runtime\Data\InheritedHexColorCodec;
 use ShipMonk\InputMapperTests\Runtime\Data\LegacyPaymentInput;
 use ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec;
 use ShipMonk\InputMapperTests\Runtime\Data\MoneyValue;
 use ShipMonk\InputMapperTests\Runtime\Data\OrderId;
 use ShipMonk\InputMapperTests\Runtime\Data\OrderInput;
+use ShipMonk\InputMapperTests\Runtime\Data\PrefixedSuffixedInput;
+use ShipMonk\InputMapperTests\Runtime\Data\ReversedTokenInput;
 use ShipMonk\InputMapperTests\Runtime\Data\SpecialRequirementsDatesInput;
 use ShipMonk\InputMapperTests\Runtime\Data\TypedIdCodec;
+use ShipMonk\InputMapperTests\Runtime\Data\UnboundGenericCodec;
 use function sys_get_temp_dir;
 
 class CodecTest extends InputMapperTestCase
@@ -273,6 +282,117 @@ class CodecTest extends InputMapperTestCase
 
         self::assertNull($resultWithNull->refund);
         self::assertSame($dataWithNull, $outputMapper->map($resultWithNull));
+    }
+
+    public function testCodecRegisteredAfterUnrelatedCompileIsPickedUp(): void
+    {
+        $mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true);
+        $mapperProvider->getInputMapper(EmptyInput::class);
+
+        $mapperProvider->registerCodecFactory(TypedIdCodec::class, TypedIdCodec::create(...));
+
+        $result = $mapperProvider->getInputMapper(AccountId::class)->map('abc-123');
+        self::assertSame('abc-123', $result->value);
+    }
+
+    public function testConflictingCodecRegistrationsThrowDeterministically(): void
+    {
+        $mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true);
+        $mapperProvider->registerCodec(new MoneyCodec());
+        $mapperProvider->registerCodec(new AlternativeMoneyCodec());
+
+        $expectedMessage = "Multiple codecs registered for domain class 'ShipMonk\InputMapperTests\Runtime\Data\MoneyValue': ShipMonk\InputMapperTests\Runtime\Data\MoneyCodec, ShipMonk\InputMapperTests\Runtime\Data\AlternativeMoneyCodec.";
+
+        self::assertException(
+            LogicException::class,
+            $expectedMessage,
+            static fn () => $mapperProvider->getInputMapper(CodecConflictProbeInput::class),
+        );
+
+        // retry after a caught conflict must fail the same way, not silently succeed with a partial codec map
+        self::assertException(
+            LogicException::class,
+            $expectedMessage,
+            static fn () => $mapperProvider->getOutputMapper(CodecConflictProbeInput::class),
+        );
+    }
+
+    public function testCodecWithoutInferableDomainClassIsRejected(): void
+    {
+        $mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true);
+        $mapperProvider->registerCodec(new UnboundGenericCodec());
+
+        self::assertException(
+            LogicException::class,
+            "Codec 'ShipMonk\InputMapperTests\Runtime\Data\UnboundGenericCodec' does not declare any class or interface as its domain type, check its @implements annotation.",
+            static fn () => $mapperProvider->getInputMapper(CodecConflictProbeInput::class),
+        );
+    }
+
+    public function testCodecInheritingImplementsFromParentClass(): void
+    {
+        $mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true);
+        $mapperProvider->registerCodec(new InheritedHexColorCodec());
+
+        $inputMapper = $mapperProvider->getInputMapper(HexColor::class);
+        $outputMapper = $mapperProvider->getOutputMapper(HexColor::class);
+
+        self::assertSame('#ff0000', $outputMapper->map($inputMapper->map('#ff0000')));
+    }
+
+    public function testTwoCodecAttributesOnPromotedParameterRoundTrip(): void
+    {
+        $inputMapper = $this->mapperProvider->getInputMapper(PrefixedSuffixedInput::class);
+        $outputMapper = $this->mapperProvider->getOutputMapper(PrefixedSuffixedInput::class);
+
+        $data = ['amount' => 'USD:100!'];
+        /** @var PrefixedSuffixedInput $result */
+        $result = $inputMapper->map($data);
+
+        self::assertSame('100', $result->amount);
+        self::assertSame($data, $outputMapper->map($result));
+    }
+
+    public function testInputOnlyProviderCodecAttributeIsNotDropped(): void
+    {
+        $inputMapper = $this->mapperProvider->getInputMapper(ReversedTokenInput::class);
+        $outputMapper = $this->mapperProvider->getOutputMapper(ReversedTokenInput::class);
+
+        /** @var ReversedTokenInput $result */
+        $result = $inputMapper->map(['token' => 'abc']);
+
+        self::assertSame('cba', $result->token);
+        self::assertSame(['token' => 'abc'], $outputMapper->map($result));
+    }
+
+    public function testFactoryConfiguredBeforeMapperProviderIsPreserved(): void
+    {
+        $factoryProvider = new DefaultMapperCompilerFactoryProvider();
+        $factory = $factoryProvider->get();
+        self::assertInstanceOf(DefaultMapperCompilerFactory::class, $factory);
+        $factory->setMapperCompilerFactory(FactoryProbeInput::class, static fn () => throw new LogicException('custom factory used'));
+
+        $mapperProvider = new MapperProvider(sys_get_temp_dir(), autoRefresh: true, mapperCompilerFactoryProvider: $factoryProvider);
+        $mapperProvider->registerCodec(new MoneyCodec());
+
+        self::assertException(
+            LogicException::class,
+            'custom factory used',
+            static fn () => $mapperProvider->getInputMapper(FactoryProbeInput::class),
+        );
+    }
+
+    public function testCodecRegistryReRegistrationReplacesCachedInstances(): void
+    {
+        $registry = new CodecRegistry();
+        $registry->register(new MoneyCodec());
+        $first = $registry->get(MoneyCodec::class, MoneyValue::class);
+
+        $replacement = new MoneyCodec();
+        $registry->register($replacement);
+
+        self::assertSame($replacement, $registry->get(MoneyCodec::class, MoneyValue::class));
+        self::assertNotSame($first, $replacement);
     }
 
 }

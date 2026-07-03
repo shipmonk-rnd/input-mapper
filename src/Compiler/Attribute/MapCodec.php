@@ -5,12 +5,12 @@ namespace ShipMonk\InputMapper\Compiler\Attribute;
 use Attribute;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use ReflectionClass;
+use ReflectionProperty;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Codec\InlineCodecInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Codec\InlineCodecOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
-use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Codec;
@@ -44,7 +44,7 @@ class MapCodec implements MapperCompilerProvider
         $codecType = new IdentifierTypeNode($this->codec::class);
         $intermediateType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 0);
         $domainType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 2);
-        $options[DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING] ??= true;
+        $options[MapperCompilerFactory::DELEGATE_OBJECT_MAPPING] ??= true;
 
         return new InlineCodecInputMapperCompiler(
             $this->codec::class,
@@ -62,7 +62,7 @@ class MapCodec implements MapperCompilerProvider
         $codecType = new IdentifierTypeNode($this->codec::class);
         $domainType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 1);
         $intermediateType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 3);
-        $options[DefaultMapperCompilerFactory::DELEGATE_OBJECT_MAPPING] ??= true;
+        $options[MapperCompilerFactory::DELEGATE_OBJECT_MAPPING] ??= true;
 
         return new InlineCodecOutputMapperCompiler(
             $this->codec::class,
@@ -87,12 +87,18 @@ class MapCodec implements MapperCompilerProvider
 
         foreach ($constructor->getParameters() as $parameter) {
             $parameterName = $parameter->getName();
+            $property = $this->findCodecProperty($reflection, $parameterName)
+                ?? throw CannotCreateMapperCompilerException::withUnsupportedCodecConstructorArgument($this->codec::class, $parameterName, 'has no matching property');
 
-            if (!$reflection->hasProperty($parameterName)) {
-                throw CannotCreateMapperCompilerException::withUnsupportedCodecConstructorArgument($this->codec::class, $parameterName, 'has no matching property');
+            if ($property->isStatic()) {
+                throw CannotCreateMapperCompilerException::withUnsupportedCodecConstructorArgument($this->codec::class, $parameterName, 'matches a static property');
             }
 
-            $value = $reflection->getProperty($parameterName)->getValue($this->codec);
+            if (!$property->isInitialized($this->codec)) {
+                throw CannotCreateMapperCompilerException::withUnsupportedCodecConstructorArgument($this->codec::class, $parameterName, 'matches an uninitialized property');
+            }
+
+            $value = $property->getValue($this->codec);
 
             if ($value !== null && !is_scalar($value)) {
                 throw CannotCreateMapperCompilerException::withUnsupportedCodecConstructorArgument($this->codec::class, $parameterName, 'must be a scalar or null value, got ' . get_debug_type($value));
@@ -102,6 +108,27 @@ class MapCodec implements MapperCompilerProvider
         }
 
         return $args;
+    }
+
+    /**
+     * Finds a property in the codec class hierarchy, including private properties of parent classes.
+     *
+     * @param ReflectionClass<T> $class
+     *
+     * @template T of object
+     */
+    private function findCodecProperty(
+        ReflectionClass $class,
+        string $name,
+    ): ?ReflectionProperty
+    {
+        for ($current = $class; $current !== false; $current = $current->getParentClass()) {
+            if ($current->hasProperty($name)) {
+                return $current->getProperty($name);
+            }
+        }
+
+        return null;
     }
 
 }

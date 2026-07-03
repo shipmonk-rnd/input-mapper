@@ -59,6 +59,7 @@ use function count;
 use function defined;
 use function get_debug_type;
 use function get_object_vars;
+use function get_parent_class;
 use function in_array;
 use function interface_exists;
 use function is_a;
@@ -701,6 +702,9 @@ class PhpDocTypeUtils
         return false;
     }
 
+    /**
+     * @throws LogicException when the type is not a subtype of the given generic type
+     */
     public static function inferGenericParameter(
         TypeNode $type,
         string $typeName,
@@ -724,7 +728,18 @@ class PhpDocTypeUtils
         }
 
         if ($type instanceof IdentifierTypeNode && !self::isKeyword($type)) {
-            return self::inferGenericParameter(new GenericTypeNode($type, []), $typeName, $parameter);
+            try {
+                return self::inferGenericParameter(new GenericTypeNode($type, []), $typeName, $parameter);
+            } catch (LogicException $e) {
+                // a class with no own @implements/@extends tags inherits the generic args of its native parent
+                $parentClassName = class_exists($type->name) ? get_parent_class($type->name) : false;
+
+                if ($parentClassName !== false) {
+                    return self::inferGenericParameter(new IdentifierTypeNode($parentClassName), $typeName, $parameter);
+                }
+
+                throw $e;
+            }
         }
 
         if ($type instanceof GenericTypeNode) {
@@ -1051,13 +1066,7 @@ class PhpDocTypeUtils
                 if ($i < $count) {
                     $mapping[] = $i;
                 } else {
-                    $default = $parameterList[$i]->default;
-
-                    if ($default instanceof IdentifierTypeNode && isset($genericParameterOffsets[$default->name])) {
-                        $mapping[] = $genericParameterOffsets[$default->name];
-                    } else {
-                        $mapping[] = null;
-                    }
+                    $mapping[] = self::resolveDefaultParameterOffset($parameterList, $genericParameterOffsets, $i, $count);
                 }
             }
 
@@ -1065,6 +1074,40 @@ class PhpDocTypeUtils
         }
 
         return $parameterOffsetMapping;
+    }
+
+    /**
+     * Follows a chain of template defaults referencing other template parameters
+     * until it reaches a parameter that is actually provided (offset < $providedCount).
+     *
+     * @param list<GenericTypeParameter> $parameterList
+     * @param array<string, int> $genericParameterOffsets
+     */
+    private static function resolveDefaultParameterOffset(
+        array $parameterList,
+        array $genericParameterOffsets,
+        int $index,
+        int $providedCount,
+    ): ?int
+    {
+        $visited = [];
+
+        while (!isset($visited[$index])) {
+            $visited[$index] = true;
+            $default = $parameterList[$index]->default;
+
+            if (!$default instanceof IdentifierTypeNode || !isset($genericParameterOffsets[$default->name])) {
+                return null;
+            }
+
+            $index = $genericParameterOffsets[$default->name];
+
+            if ($index < $providedCount) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 
     private static function parsePhpDoc(string $phpDoc): PhpDocNode

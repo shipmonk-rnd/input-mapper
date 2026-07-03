@@ -349,7 +349,9 @@ $data = $outputMapper->map($money); // ['currency' => 'USD', 'cents' => 1299]
 
 The library auto-compiles the `mixed → intermediate` bridge (e.g. validating that the input is `array{currency: string, cents: int}`). Your codec only handles the `intermediate → domain` conversion.
 
-The codec's domain classes are inferred from its generic parameters. When resolving a codec for a class, the class hierarchy is walked from the most specific type to the least specific one, and at each level registered codecs take precedence over type-based mapper compiler factories (such as the built-in `DateTimeInterface` handling). Registering two codecs claiming the same domain class is an error. Codecs must be registered before the first mapper is compiled — and note that compiled mappers are cached on disk, so without `autoRefresh: true` changing codec registrations does not invalidate previously compiled mappers.
+The codec's domain classes are inferred from its generic parameters (an `@implements` annotation inherited from a parent class works too). When resolving a codec for a class, the class hierarchy is walked from the most specific type to the least specific one, and at each level registered codecs take precedence over type-based mapper compiler factories (such as the built-in `DateTimeInterface` handling). Hand-written mappers registered via `registerInputFactory()` / `registerOutputFactory()` take precedence over codecs. Registering two codecs claiming the same domain class is an error, as is registering a codec whose domain type cannot be resolved to a class or interface.
+
+Register codecs before compiling mappers: a mapper already compiled for a domain class does not observe later codec registrations — whether it is loaded in the current process or cached on disk (mappers are cached per domain class name, and with `autoRefresh` disabled the cached file is reused even if codec registrations changed, which can mean either silently skipped codec validation or a runtime `LogicException` about an unregistered codec).
 
 #### Parameterized Codecs (Codec Factories)
 
@@ -471,6 +473,8 @@ class DateTimeFormatCodec implements Codec, MapperCompilerProvider
 ```
 
 Codecs used as attributes are re-instantiated inside the generated mapper, so all their constructor arguments must be scalar or null values readable from properties of the same name.
+
+A codec attribute that wants to provide its own mapper compilers must implement the full `MapperCompilerProvider` interface (both directions, as above); a codec implementing neither provider interface is wrapped in `MapCodec` automatically. Multiple codec attributes on one promoted constructor property are chained: decoding applies them in declaration order, encoding in reverse order.
 
 ### Using custom mappers
 

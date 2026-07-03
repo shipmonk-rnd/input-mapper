@@ -7,6 +7,11 @@ use ShipMonk\InputMapper\Runtime\CodecRegistry;
 interface MapperCompilerFactoryProvider
 {
 
-    public function get(?CodecRegistry $codecRegistry = null): MapperCompilerFactory;
+    public function get(): MapperCompilerFactory;
+
+    /**
+     * Returns the codec registry used by the provided factory.
+     */
+    public function getCodecRegistry(): CodecRegistry;
 
 }

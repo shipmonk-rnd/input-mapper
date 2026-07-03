@@ -15,25 +15,27 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
 
     private ?MapperCompilerFactory $mapperCompilerFactory = null;
 
-    private ?CodecRegistry $lastCodecRegistry = null;
+    protected readonly CodecRegistry $codecRegistry;
 
     public function __construct(
         protected readonly ?PropertyNameTransformer $propertyNameTransformer = null,
+        ?CodecRegistry $codecRegistry = null,
     )
     {
+        $this->codecRegistry = $codecRegistry ?? new CodecRegistry();
     }
 
-    public function get(?CodecRegistry $codecRegistry = null): MapperCompilerFactory
+    public function get(): MapperCompilerFactory
     {
-        if ($this->mapperCompilerFactory === null || $codecRegistry !== $this->lastCodecRegistry) {
-            $this->lastCodecRegistry = $codecRegistry;
-            $this->mapperCompilerFactory = $this->create($codecRegistry);
-        }
-
-        return $this->mapperCompilerFactory;
+        return $this->mapperCompilerFactory ??= $this->create();
     }
 
-    protected function create(?CodecRegistry $codecRegistry = null): MapperCompilerFactory
+    public function getCodecRegistry(): CodecRegistry
+    {
+        return $this->codecRegistry;
+    }
+
+    protected function create(): MapperCompilerFactory
     {
         $config = $this->createParserConfig();
         return new DefaultMapperCompilerFactory(
@@ -41,7 +43,7 @@ class DefaultMapperCompilerFactoryProvider implements MapperCompilerFactoryProvi
             $this->createPhpDocParser($config),
             [],
             $this->propertyNameTransformer,
-            $codecRegistry ?? new CodecRegistry(),
+            $this->codecRegistry,
         );
     }
 

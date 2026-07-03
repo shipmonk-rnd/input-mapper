@@ -34,6 +34,7 @@ use ReflectionFunction;
 use ReflectionParameter;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
+use ShipMonk\InputMapperTests\Compiler\Type\Data\ChainedDefaultsType;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 use Traversable;
 use function array_map;
@@ -1712,6 +1713,21 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
             3,
             'string',
         ];
+    }
+
+    public function testParameterOffsetMappingResolvesChainedDefaults(): void
+    {
+        $type = new IdentifierTypeNode(ChainedDefaultsType::class);
+        $definition = PhpDocTypeUtils::getGenericTypeDefinition($type);
+
+        // with 1 arg provided, both B (= A) and C (= B = A) resolve to offset 0
+        self::assertSame([0, 0, 0], $definition->parameterOffsetMapping[1] ?? null);
+        self::assertSame([0, 1, 1], $definition->parameterOffsetMapping[2] ?? null);
+
+        self::assertEquals(
+            $this->parseType('int'),
+            PhpDocTypeUtils::inferGenericParameter($this->parseType(ChainedDefaultsType::class . '<int>'), ChainedDefaultsType::class, 2),
+        );
     }
 
     public function testParameterOffsetMappingDerivedFromTemplateDefaults(): void

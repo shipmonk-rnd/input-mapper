@@ -22,17 +22,17 @@ public function getOutputMapperCompiler(MapperCompilerFactory $mapperCompilerFac
 
 If you implement custom attributes, update the signatures and pass both arguments along when delegating to inner providers.
 
-#### 2. `MapperCompilerFactoryProvider::get()` receives the codec registry
+#### 2. `MapperCompilerFactoryProvider` gains `getCodecRegistry()`
 
 ```php
-// before
-public function get(): MapperCompilerFactory;
-
-// after
-public function get(?CodecRegistry $codecRegistry = null): MapperCompilerFactory;
+interface MapperCompilerFactoryProvider
+{
+    public function get(): MapperCompilerFactory;
+    public function getCodecRegistry(): CodecRegistry; // new
+}
 ```
 
-`MapperProvider` passes its codec registry to the factory provider when compiling mappers. Custom implementations should forward the registry to `DefaultMapperCompilerFactory` (or handle codec resolution themselves).
+The factory provider owns the codec registry (like it owns the rest of the compile-time configuration); `MapperProvider::registerCodec()` / `registerCodecFactory()` / `getCodec()` delegate to it, so the compiled mappers and the runtime codec lookup always share one registry. `DefaultMapperCompilerFactoryProvider` accepts an optional `CodecRegistry` in its constructor and creates one by default.
 
 #### 3. Protected API changes in `DefaultMapperCompilerFactory` and `DefaultMapperCompilerFactoryProvider`
 
@@ -40,7 +40,8 @@ Relevant only for subclasses:
 
 - `DefaultMapperCompilerFactory::__construct()` gained a `CodecRegistry $codecRegistry` parameter.
 - `DefaultMapperCompilerFactory::addValidatorProvider()` gained an `array $options` parameter.
-- `DefaultMapperCompilerFactoryProvider::create()` gained a `?CodecRegistry $codecRegistry` parameter.
+- `DefaultMapperCompilerFactoryProvider` subclasses overriding `create()` should pass `$this->codecRegistry` to the factory they construct.
+- The `DELEGATE_OBJECT_MAPPING` and `GENERIC_PARAMETERS` option constants moved from `DefaultMapperCompilerFactory` to the `MapperCompilerFactory` interface (references through the class keep working).
 
 ## From 0.x to 1.0 (Bidirectional Mapping)
 
