@@ -295,6 +295,183 @@ class Truck extends Vehicle {
 }
 ```
 
+### Custom mapping with Codecs
+
+Codecs are the primary way to provide custom bidirectional mapping for classes that don't follow the standard public-constructor pattern. A codec converts between an intermediate type (that the library knows how to map from/to `mixed`) and your domain type.
+
+Implement the `Codec` interface with two methods: `decode()` for input and `encode()` for output:
+
+```php
+use ShipMonk\InputMapper\Runtime\Codec;
+use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+
+class Money
+{
+    public function __construct(
+        public readonly string $currency,
+        public readonly int $cents,
+    ) {}
+}
+
+/**
+ * @implements Codec<array{currency: string, cents: int}, Money>
+ */
+class MoneyCodec implements Codec
+{
+    public function decode(mixed $data, array $path = []): Money
+    {
+        if ($data['cents'] < 0) {
+            throw MappingFailedException::incorrectValue($data['cents'], [...$path, 'cents'], 'non-negative integer');
+        }
+
+        return new Money($data['currency'], $data['cents']);
+    }
+
+    public function encode(mixed $data, array $path = []): array
+    {
+        return ['currency' => $data->currency, 'cents' => $data->cents];
+    }
+}
+```
+
+Then register the codec with the mapper provider:
+
+```php
+$mapperProvider->registerCodec(new MoneyCodec());
+
+// Now Money can be used as a field type in any mapped class
+$inputMapper = $mapperProvider->getInputMapper(Money::class);
+$money = $inputMapper->map(['currency' => 'USD', 'cents' => 1299]);
+
+$outputMapper = $mapperProvider->getOutputMapper(Money::class);
+$data = $outputMapper->map($money); // ['currency' => 'USD', 'cents' => 1299]
+```
+
+The library auto-compiles the `mixed → intermediate` bridge (e.g. validating that the input is `array{currency: string, cents: int}`). Your codec only handles the `intermediate → domain` conversion.
+
+The codec's domain classes are inferred from its generic parameters. When resolving a codec for a class, the class hierarchy is walked from the most specific type to the least specific one, and at each level registered codecs take precedence over type-based mapper compiler factories (such as the built-in `DateTimeInterface` handling). Registering two codecs claiming the same domain class is an error. Codecs must be registered before the first mapper is compiled — and note that compiled mappers are cached on disk, so without `autoRefresh: true` changing codec registrations does not invalidate previously compiled mappers.
+
+#### Parameterized Codecs (Codec Factories)
+
+For generic codecs that handle a family of classes, use `registerCodecFactory()`. The factory receives the concrete class name at runtime:
+
+```php
+use ShipMonk\InputMapper\Runtime\Codec;
+use ShipMonk\InputMapper\Runtime\CodecRegistry;
+
+abstract class TypedId
+{
+    public function __construct(public readonly string $value) {}
+}
+
+class AccountId extends TypedId {}
+class OrderId extends TypedId {}
+
+/**
+ * @template T of TypedId
+ * @implements Codec<string, T>
+ */
+class TypedIdCodec implements Codec
+{
+    /** @param class-string<T> $className */
+    public function __construct(private readonly string $className) {}
+
+    public static function create(string $className, CodecRegistry $registry): self
+    {
+        return new self($className);
+    }
+
+    public function decode(mixed $data, array $path = []): TypedId
+    {
+        return new ($this->className)($data);
+    }
+
+    public function encode(mixed $data, array $path = []): string
+    {
+        return $data->value;
+    }
+}
+
+$mapperProvider->registerCodecFactory(TypedIdCodec::class, TypedIdCodec::create(...));
+
+// Both AccountId and OrderId are now automatically mapped via TypedIdCodec
+$accountId = $mapperProvider->getInputMapper(AccountId::class)->map('acc-123');
+```
+
+#### Asymmetric Codecs
+
+Codecs support asymmetric types — you can decode into one type and encode from a different (typically wider) type. The full signature is `Codec<DI, EI, DO, EO>` where `DI`/`EO` are intermediate types and `EI`/`DO` are domain types, with defaults `DO = EI` and `EO = DI` for the common symmetric case.
+
+```php
+use ShipMonk\InputMapper\Runtime\Codec;
+
+/**
+ * Decode: string → DateTimeImmutable
+ * Encode: DateTimeInterface → string
+ *
+ * @implements Codec<string, DateTimeInterface, DateTimeImmutable, string>
+ */
+class DateTimeInterfaceCodec implements Codec
+{
+    public function decode(mixed $data, array $path = []): DateTimeImmutable
+    {
+        return new DateTimeImmutable($data);
+    }
+
+    public function encode(mixed $data, array $path = []): string
+    {
+        return $data->format('c');
+    }
+}
+```
+
+#### Codecs as attributes
+
+Instead of registering a codec globally, you can apply a codec to a single property. Mark the codec class itself with `#[Attribute]` and use it directly:
+
+```php
+use ShipMonk\InputMapper\Compiler\Attribute\MapCodec;
+use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
+
+class EventInput
+{
+    public function __construct(
+        #[DateTimeFormatCodec(format: 'Y-m-d')]
+        public readonly DateTimeImmutable $date,
+
+        #[MapNullable(new MapCodec(new DateTimeFormatCodec(format: 'Y-m-d\TH:i:sP')))]
+        public readonly ?DateTimeImmutable $startsAt,
+    ) {}
+}
+```
+
+To compose a codec with other mapper attributes (like `MapNullable` above), wrap it in `MapCodec` — or let the codec class implement `MapperCompilerProvider` itself by delegating to `MapCodec`, so it can be nested directly:
+
+```php
+use ShipMonk\InputMapper\Compiler\Attribute\MapCodec;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
+
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
+class DateTimeFormatCodec implements Codec, MapperCompilerProvider
+{
+    // ... decode() and encode() as usual ...
+
+    public function getInputMapperCompiler(MapperCompilerFactory $mapperCompilerFactory, array $options): MapperCompiler
+    {
+        return (new MapCodec($this))->getInputMapperCompiler($mapperCompilerFactory, $options);
+    }
+
+    public function getOutputMapperCompiler(MapperCompilerFactory $mapperCompilerFactory, array $options): MapperCompiler
+    {
+        return (new MapCodec($this))->getOutputMapperCompiler($mapperCompilerFactory, $options);
+    }
+}
+```
+
+Codecs used as attributes are re-instantiated inside the generated mapper, so all their constructor arguments must be scalar or null values readable from properties of the same name.
+
 ### Using custom mappers
 
 To map a class with your own hand-written mapper, implement the `Mapper` interface and register a factory for the class with `MapperProvider`:
