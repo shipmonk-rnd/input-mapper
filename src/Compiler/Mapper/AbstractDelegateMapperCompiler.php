@@ -98,6 +98,7 @@ abstract class AbstractDelegateMapperCompiler implements MapperCompiler
     ): Expr
     {
         if ($innerMapperCompiler instanceof static && count($innerMapperCompiler->innerMapperCompilers) === 0) {
+            $builder->addDelegatedClassName($innerMapperCompiler->className);
             $provider = $builder->propertyFetch($builder->var('this'), 'provider');
             $innerClassExpr = $builder->classConstFetch($builder->importClass($innerMapperCompiler->className), 'class');
             return $builder->methodCall($provider, $this->getProviderMethodName(), [$innerClassExpr]);
@@ -120,6 +121,8 @@ abstract class AbstractDelegateMapperCompiler implements MapperCompiler
                 return new CompiledExpr($innerMapper);
             }
         }
+
+        $builder->addDelegatedClassName($this->className);
 
         $statements = [];
         $classNameExpr = $builder->classConstFetch($builder->importClass($this->className), 'class');

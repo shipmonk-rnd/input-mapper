@@ -9,7 +9,9 @@ use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProv
 use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactoryProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
+use function array_keys;
 use function array_map;
+use function array_pop;
 use function class_exists;
 use function class_implements;
 use function class_parents;
@@ -102,6 +104,57 @@ class MapperProvider
     }
 
     /**
+     * Generates input & output mapper files for the given classes and for all classes
+     * their mappers fetch from this provider at runtime, transitively.
+     *
+     * Existing mapper files are not overwritten (unless auto refresh is enabled),
+     * but they are recompiled in memory to discover their delegated classes.
+     *
+     * Classes covered by a factory registered via registerInputFactory() / registerOutputFactory()
+     * are skipped in the respective direction, no file is generated for them.
+     *
+     * @param iterable<class-string> $classNames
+     * @return list<class-string> classes for which at least one mapper file was generated
+     */
+    public function pregenerate(iterable $classNames): array
+    {
+        $queue = [];
+        $visited = [];
+        $generated = [];
+
+        foreach ($classNames as $className) {
+            $queue[] = [$className, 'input'];
+            $queue[] = [$className, 'output'];
+        }
+
+        while ($queue !== []) {
+            [$className, $direction] = array_pop($queue);
+
+            if (isset($visited[$direction][$className])) {
+                continue;
+            }
+
+            $visited[$direction][$className] = true;
+            $factories = $direction === 'input' ? $this->inputMapperFactories : $this->outputMapperFactories;
+
+            if ($this->findMapperFactory($className, $factories) !== null) {
+                continue;
+            }
+
+            $mapperClassName = $this->getMapperClass($className, $direction);
+            $generated[$className] = true;
+
+            foreach ($this->generateMapperFile($className, $mapperClassName, $direction) as $delegatedClassName) {
+                if (class_exists($delegatedClassName)) {
+                    $queue[] = [$delegatedClassName, $direction];
+                }
+            }
+        }
+
+        return array_keys($generated);
+    }
+
+    /**
      * @param class-string<T> $className
      * @param callable(class-string<T>, list<Mapper<mixed, mixed>>, self): Mapper<mixed, T> $mapperFactory
      *
@@ -170,6 +223,30 @@ class MapperProvider
         string $direction,
     ): Mapper
     {
+        $factory = $this->findMapperFactory($className, $factories);
+
+        if ($factory !== null) {
+            return $factory($className, $genericInnerMappers, $this);
+        }
+
+        $mapperClassName = $this->getMapperClass($className, $direction);
+
+        if (!class_exists($mapperClassName, autoload: false)) {
+            $this->load($className, $mapperClassName, $direction);
+        }
+
+        return new $mapperClassName($this, $genericInnerMappers);
+    }
+
+    /**
+     * @param array<class-string, callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>> $factories
+     * @return (callable(class-string, list<Mapper<*, *>>, self): Mapper<mixed, mixed>)|null
+     */
+    private function findMapperFactory(
+        string $className,
+        array $factories,
+    ): ?callable
+    {
         $classParents = class_parents($className);
         $classImplements = class_implements($className);
 
@@ -181,18 +258,11 @@ class MapperProvider
 
         foreach ($classLikeNames as $classLikeName => $true) {
             if (isset($factories[$classLikeName])) {
-                $factory = $factories[$classLikeName];
-                return $factory($className, $genericInnerMappers, $this);
+                return $factories[$classLikeName];
             }
         }
 
-        $mapperClassName = $this->getMapperClass($className, $direction);
-
-        if (!class_exists($mapperClassName, autoload: false)) {
-            $this->load($className, $mapperClassName, $direction);
-        }
-
-        return new $mapperClassName($this, $genericInnerMappers);
+        return null;
     }
 
     /**
@@ -212,6 +282,29 @@ class MapperProvider
             return;
         }
 
+        $this->generateMapperFile($className, $mapperClassName, $direction);
+
+        if ((@include $path) === false) { // @ error escalated to exception
+            throw new RuntimeException("Unable to load '$path'.");
+        }
+    }
+
+    /**
+     * Compiles the mapper and writes its file (unless already present), returns delegated class names.
+     *
+     * @param class-string $className
+     * @param class-string<Mapper<mixed, mixed>> $mapperClassName
+     * @param 'input'|'output' $direction
+     * @return list<string>
+     */
+    private function generateMapperFile(
+        string $className,
+        string $mapperClassName,
+        string $direction,
+    ): array
+    {
+        $path = $this->getMapperPath($mapperClassName);
+
         if (!is_dir(dirname($path))) {
             @mkdir(dirname($path)); // @ directory may already exist
         }
@@ -226,20 +319,19 @@ class MapperProvider
             throw new RuntimeException("Unable to acquire exclusive lock '$path.lock'.");
         }
 
-        if (!is_file($path) || $this->autoRefresh) {
-            $code = $this->compile($className, $mapperClassName, $direction);
+        $codeBuilder = new PhpCodeBuilder();
+        $code = $this->compile($className, $mapperClassName, $direction, $codeBuilder);
 
+        if (!is_file($path) || $this->autoRefresh) {
             if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
                 @unlink("$path.tmp"); // @ file may not exist
                 throw new RuntimeException("Unable to create '$path'.");
             }
         }
 
-        if ((@include $path) === false) { // @ error escalated to exception
-            throw new RuntimeException("Unable to load '$path'.");
-        }
-
         flock($handle, LOCK_UN);
+
+        return $codeBuilder->getDelegatedClassNames();
     }
 
     /**
@@ -251,12 +343,12 @@ class MapperProvider
         string $className,
         string $mapperClassName,
         string $direction,
+        PhpCodeBuilder $codeBuilder,
     ): string
     {
         $mapperCompilerFactory = $this->mapperCompilerFactoryProvider->get();
         $type = new IdentifierTypeNode($className);
 
-        $codeBuilder = new PhpCodeBuilder();
         $codePrinter = new PhpCodePrinter();
 
         $mapperCompiler = $direction === 'input'
