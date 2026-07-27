@@ -27,6 +27,7 @@ use ReflectionEnum;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
+use SensitiveParameter;
 use ShipMonk\InputMapper\Compiler\Attribute\AllowExtraKeys;
 use ShipMonk\InputMapper\Compiler\Attribute\ArrayShapeItemMapping;
 use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;
@@ -46,6 +47,7 @@ use ShipMonk\InputMapper\Compiler\Attribute\MapMixed;
 use ShipMonk\InputMapper\Compiler\Attribute\MapNullable;
 use ShipMonk\InputMapper\Compiler\Attribute\MapObject;
 use ShipMonk\InputMapper\Compiler\Attribute\MapOptional;
+use ShipMonk\InputMapper\Compiler\Attribute\MapSensitive;
 use ShipMonk\InputMapper\Compiler\Attribute\MapString;
 use ShipMonk\InputMapper\Compiler\Attribute\MapValidated;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
@@ -546,6 +548,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $provider = $this->addValidatorProvider($provider, $validator);
         }
 
+        if (!$provider instanceof MapSensitive && count($parameterReflection->getAttributes(SensitiveParameter::class)) > 0) {
+            $provider = new MapSensitive($provider);
+        }
+
         foreach ($parameterReflection->getAttributes(OptionalAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $provider = new MapDefaultValue($provider, $attribute->newInstance()->default);
         }
@@ -608,6 +614,12 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
 
         if ($provider instanceof MapNullable) {
             return new MapNullable(
+                $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler),
+            );
+        }
+
+        if ($provider instanceof MapSensitive) {
+            return new MapSensitive(
                 $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler),
             );
         }

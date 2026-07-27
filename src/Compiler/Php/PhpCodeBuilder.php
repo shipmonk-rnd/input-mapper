@@ -30,9 +30,11 @@ use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\PreInc;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Throw_;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\MatchArm;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
@@ -44,6 +46,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -348,6 +351,20 @@ class PhpCodeBuilder extends BuilderFactory
     public function throwExpr(Expr $expr): Throw_
     {
         return new Throw_($expr);
+    }
+
+    /**
+     * @param list<Stmt> $statements
+     * @param list<Stmt> $catchStatements
+     */
+    public function tryCatch(
+        array $statements,
+        string $caughtClassName,
+        Variable $caughtVariable,
+        array $catchStatements,
+    ): TryCatch
+    {
+        return new TryCatch($statements, [new Catch_([new Name($caughtClassName)], $caughtVariable, $catchStatements)]);
     }
 
     public function assign(

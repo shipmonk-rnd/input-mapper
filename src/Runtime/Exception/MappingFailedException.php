@@ -38,6 +38,7 @@ class MappingFailedException extends RuntimeException
     private function __construct(
         private readonly array $path,
         string $reason,
+        private readonly string $redactedReason,
         ?Throwable $previous = null,
     )
     {
@@ -54,6 +55,19 @@ class MappingFailedException extends RuntimeException
     }
 
     /**
+     * Returns an equivalent exception with the offending value stripped from the message,
+     * so that it can be logged or sent to the client without leaking sensitive data.
+     *
+     * The given exception is intentionally not kept as previous, as its message contains the value.
+     */
+    public static function redact(self $exception): self
+    {
+        $previous = $exception->getPrevious();
+        $redactedPrevious = $previous instanceof self ? self::redact($previous) : null;
+        return new self($exception->path, $exception->redactedReason, $exception->redactedReason, $redactedPrevious);
+    }
+
+    /**
      * @param list<string|int> $path
      */
     public static function incorrectType(
@@ -64,8 +78,10 @@ class MappingFailedException extends RuntimeException
     ): self
     {
         $describedValue = self::describeValue($data);
+        $redactedValue = self::describeValueType($data);
         $reason = "Expected {$expectedType}, got {$describedValue}";
-        return new self($path, $reason, $previous);
+        $redactedReason = "Expected {$expectedType}, got {$redactedValue}";
+        return new self($path, $reason, $redactedReason, $previous);
     }
 
     /**
@@ -79,8 +95,10 @@ class MappingFailedException extends RuntimeException
     ): self
     {
         $describedValue = self::describeValue($data);
+        $redactedValue = self::describeValueType($data);
         $reason = "Expected {$expectedValueDescription}, got {$describedValue}";
-        return new self($path, $reason, $previous);
+        $redactedReason = "Expected {$expectedValueDescription}, got {$redactedValue}";
+        return new self($path, $reason, $redactedReason, $previous);
     }
 
     /**
@@ -94,8 +112,10 @@ class MappingFailedException extends RuntimeException
     ): self
     {
         $describedValue = self::describeValue($data);
+        $redactedValue = self::describeValueType($data);
         $reason = "Expected {$expectedValueDescription}, got {$describedValue} multiple times";
-        return new self($path, $reason, $previous);
+        $redactedReason = "Expected {$expectedValueDescription}, got {$redactedValue} multiple times";
+        return new self($path, $reason, $redactedReason, $previous);
     }
 
     /**
@@ -109,7 +129,7 @@ class MappingFailedException extends RuntimeException
     {
         $missingKeyDescription = self::describeValue($missingKey);
         $reason = "Missing required key {$missingKeyDescription}";
-        return new self($path, $reason, $previous);
+        return new self($path, $reason, $reason, $previous);
     }
 
     /**
@@ -124,7 +144,7 @@ class MappingFailedException extends RuntimeException
     {
         $keyLabel = count($extraKeys) > 1 ? 'keys' : 'key';
         $reason = "Unrecognized {$keyLabel} " . self::humanImplode(array_map(self::describeValue(...), $extraKeys));
-        return new self($path, $reason, $previous);
+        return new self($path, $reason, $reason, $previous);
     }
 
     /**
@@ -143,6 +163,11 @@ class MappingFailedException extends RuntimeException
     private static function toJsonPointer(array $path): string
     {
         return '/' . implode('/', $path);
+    }
+
+    private static function describeValueType(mixed $value): string
+    {
+        return get_debug_type($value) . ' (redacted)';
     }
 
     private static function describeValue(mixed $value): string
