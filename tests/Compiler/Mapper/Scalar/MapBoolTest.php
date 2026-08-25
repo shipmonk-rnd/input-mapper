@@ -31,7 +31,7 @@ class MapBoolTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected bool, got array',
+            'Failed to map data at path /: Expected bool, got empty array',
             static fn () => $mapper->map([]),
         );
     }

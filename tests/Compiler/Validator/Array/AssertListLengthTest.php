@@ -34,7 +34,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with at least 2 items, got array',
+            'Failed to map data at path /: Expected list with at least 2 items, got list with 1 item',
             static fn () => $validator->map(['a']),
         );
     }
@@ -50,7 +50,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with at most 5 items, got array',
+            'Failed to map data at path /: Expected list with at most 5 items, got list with 6 items',
             static fn () => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
         );
     }
@@ -67,13 +67,13 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with at least 1 items, got array',
+            'Failed to map data at path /: Expected list with at least 1 items, got empty array',
             static fn () => $validator->map([]),
         );
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with at most 5 items, got array',
+            'Failed to map data at path /: Expected list with at most 5 items, got list with 6 items',
             static fn () => $validator->map(['a', 'b', 'c', 'd', 'e', 'f']),
         );
     }
@@ -88,7 +88,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with exactly 5 items, got array',
+            'Failed to map data at path /: Expected list with exactly 5 items, got empty array',
             static fn () => $validator->map([]),
         );
     }

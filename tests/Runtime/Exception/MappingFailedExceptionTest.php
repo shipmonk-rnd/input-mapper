@@ -108,7 +108,25 @@ class MappingFailedExceptionTest extends InputMapperTestCase
 
         yield 'array' => [
             MappingFailedException::incorrectValue([], ['foo'], 'int'),
-            'Failed to map data at path /foo: Expected int, got array',
+            'Failed to map data at path /foo: Expected int, got empty array',
+            ['foo'],
+        ];
+
+        yield 'list' => [
+            MappingFailedException::incorrectValue(['a', 'b', 'c'], ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got list with 3 items',
+            ['foo'],
+        ];
+
+        yield 'list with single item' => [
+            MappingFailedException::incorrectValue(['a'], ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got list with 1 item',
+            ['foo'],
+        ];
+
+        yield 'non-list array' => [
+            MappingFailedException::incorrectValue(['a' => 1, 'b' => 2], ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got array with 2 items',
             ['foo'],
         ];
 

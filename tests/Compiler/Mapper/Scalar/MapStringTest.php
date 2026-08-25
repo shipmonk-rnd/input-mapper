@@ -31,7 +31,7 @@ class MapStringTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected string, got array',
+            'Failed to map data at path /: Expected string, got empty array',
             static fn () => $mapper->map([]),
         );
     }

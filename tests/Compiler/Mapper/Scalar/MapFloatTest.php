@@ -34,7 +34,7 @@ class MapFloatTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected float, got array',
+            'Failed to map data at path /: Expected float, got empty array',
             static fn () => $mapper->map([]),
         );
 

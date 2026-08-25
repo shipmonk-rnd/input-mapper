@@ -31,7 +31,7 @@ class MapIntTest extends MapperCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected int, got array',
+            'Failed to map data at path /: Expected int, got empty array',
             static fn () => $mapper->map([]),
         );
     }
