@@ -108,7 +108,7 @@ class MappingFailedExceptionTest extends InputMapperTestCase
 
         yield 'array' => [
             MappingFailedException::incorrectValue([], ['foo'], 'int'),
-            'Failed to map data at path /foo: Expected int, got empty array',
+            'Failed to map data at path /foo: Expected int, got empty list',
             ['foo'],
         ];
 

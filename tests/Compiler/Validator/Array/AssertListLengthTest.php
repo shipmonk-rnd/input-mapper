@@ -67,7 +67,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with at least 1 items, got empty array',
+            'Failed to map data at path /: Expected list with at least 1 items, got empty list',
             static fn () => $validator->map([]),
         );
 
@@ -88,7 +88,7 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
 
         self::assertException(
             MappingFailedException::class,
-            'Failed to map data at path /: Expected list with exactly 5 items, got empty array',
+            'Failed to map data at path /: Expected list with exactly 5 items, got empty list',
             static fn () => $validator->map([]),
         );
     }

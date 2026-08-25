@@ -192,7 +192,7 @@ class MappingFailedException extends RuntimeException
             $count = count($value);
 
             if ($count === 0) {
-                return 'empty array';
+                return 'empty list';
             }
 
             $kind = array_is_list($value) ? 'list' : 'array';
