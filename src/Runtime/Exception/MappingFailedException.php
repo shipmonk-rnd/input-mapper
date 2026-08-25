@@ -4,12 +4,14 @@ namespace ShipMonk\InputMapper\Runtime\Exception;
 
 use DateTimeInterface;
 use Throwable;
+use function array_is_list;
 use function array_map;
 use function array_slice;
 use function count;
 use function extension_loaded;
 use function get_debug_type;
 use function implode;
+use function is_array;
 use function is_bool;
 use function is_finite;
 use function is_float;
@@ -184,6 +186,18 @@ class MappingFailedException extends RuntimeException
             if ($printable) {
                 return json_encode($value, self::JSON_ENCODE_OPTIONS) . ($truncated ? ' (truncated)' : '');
             }
+        }
+
+        if (is_array($value)) {
+            $count = count($value);
+
+            if ($count === 0) {
+                return 'empty list';
+            }
+
+            $kind = array_is_list($value) ? 'list' : 'array';
+            $unit = $count === 1 ? 'item' : 'items';
+            return "{$kind} with {$count} {$unit}";
         }
 
         if ($value instanceof DateTimeInterface) {
