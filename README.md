@@ -208,7 +208,10 @@ The built-in `CamelToSnakeCasePropertyNameTransformer` handles common acronym bo
 ### Parsing polymorphic classes (subtypes with a common parent)
 
 If you need to parse a hierarchy of classes, you can use the `#[Discriminator]` attribute.
-(The discriminator field does not need to be mapped to a property if `#[AllowExtraKeys]` is used.)
+
+The mapper hands the whole input, the discriminator key included, to the subtype mapper. Every subtype therefore has to
+either declare a constructor parameter for that key, or carry `#[AllowExtraKeys]`. `#[AllowExtraKeys]` on the class that
+carries `#[Discriminator]` has no effect, because that class never maps anything itself.
 
 ```php
 use ShipMonk\InputMapper\Compiler\Attribute\Discriminator;

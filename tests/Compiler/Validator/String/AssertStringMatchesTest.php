@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\String;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringMatches;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -35,6 +36,15 @@ class AssertStringMatchesTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected numeric string, got "abc"',
             static fn () => $validator->map('abc'),
+        );
+    }
+
+    public function testInvalidPattern(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Pattern ~[~ is not a valid regular expression, so every input would fail',
+            static fn () => new AssertStringMatches('~[~'),
         );
     }
 

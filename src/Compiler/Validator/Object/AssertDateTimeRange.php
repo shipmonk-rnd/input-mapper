@@ -3,9 +3,12 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Object;
 
 use Attribute;
+use DateInvalidTimeZoneException;
+use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use LogicException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -27,6 +30,46 @@ class AssertDateTimeRange implements ValidatorCompiler
         public readonly ?string $timezone = null,
     )
     {
+        $parsedTimezone = $this->parseTimezone($timezone);
+
+        foreach (['gte' => $gte, 'gt' => $gt, 'lt' => $lt, 'lte' => $lte] as $name => $boundary) {
+            $this->assertBoundaryIsParsable($name, $boundary, $parsedTimezone);
+        }
+    }
+
+    /**
+     * The generated mapper builds the boundary on every request, so an unparsable one fails every request.
+     */
+    private function assertBoundaryIsParsable(
+        string $name,
+        ?string $boundary,
+        ?DateTimeZone $timezone,
+    ): void
+    {
+        if ($boundary === null) {
+            return;
+        }
+
+        try {
+            new DateTimeImmutable($boundary, $timezone);
+
+        } catch (DateMalformedStringException $e) {
+            throw new LogicException("Boundary {$name}: {$boundary} is not a valid date-time string, so every input would fail", previous: $e);
+        }
+    }
+
+    private function parseTimezone(?string $timezone): ?DateTimeZone
+    {
+        if ($timezone === null) {
+            return null;
+        }
+
+        try {
+            return new DateTimeZone($timezone);
+
+        } catch (DateInvalidTimeZoneException $e) {
+            throw new LogicException("Timezone {$timezone} is not a valid timezone, so every input would fail", previous: $e);
+        }
     }
 
     /**

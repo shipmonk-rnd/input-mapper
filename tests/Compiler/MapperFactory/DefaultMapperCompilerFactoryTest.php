@@ -14,6 +14,7 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ShipMonk\InputMapper\Compiler\Attribute\MapDiscriminatedObject;
 use ShipMonk\InputMapper\Compiler\Attribute\MapInt;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
@@ -74,6 +75,14 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\CarInputWithVarTags;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\ColorEnum;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithAllowExtraKeys;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithEmptyMapping;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithMissingSubtype;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithNestedDiscriminator;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithNonPublicConstructor;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithRenamedKey;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithUnmappedKey;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\DiscriminatedInputWithUnmappedKeySubtype;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EnumFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\EqualsFilterInput;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InFilterInput;
@@ -785,6 +794,85 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
             "Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\InputWithTransformerCollidingKeys, because multiple constructor parameters map to source key 'foo_bar'",
             static fn () => $factory->create($phpDocType),
         );
+    }
+
+    public function testCreateDiscriminatedInputWithEmptyMapping(): void
+    {
+        $factory = self::createFactory();
+        $phpDocType = self::parseType(DiscriminatedInputWithEmptyMapping::class);
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            'Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\DiscriminatedInputWithEmptyMapping, because discriminator mapping is empty, so no input can be mapped',
+            static fn () => $factory->create($phpDocType),
+        );
+    }
+
+    public function testCreateDiscriminatedInputWithAllowExtraKeys(): void
+    {
+        $factory = self::createFactory();
+        $phpDocType = self::parseType(DiscriminatedInputWithAllowExtraKeys::class);
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            'Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\DiscriminatedInputWithAllowExtraKeys, because the discriminated mapping delegates to subtypes and never reads #[AllowExtraKeys] here, put it on every subtype instead',
+            static fn () => $factory->create($phpDocType),
+        );
+    }
+
+    public function testCreateDiscriminatedInputWithSubtypeThatCannotAcceptDiscriminatorKey(): void
+    {
+        $factory = self::createFactory();
+        $phpDocType = self::parseType(DiscriminatedInputWithUnmappedKey::class);
+
+        self::assertException(
+            CannotCreateMapperCompilerException::class,
+            'Cannot create mapper for type ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\DiscriminatedInputWithUnmappedKey, because subtype ShipMonk\\InputMapperTests\\Compiler\\MapperFactory\\Data\\DiscriminatedInputWithUnmappedKeySubtype mapped to "dog" accepts no "type" key, so every input would fail; add a constructor parameter for that key or #[AllowExtraKeys] to the subtype',
+            static fn () => $factory->create($phpDocType),
+        );
+    }
+
+    public function testCreateDiscriminatedInputWithSubtypeThatRenamesDiscriminatorKey(): void
+    {
+        $factory = self::createFactory();
+        $mapperCompilerProvider = $factory->create(self::parseType(DiscriminatedInputWithRenamedKey::class));
+
+        self::assertInstanceOf(MapDiscriminatedObject::class, $mapperCompilerProvider);
+    }
+
+    /**
+     * The check judges only subtypes that the standard object mapping covers; anything else decides its own shape.
+     */
+    #[DataProvider('provideDiscriminatedInputWithUnjudgeableSubtypeData')]
+    public function testCreateDiscriminatedInputWithUnjudgeableSubtype(string $className): void
+    {
+        $factory = self::createFactory();
+        $mapperCompilerProvider = $factory->create(self::parseType($className));
+
+        self::assertInstanceOf(MapDiscriminatedObject::class, $mapperCompilerProvider);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function provideDiscriminatedInputWithUnjudgeableSubtypeData(): iterable
+    {
+        yield 'subtype with its own discriminator' => [DiscriminatedInputWithNestedDiscriminator::class];
+        yield 'subtype with a non-public constructor' => [DiscriminatedInputWithNonPublicConstructor::class];
+        yield 'subtype that does not exist' => [DiscriminatedInputWithMissingSubtype::class];
+    }
+
+    public function testCreateDiscriminatedInputWithSubtypeMappedByRegisteredFactory(): void
+    {
+        $factory = self::createFactory();
+        $factory->setMapperCompilerFactory(
+            DiscriminatedInputWithUnmappedKeySubtype::class,
+            static fn (): MapperCompilerProvider => new MapInt(),
+        );
+
+        $mapperCompilerProvider = $factory->create(self::parseType(DiscriminatedInputWithUnmappedKey::class));
+
+        self::assertInstanceOf(MapDiscriminatedObject::class, $mapperCompilerProvider);
     }
 
     public function testCreateWithCustomFactory(): void

@@ -102,4 +102,13 @@ class AssertListLengthTest extends ValidatorCompilerTestCase
         );
     }
 
+    public function testBoundsThatAcceptNoListLength(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Bounds min: 10, max: 5 accept no list length, so every input would fail',
+            static fn () => new AssertListLength(min: 10, max: 5),
+        );
+    }
+
 }

@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Float;
 
 use Attribute;
+use LogicException;
 use Nette\Utils\Floats;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Div;
@@ -21,6 +22,9 @@ class AssertFloatMultipleOf implements ValidatorCompiler
         public readonly float $value,
     )
     {
+        if ($value === 0.0) {
+            throw new LogicException('Multiple of 0 is not a meaningful constraint, and the generated remainder would never match');
+        }
     }
 
     /**
