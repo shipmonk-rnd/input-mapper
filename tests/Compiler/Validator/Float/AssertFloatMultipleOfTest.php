@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -59,6 +60,15 @@ class AssertFloatMultipleOfTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 1.234',
             static fn () => $validator->map(1.234),
+        );
+    }
+
+    public function testMultipleOfZero(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Multiple of 0 is not a meaningful constraint, and the generated remainder would never match',
+            static fn () => new AssertFloatMultipleOf(0.0),
         );
     }
 

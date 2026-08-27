@@ -23,6 +23,9 @@ class DefaultValueInputMapperCompiler implements UndefinedAwareMapperCompiler
         public readonly mixed $defaultValue,
     )
     {
+        if ($defaultValue !== null && !is_scalar($defaultValue) && !is_array($defaultValue) && !$defaultValue instanceof BackedEnum) {
+            throw new LogicException('Unsupported default value type: ' . get_debug_type($defaultValue));
+        }
     }
 
     public function compile(

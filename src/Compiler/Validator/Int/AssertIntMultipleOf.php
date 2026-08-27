@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Int;
 
 use Attribute;
+use LogicException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Mod;
 use PhpParser\Node\Stmt;
@@ -20,6 +21,9 @@ class AssertIntMultipleOf implements ValidatorCompiler
         public readonly int $value,
     )
     {
+        if ($value === 0) {
+            throw new LogicException('Multiple of 0 is not a meaningful constraint, and the generated modulo would fail with DivisionByZeroError');
+        }
     }
 
     /**

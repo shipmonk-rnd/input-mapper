@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Float;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\FloatInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Float\AssertFloatRange;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -104,6 +105,29 @@ class AssertFloatRangeTest extends ValidatorCompilerTestCase
             'Failed to map data at path /: Expected value less than or equal to 10, got 11.0',
             static fn () => $validator->map(11.0),
         );
+    }
+
+    public function testBoundsThatAcceptNoFloat(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Bounds gte: 10, lte: 5 accept no float, so every input would fail',
+            static fn () => new AssertFloatRange(gte: 10.0, lte: 5.0),
+        );
+
+        self::assertException(
+            LogicException::class,
+            'Bounds gt: 1, lt: 1 accept no float, so every input would fail',
+            static fn () => new AssertFloatRange(gt: 1.0, lt: 1.0),
+        );
+    }
+
+    public function testBoundsThatAcceptASingleFloat(): void
+    {
+        $validatorCompiler = new AssertFloatRange(gte: 1.0, lte: 1.0);
+
+        self::assertSame(1.0, $validatorCompiler->gte);
+        self::assertSame(1.0, $validatorCompiler->lte);
     }
 
 }

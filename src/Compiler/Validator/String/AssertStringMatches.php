@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\String;
 
 use Attribute;
+use LogicException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -10,6 +11,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
+use function preg_match;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class AssertStringMatches implements ValidatorCompiler
@@ -20,6 +22,9 @@ class AssertStringMatches implements ValidatorCompiler
         public readonly ?string $expectedDescription = null,
     )
     {
+        if (@preg_match($pattern, '') === false) {
+            throw new LogicException("Pattern {$pattern} is not a valid regular expression, so every input would fail");
+        }
     }
 
     /**

@@ -3,12 +3,14 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Float;
 
 use Attribute;
+use LogicException;
 use Nette\Utils\Floats;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Validator\AcceptedBounds;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
@@ -23,6 +25,11 @@ class AssertFloatRange implements ValidatorCompiler
         public readonly ?float $lte = null,
     )
     {
+        $bounds = AcceptedBounds::overFloats(gte: $gte, gt: $gt, lt: $lt, lte: $lte);
+
+        if ($bounds->acceptNothing()) {
+            throw new LogicException("Bounds {$bounds->describeArguments()} accept no float, so every input would fail");
+        }
     }
 
     /**

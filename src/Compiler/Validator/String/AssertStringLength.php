@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Validator\AcceptedBounds;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
@@ -32,6 +33,12 @@ class AssertStringLength implements ValidatorCompiler
 
         $this->min = $exact ?? $min;
         $this->max = $exact ?? $max;
+
+        $bounds = AcceptedBounds::overLengths(min: $this->min, max: $this->max);
+
+        if ($bounds->acceptNothing()) {
+            throw new LogicException("Bounds {$bounds->describeArguments()} accept no string length, so every input would fail");
+        }
     }
 
     /**

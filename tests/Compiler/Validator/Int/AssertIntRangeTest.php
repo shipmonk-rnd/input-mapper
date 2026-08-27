@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
+use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntRange;
@@ -201,6 +202,21 @@ class AssertIntRangeTest extends ValidatorCompilerTestCase
             new AssertIntRange(lt: PHP_INT_MIN),
             'int<min, -9223372036854775808>',
         ];
+    }
+
+    public function testBoundsThatAcceptNoInteger(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Bounds gte: 10, lte: 5 accept no integer, so every input would fail',
+            static fn () => new AssertIntRange(gte: 10, lte: 5),
+        );
+
+        self::assertException(
+            LogicException::class,
+            'Bounds gt: 1, lt: 2 accept no integer, so every input would fail',
+            static fn () => new AssertIntRange(gt: 1, lt: 2),
+        );
     }
 
 }
