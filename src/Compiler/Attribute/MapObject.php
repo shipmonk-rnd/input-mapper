@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
+use ShipMonk\InputMapper\Compiler\Mapper\CompositeMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\InputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -9,9 +10,11 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
+use function array_column;
 use function array_map;
+use function array_values;
 
-class MapObject implements MapperCompilerProvider
+class MapObject implements CompositeMapperCompilerProvider, MapperCompilerProvider
 {
 
     /**
@@ -53,6 +56,17 @@ class MapObject implements MapperCompilerProvider
             ),
             $this->genericParameters,
         );
+    }
+
+    /**
+     * @return list<InputMapperCompilerProvider|OutputMapperCompilerProvider>
+     */
+    public function getInnerMapperCompilerProviders(): array
+    {
+        return [
+            ...array_values($this->constructorArgsProviders),
+            ...array_column($this->propertyProviders, 1),
+        ];
     }
 
 }
