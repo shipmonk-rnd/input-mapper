@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapperTests\Runtime\Exception;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
@@ -27,6 +28,79 @@ class MappingFailedExceptionTest extends InputMapperTestCase
     {
         self::assertSame($expectedMessage, $exception->getMessage());
         self::assertSame($path, $exception->getPath());
+    }
+
+    /**
+     * @param list<string|int> $path
+     */
+    #[DataProvider('provideRedactedMessagesData')]
+    public function testRedactedMessages(
+        MappingFailedException $exception,
+        string $expectedMessage,
+        array $path,
+    ): void
+    {
+        $redacted = MappingFailedException::redact($exception);
+        self::assertSame($expectedMessage, $redacted->getMessage());
+        self::assertSame($path, $redacted->getPath());
+    }
+
+    /**
+     * @return iterable<string, array{MappingFailedException, string, list<string|int>}>
+     */
+    public static function provideRedactedMessagesData(): iterable
+    {
+        yield 'incorrect type' => [
+            MappingFailedException::incorrectType('hunter2', ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got string (redacted)',
+            ['foo'],
+        ];
+
+        yield 'incorrect value' => [
+            MappingFailedException::incorrectValue(123, ['foo'], 'positive int'),
+            'Failed to map data at path /foo: Expected positive int, got int (redacted)',
+            ['foo'],
+        ];
+
+        yield 'duplicate value' => [
+            MappingFailedException::duplicateValue('hunter2', ['foo'], 'unique string'),
+            'Failed to map data at path /foo: Expected unique string, got string (redacted) multiple times',
+            ['foo'],
+        ];
+
+        yield 'missing key' => [
+            MappingFailedException::missingKey(['foo'], 'bar'),
+            'Failed to map data at path /foo: Missing required key "bar"',
+            ['foo'],
+        ];
+
+        yield 'extra keys' => [
+            MappingFailedException::extraKeys(['foo'], ['bar']),
+            'Failed to map data at path /foo: Unrecognized key "bar"',
+            ['foo'],
+        ];
+
+        yield 'object' => [
+            MappingFailedException::incorrectValue(new stdClass(), ['foo'], 'int'),
+            'Failed to map data at path /foo: Expected int, got stdClass (redacted)',
+            ['foo'],
+        ];
+    }
+
+    public function testRedactedDropsUnrelatedPreviousException(): void
+    {
+        $exception = MappingFailedException::incorrectValue('hunter2', ['foo'], 'int', new LogicException('hunter2'));
+        self::assertNull(MappingFailedException::redact($exception)->getPrevious());
+    }
+
+    public function testRedactedRedactsPreviousMappingFailure(): void
+    {
+        $previous = MappingFailedException::incorrectType('hunter2', ['foo', 'bar'], 'int');
+        $exception = MappingFailedException::incorrectValue('hunter2', ['foo'], 'int', $previous);
+        $redactedPrevious = MappingFailedException::redact($exception)->getPrevious();
+
+        self::assertInstanceOf(MappingFailedException::class, $redactedPrevious);
+        self::assertSame('Failed to map data at path /foo/bar: Expected int, got string (redacted)', $redactedPrevious->getMessage());
     }
 
     /**
