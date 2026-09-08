@@ -63,6 +63,7 @@ use ShipMonk\InputMapper\Runtime\MapperProvider;
 use function array_column;
 use function array_fill_keys;
 use function array_filter;
+use function array_keys;
 use function array_pop;
 use function array_slice;
 use function array_values;
@@ -111,6 +112,11 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<int, array<string, bool>>
      */
     private array $variables = [];
+
+    /**
+     * @var array<string, true>
+     */
+    private array $delegatedClassNames = [];
 
     /**
      * @param array<ArrayItem> $items
@@ -750,6 +756,21 @@ class PhpCodeBuilder extends BuilderFactory
     public function getGenericParameters(): array
     {
         return $this->genericParameters;
+    }
+
+    public function addDelegatedClassName(string $className): void
+    {
+        $this->delegatedClassNames[$className] = true;
+    }
+
+    /**
+     * Class names the generated mapper fetches from MapperProvider at runtime.
+     *
+     * @return list<string>
+     */
+    public function getDelegatedClassNames(): array
+    {
+        return array_keys($this->delegatedClassNames);
     }
 
     /**
