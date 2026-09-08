@@ -15,6 +15,7 @@ use function class_implements;
 use function class_parents;
 use function count;
 use function dirname;
+use function fclose;
 use function file_put_contents;
 use function flock;
 use function fopen;
@@ -138,6 +139,53 @@ class MapperProvider
     }
 
     /**
+     * Registers a codec instance used for both input and output mapping of its domain classes.
+     *
+     * Register codecs before compiling mappers: mappers already compiled (loaded in this process,
+     * or cached on disk when `autoRefresh` is disabled) do not observe later registrations.
+     *
+     * @param Codec<*, *, *, *> $codec
+     */
+    public function registerCodec(
+        Codec $codec,
+    ): void
+    {
+        $this->mapperCompilerFactoryProvider->getCodecRegistry()->register($codec);
+    }
+
+    /**
+     * Registers a factory creating codec instances lazily, once per domain class.
+     * Useful for generic codecs that handle a family of classes (the factory receives the concrete domain class name).
+     *
+     * @param class-string<T> $codecClassName
+     * @param callable(class-string, CodecRegistry): T $factory
+     *
+     * @template T of Codec<*, *, *, *>
+     */
+    public function registerCodecFactory(
+        string $codecClassName,
+        callable $factory,
+    ): void
+    {
+        $this->mapperCompilerFactoryProvider->getCodecRegistry()->registerFactory($codecClassName, $factory);
+    }
+
+    /**
+     * @param class-string<T> $codecClassName
+     * @param class-string $domainClassName
+     * @return T
+     *
+     * @template T of Codec<*, *, *, *>
+     */
+    public function getCodec(
+        string $codecClassName,
+        string $domainClassName,
+    ): Codec
+    {
+        return $this->mapperCompilerFactoryProvider->getCodecRegistry()->get($codecClassName, $domainClassName);
+    }
+
+    /**
      * @param list<Mapper<*, *>> $genericInnerMappers
      */
     private function getCacheKey(
@@ -226,20 +274,23 @@ class MapperProvider
             throw new RuntimeException("Unable to acquire exclusive lock '$path.lock'.");
         }
 
-        if (!is_file($path) || $this->autoRefresh) {
-            $code = $this->compile($className, $mapperClassName, $direction);
+        try {
+            if (!is_file($path) || $this->autoRefresh) {
+                $code = $this->compile($className, $mapperClassName, $direction);
 
-            if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
-                @unlink("$path.tmp"); // @ file may not exist
-                throw new RuntimeException("Unable to create '$path'.");
+                if (file_put_contents("$path.tmp", $code) !== strlen($code) || !rename("$path.tmp", $path)) {
+                    @unlink("$path.tmp"); // @ file may not exist
+                    throw new RuntimeException("Unable to create '$path'.");
+                }
             }
-        }
 
-        if ((@include $path) === false) { // @ error escalated to exception
-            throw new RuntimeException("Unable to load '$path'.");
+            if ((@include $path) === false) { // @ error escalated to exception
+                throw new RuntimeException("Unable to load '$path'.");
+            }
+        } finally {
+            flock($handle, LOCK_UN);
+            fclose($handle);
         }
-
-        flock($handle, LOCK_UN);
     }
 
     /**
@@ -260,8 +311,8 @@ class MapperProvider
         $codePrinter = new PhpCodePrinter();
 
         $mapperCompiler = $direction === 'input'
-            ? $mapperCompilerFactory->create($type)->getInputMapperCompiler()
-            : $mapperCompilerFactory->create($type)->getOutputMapperCompiler();
+            ? $mapperCompilerFactory->create($type)->getInputMapperCompiler($mapperCompilerFactory, [])
+            : $mapperCompilerFactory->create($type)->getOutputMapperCompiler($mapperCompilerFactory, []);
 
         return $codePrinter->prettyPrintFile($codeBuilder->mapperFile($mapperClassName, $mapperCompiler));
     }

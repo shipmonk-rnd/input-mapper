@@ -34,6 +34,7 @@ use ShipMonk\InputMapper\Compiler\Attribute\MapArray;
 use ShipMonk\InputMapper\Compiler\Attribute\MapArrayShape;
 use ShipMonk\InputMapper\Compiler\Attribute\MapBool;
 use ShipMonk\InputMapper\Compiler\Attribute\MapChain;
+use ShipMonk\InputMapper\Compiler\Attribute\MapCodec;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDateTimeImmutable;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDefaultValue;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDelegate;
@@ -51,6 +52,7 @@ use ShipMonk\InputMapper\Compiler\Attribute\MapValidated;
 use ShipMonk\InputMapper\Compiler\Attribute\Optional as OptionalAttribute;
 use ShipMonk\InputMapper\Compiler\Attribute\SourceKey;
 use ShipMonk\InputMapper\Compiler\Exception\CannotCreateMapperCompilerException;
+use ShipMonk\InputMapper\Compiler\Mapper\Codec\CodecMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\OutputMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
@@ -64,6 +66,8 @@ use ShipMonk\InputMapper\Compiler\Validator\Int\AssertNonPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertPositiveInt;
 use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
 use ShipMonk\InputMapper\Compiler\Validator\ValidatorCompiler;
+use ShipMonk\InputMapper\Runtime\Codec;
+use ShipMonk\InputMapper\Runtime\CodecRegistry;
 use ShipMonk\InputMapper\Runtime\Optional;
 use function array_column;
 use function array_fill_keys;
@@ -80,8 +84,12 @@ use function substr;
 class DefaultMapperCompilerFactory implements MapperCompilerFactory
 {
 
-    final public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
-    final public const GENERIC_PARAMETERS = 'genericParameters';
+    /**
+     * @var array<string, class-string<Codec<*, *, *, *>>>|null
+     */
+    private ?array $codecDomainClassMap = null;
+
+    private int $codecDomainClassMapFactoryCount = 0;
 
     /**
      * @param array<class-string, callable(class-string, array<string, mixed>): MapperCompilerProvider> $mapperCompilerFactories
@@ -91,6 +99,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         protected readonly PhpDocParser $phpDocParser,
         protected array $mapperCompilerFactories = [],
         protected readonly ?PropertyNameTransformer $propertyNameTransformer = null,
+        protected readonly CodecRegistry $codecRegistry = new CodecRegistry(),
     )
     {
         $this->setMapperCompilerFactory(BackedEnum::class, $this->createEnumMapperCompilerProvider(...));
@@ -294,8 +303,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         $classLikeNames = [$className => true, ...$classParents, ...$classImplements];
+        $codecDomainClassMap = $this->getCodecDomainClassMap();
 
         foreach ($classLikeNames as $classLikeName => $true) {
+            if (isset($codecDomainClassMap[$classLikeName])) {
+                return $this->createCodecMapperCompilerProvider($codecDomainClassMap[$classLikeName], $className, $options);
+            }
+
             if (isset($this->mapperCompilerFactories[$classLikeName])) {
                 $factory = $this->mapperCompilerFactories[$classLikeName];
                 return $factory($className, $options);
@@ -532,6 +546,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $providers[] = $attribute->newInstance();
         }
 
+        foreach ($parameterReflection->getAttributes(Codec::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            $codec = $attribute->newInstance();
+
+            if (!$codec instanceof MapperCompilerProvider) {
+                $providers[] = new MapCodec($codec);
+            }
+        }
+
         foreach ($parameterReflection->getAttributes(ValidatorCompiler::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $validators[] = $attribute->newInstance();
         }
@@ -543,14 +565,14 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         };
 
         foreach ($validators as $validator) {
-            $provider = $this->addValidatorProvider($provider, $validator);
+            $provider = $this->addValidatorProvider($provider, $validator, $options);
         }
 
         foreach ($parameterReflection->getAttributes(OptionalAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             $provider = new MapDefaultValue($provider, $attribute->newInstance()->default);
         }
 
-        $mapper = $provider->getInputMapperCompiler();
+        $mapper = $provider->getInputMapperCompiler($this, $options);
 
         if (!PhpDocTypeUtils::isSubTypeOf($mapper->getOutputType(), $type)) {
             throw CannotCreateMapperCompilerException::withIncompatibleMapperForMethodParameter($mapper, $parameterReflection, $type);
@@ -581,45 +603,71 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $outputProviders[] = $attribute->newInstance();
         }
 
-        return match (count($outputProviders)) {
-            0 => $this->createInner($type, $options),
-            1 => $outputProviders[0],
-            default => throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName()),
-        };
+        foreach ($propertyReflection->getAttributes(Codec::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            $codec = $attribute->newInstance();
+
+            if (!$codec instanceof OutputMapperCompilerProvider) {
+                $outputProviders[] = new MapCodec($codec);
+            }
+        }
+
+        if (count($outputProviders) === 0) {
+            return $this->createInner($type, $options);
+        }
+
+        if (count($outputProviders) === 1) {
+            return $outputProviders[0];
+        }
+
+        $chainableProviders = [];
+
+        foreach ($outputProviders as $outputProvider) {
+            if (!$outputProvider instanceof MapperCompilerProvider) {
+                throw CannotCreateMapperCompilerException::fromType($type, 'multiple OutputMapperCompilerProvider attributes found on property $' . $propertyReflection->getName());
+            }
+
+            $chainableProviders[] = $outputProvider;
+        }
+
+        return new MapChain($chainableProviders);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     protected function addValidatorProvider(
         MapperCompilerProvider $provider,
         ValidatorCompiler $validatorCompiler,
+        array $options,
     ): MapperCompilerProvider
     {
         if ($provider instanceof MapDefaultValue) {
             return new MapDefaultValue(
-                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler, $options),
                 $provider->defaultValue,
             );
         }
 
         if ($provider instanceof MapOptional) {
             return new MapOptional(
-                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->mapperCompilerProvider, $validatorCompiler, $options),
             );
         }
 
         if ($provider instanceof MapNullable) {
             return new MapNullable(
-                $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler),
+                $this->addValidatorProvider($provider->innerMapperCompilerProvider, $validatorCompiler, $options),
             );
         }
 
-        $mapperOutputType = $provider->getInputMapperCompiler()->getOutputType();
+        $mapperOutputType = $provider->getInputMapperCompiler($this, $options)->getOutputType();
         $validatorInputType = $validatorCompiler->getInputType();
 
         if (PhpDocTypeUtils::isSubTypeOf($mapperOutputType, $validatorInputType)) {
             return new MapValidated($provider, [$validatorCompiler]);
         }
 
-        throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $provider->getInputMapperCompiler());
+        throw CannotCreateMapperCompilerException::withIncompatibleValidator($validatorCompiler, $provider->getInputMapperCompiler($this, $options));
     }
 
     /**
@@ -653,6 +701,86 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         throw CannotCreateMapperCompilerException::fromType(new IdentifierTypeNode($className));
+    }
+
+    /**
+     * Maps domain classes (the codec EI and DO generic parameters) to codec classes registered in the codec registry.
+     *
+     * The map is rebuilt when the registry gains new codec registrations, so codecs registered late are picked up
+     * by mappers that are not compiled yet.
+     *
+     * @return array<string, class-string<Codec<*, *, *, *>>>
+     */
+    protected function getCodecDomainClassMap(): array
+    {
+        $codecFactories = $this->codecRegistry->getFactories();
+
+        if ($this->codecDomainClassMap === null || count($codecFactories) !== $this->codecDomainClassMapFactoryCount) {
+            $codecDomainClassMap = [];
+
+            foreach ($codecFactories as $codecClassName => $factory) {
+                $codecType = new IdentifierTypeNode($codecClassName);
+                $domainClassNames = [];
+
+                foreach ([1, 2] as $parameter) {
+                    try {
+                        $domainType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, $parameter);
+                    } catch (LogicException $e) {
+                        throw new LogicException("Unable to infer domain class of codec '{$codecClassName}', check its @implements annotation: {$e->getMessage()}", 0, $e);
+                    }
+
+                    if (
+                        $domainType instanceof IdentifierTypeNode
+                        && !PhpDocTypeUtils::isKeyword($domainType)
+                        && (class_exists($domainType->name) || interface_exists($domainType->name))
+                    ) {
+                        $domainClassNames[$domainType->name] = true;
+                    }
+                }
+
+                if (count($domainClassNames) === 0) {
+                    throw new LogicException("Codec '{$codecClassName}' does not declare any class or interface as its domain type, check its @implements annotation.");
+                }
+
+                foreach ($domainClassNames as $domainClassName => $true) {
+                    $conflictingCodecClassName = $codecDomainClassMap[$domainClassName] ?? null;
+
+                    if ($conflictingCodecClassName !== null && $conflictingCodecClassName !== $codecClassName) {
+                        throw new LogicException("Multiple codecs registered for domain class '{$domainClassName}': {$conflictingCodecClassName}, {$codecClassName}.");
+                    }
+
+                    $codecDomainClassMap[$domainClassName] = $codecClassName;
+                }
+            }
+
+            $this->codecDomainClassMap = $codecDomainClassMap;
+            $this->codecDomainClassMapFactoryCount = count($codecFactories);
+        }
+
+        return $this->codecDomainClassMap;
+    }
+
+    /**
+     * @param class-string<Codec<*, *, *, *>> $codecClassName
+     * @param class-string $domainClassName
+     * @param array<string, mixed> $options
+     */
+    protected function createCodecMapperCompilerProvider(
+        string $codecClassName,
+        string $domainClassName,
+        array $options,
+    ): MapperCompilerProvider
+    {
+        $codecType = new IdentifierTypeNode($codecClassName);
+        $decodeInputType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 0);
+        $encodeOutputType = PhpDocTypeUtils::inferGenericParameter($codecType, Codec::class, 3);
+
+        return new CodecMapperCompilerProvider(
+            $codecClassName,
+            $this->createInner($decodeInputType, $options)->getInputMapperCompiler($this, $options),
+            $this->createInner($encodeOutputType, $options)->getOutputMapperCompiler($this, $options),
+            $domainClassName,
+        );
     }
 
     protected function resolveIntegerBoundary(

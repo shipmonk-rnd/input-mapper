@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\NullableOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapNullable implements MapperCompilerProvider
@@ -18,14 +19,20 @@ class MapNullable implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new NullableInputMapperCompiler($this->innerMapperCompilerProvider->getInputMapperCompiler());
+        return new NullableInputMapperCompiler($this->innerMapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options));
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new NullableOutputMapperCompiler($this->innerMapperCompilerProvider->getOutputMapperCompiler());
+        return new NullableOutputMapperCompiler($this->innerMapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options));
     }
 
 }

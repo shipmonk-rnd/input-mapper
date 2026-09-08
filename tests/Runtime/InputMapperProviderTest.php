@@ -130,7 +130,7 @@ class InputMapperProviderTest extends InputMapperTestCase
 
             $factoryProvider = new DefaultMapperCompilerFactoryProvider();
             $factory = $factoryProvider->get();
-            $mapperCompiler = $factory->create(new IdentifierTypeNode($className))->getInputMapperCompiler();
+            $mapperCompiler = $factory->create(new IdentifierTypeNode($className))->getInputMapperCompiler($factory, []);
 
             $codeBuilder = new PhpCodeBuilder();
             $codePrinter = new PhpCodePrinter();

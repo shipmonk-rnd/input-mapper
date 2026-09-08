@@ -19,7 +19,7 @@ class MapChainTest extends InputMapperTestCase
     {
         $mapChain = new MapChain([new MapString(), new MapInt()]);
 
-        $result = $mapChain->getInputMapperCompiler();
+        $result = $mapChain->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
 
         self::assertEquals(
             new ChainMapperCompiler([new StringInputMapperCompiler(), new IntInputMapperCompiler()]),
@@ -31,7 +31,7 @@ class MapChainTest extends InputMapperTestCase
     {
         $mapChain = new MapChain([new MapString(), new MapInt()]);
 
-        $result = $mapChain->getOutputMapperCompiler();
+        $result = $mapChain->getOutputMapperCompiler(self::createMapperCompilerFactory(), []);
 
         self::assertEquals(
             new ChainMapperCompiler([

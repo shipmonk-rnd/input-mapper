@@ -61,6 +61,16 @@ class CannotCreateMapperCompilerException extends LogicException
         return new self("Cannot use mapper {$mapperCompilerClass} for parameter \${$parameterName} of method {$methodFullName}, because {$reason}", 0, $previous);
     }
 
+    public static function withUnsupportedCodecConstructorArgument(
+        string $codecClassName,
+        string $parameterName,
+        string $reason,
+        ?Throwable $previous = null,
+    ): self
+    {
+        return new self("Cannot compile codec {$codecClassName} inline, because constructor argument \${$parameterName} {$reason}", 0, $previous);
+    }
+
     public static function withIncompatibleValidator(
         ValidatorCompiler $validatorCompiler,
         MapperCompiler $mapperCompiler,

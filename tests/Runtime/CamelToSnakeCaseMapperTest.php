@@ -184,6 +184,7 @@ class CamelToSnakeCaseMapperTest extends InputMapperTestCase
                     $this->createPhpDocParser($config),
                     [],
                     $this->propertyNameTransformer,
+                    $this->codecRegistry,
                 );
             }
 

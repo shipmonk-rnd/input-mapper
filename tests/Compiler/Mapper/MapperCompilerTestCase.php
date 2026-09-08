@@ -6,6 +6,7 @@ use ReflectionClass;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
+use ShipMonk\InputMapper\Runtime\Codec;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
@@ -24,6 +25,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
     /**
      * @param array<class-string, MapperCompiler> $providedMapperCompilers
      * @param list<Mapper<mixed, mixed>> $genericInnerMappers
+     * @param array<class-string<Codec<*, *, *, *>>, Codec<*, *, *, *>> $codecs
      * @return Mapper<mixed, mixed>
      */
     protected function compileInputMapper(
@@ -31,14 +33,16 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers = [],
         array $genericInnerMappers = [],
+        array $codecs = [],
     ): Mapper
     {
-        return $this->doCompileMapper($name, 'Mapper', 'getInputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers);
+        return $this->doCompileMapper($name, 'Mapper', 'getInputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers, $codecs);
     }
 
     /**
      * @param array<class-string, MapperCompiler> $providedMapperCompilers
      * @param list<Mapper<mixed, mixed>> $genericInnerMappers
+     * @param array<class-string<Codec<*, *, *, *>>, Codec<*, *, *, *>> $codecs
      * @return Mapper<mixed, mixed>
      */
     protected function compileOutputMapper(
@@ -46,14 +50,16 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers = [],
         array $genericInnerMappers = [],
+        array $codecs = [],
     ): Mapper
     {
-        return $this->doCompileMapper($name, 'OutputMapper', 'getOutputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers);
+        return $this->doCompileMapper($name, 'OutputMapper', 'getOutputMapper', $mapperCompiler, $providedMapperCompilers, $genericInnerMappers, $codecs);
     }
 
     /**
      * @param array<class-string, MapperCompiler> $providedMapperCompilers
      * @param list<Mapper<mixed, mixed>> $genericInnerMappers
+     * @param array<class-string<Codec<*, *, *, *>>, Codec<*, *, *, *>> $codecs
      * @return Mapper<mixed, mixed>
      */
     private function doCompileMapper(
@@ -63,6 +69,7 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
         MapperCompiler $mapperCompiler,
         array $providedMapperCompilers,
         array $genericInnerMappers,
+        array $codecs = [],
     ): Mapper
     {
         $testCaseReflection = new ReflectionClass($this);
@@ -89,6 +96,12 @@ abstract class MapperCompilerTestCase extends InputMapperTestCase
             function (string $inputClassName, array $genericInnerMappers = []) use ($name, $classNameSuffix, $providerMethodName, $providedMapperCompilers): Mapper {
                 /** @var list<Mapper<mixed, mixed>> $genericInnerMappers */
                 return $this->doCompileMapper($name . '__' . $this->toShortClassName($inputClassName), $classNameSuffix, $providerMethodName, $providedMapperCompilers[$inputClassName], [], $genericInnerMappers);
+            },
+        );
+
+        $mapperProvider->expects(self::any())->method('getCodec')->willReturnCallback(
+            static function (string $codecClassName) use ($codecs): Codec {
+                return $codecs[$codecClassName];
             },
         );
 

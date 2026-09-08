@@ -5,12 +5,19 @@ namespace ShipMonk\InputMapperTests;
 use Nette\Utils\FileSystem;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\TestCase;
+use ShipMonk\InputMapper\Compiler\MapperFactory\DefaultMapperCompilerFactoryProvider;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 use Throwable;
 use function getenv;
 use function is_file;
 
 abstract class InputMapperTestCase extends TestCase
 {
+
+    protected static function createMapperCompilerFactory(): MapperCompilerFactory
+    {
+        return (new DefaultMapperCompilerFactoryProvider())->get();
+    }
 
     protected static function assertSnapshot(
         string $snapshotPath,

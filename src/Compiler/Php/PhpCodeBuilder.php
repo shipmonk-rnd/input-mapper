@@ -43,6 +43,7 @@ use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
+use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
@@ -106,6 +107,11 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<string, ClassMethod>
      */
     private array $methods = [];
+
+    /**
+     * @var array<string, Property>
+     */
+    private array $properties = [];
 
     /**
      * @var array<int, array<string, bool>>
@@ -398,6 +404,18 @@ class PhpCodeBuilder extends BuilderFactory
         return $uniqueName;
     }
 
+    public function uniqPropertyName(string $name): string
+    {
+        $i = 1;
+        $uniqueName = $name;
+
+        while (isset($this->properties[$uniqueName])) {
+            $uniqueName = $name . ++$i;
+        }
+
+        return $uniqueName;
+    }
+
     public function uniqVariableName(string $name): string
     {
         $i = 1;
@@ -469,6 +487,17 @@ class PhpCodeBuilder extends BuilderFactory
         }
 
         $this->methods[$method->name->name] = $method;
+    }
+
+    public function addProperty(Property $property): void
+    {
+        $name = $property->props[0]->name->name;
+
+        if (isset($this->properties[$name])) {
+            throw new LogicException('Property already exists');
+        }
+
+        $this->properties[$name] = $property;
     }
 
     public function importClass(string $className): string
@@ -643,6 +672,7 @@ class PhpCodeBuilder extends BuilderFactory
             ->setDocComment($phpDoc)
             ->implement($this->importClass(Mapper::class))
             ->addStmts($constants)
+            ->addStmts(array_values($this->properties))
             ->addStmt($mapperConstructor)
             ->addStmt($mapMethod)
             ->addStmts(array_values($this->methods));

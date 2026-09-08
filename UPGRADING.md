@@ -1,5 +1,48 @@
 # Upgrading Guide
 
+## From 2.x to 3.0 (Codecs)
+
+This release introduces **codecs** — user-defined bidirectional conversions between an intermediate wire type and a domain type (see the README section "Custom mapping with Codecs"). Supporting codec attributes that compose with other mapper attributes required extending the mapper compiler provider SPI.
+
+### Breaking Changes
+
+#### 1. `InputMapperCompilerProvider` / `OutputMapperCompilerProvider` methods receive the factory and options
+
+Providers sometimes need to compile a mapper for a type they only know at provide-time (e.g. a codec's intermediate type). Both SPI methods now receive the `MapperCompilerFactory` and the current options:
+
+```php
+// before
+public function getInputMapperCompiler(): MapperCompiler;
+public function getOutputMapperCompiler(): MapperCompiler;
+
+// after
+public function getInputMapperCompiler(MapperCompilerFactory $mapperCompilerFactory, array $options): MapperCompiler;
+public function getOutputMapperCompiler(MapperCompilerFactory $mapperCompilerFactory, array $options): MapperCompiler;
+```
+
+If you implement custom attributes, update the signatures and pass both arguments along when delegating to inner providers.
+
+#### 2. `MapperCompilerFactoryProvider` gains `getCodecRegistry()`
+
+```php
+interface MapperCompilerFactoryProvider
+{
+    public function get(): MapperCompilerFactory;
+    public function getCodecRegistry(): CodecRegistry; // new
+}
+```
+
+The factory provider owns the codec registry (like it owns the rest of the compile-time configuration); `MapperProvider::registerCodec()` / `registerCodecFactory()` / `getCodec()` delegate to it, so the compiled mappers and the runtime codec lookup always share one registry. `DefaultMapperCompilerFactoryProvider` accepts an optional `CodecRegistry` in its constructor and creates one by default.
+
+#### 3. Protected API changes in `DefaultMapperCompilerFactory` and `DefaultMapperCompilerFactoryProvider`
+
+Relevant only for subclasses:
+
+- `DefaultMapperCompilerFactory::__construct()` gained a `CodecRegistry $codecRegistry` parameter.
+- `DefaultMapperCompilerFactory::addValidatorProvider()` gained an `array $options` parameter.
+- `DefaultMapperCompilerFactoryProvider` subclasses overriding `create()` should pass `$this->codecRegistry` to the factory they construct.
+- The `DELEGATE_OBJECT_MAPPING` and `GENERIC_PARAMETERS` option constants moved from `DefaultMapperCompilerFactory` to the `MapperCompilerFactory` interface (references through the class keep working).
+
 ## From 0.x to 1.0 (Bidirectional Mapping)
 
 This release introduces **output mapping** (object → scalar) alongside the existing input mapping (scalar → object). This required significant architectural changes: attribute classes are now separated from compiler classes, mapper compilers are organized by direction (input/output), and the runtime supports both input and output mappers.

@@ -41,6 +41,13 @@ parameters:
             identifier: throws.unusedType
             paths: [tests/**/Data/*.php]
         -
+            identifiers:
+                - property.uninitialized
+                - property.unused
+                - constructor.unusedParameter
+                - shipmonk.deadProperty.neverWritten
+            path: tests/Compiler/Mapper/Codec/Data/UninitPropCodec.php
+        -
             message: '#throws checked exception ShipMonk\\InputMapper\\Runtime\\Exception\\MappingFailedException but it''s missing from the PHPDoc @throws tag\.#'
             paths: [tests/**/*Test.php]
         -

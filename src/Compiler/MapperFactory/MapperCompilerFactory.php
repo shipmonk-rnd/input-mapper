@@ -8,6 +8,9 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 interface MapperCompilerFactory
 {
 
+    public const DELEGATE_OBJECT_MAPPING = 'delegateObjectMapping';
+    public const GENERIC_PARAMETERS = 'genericParameters';
+
     /**
      * @param array<string, mixed> $options
      */

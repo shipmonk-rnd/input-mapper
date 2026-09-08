@@ -15,7 +15,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testNoopDateTimeRangeValidator(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange();
         $validator = $this->compileValidator('NoopDateTimeRangeValidator', $mapperCompiler, $validatorCompiler);
 
@@ -25,7 +25,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveLowerBound(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -41,7 +41,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithExclusiveLowerBound(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange(gt: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithExclusiveLowerBound', $mapperCompiler, $validatorCompiler);
 
@@ -56,7 +56,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveUpperBound(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange(lte: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -72,7 +72,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithExclusiveUpperBound(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange(lt: '2000-01-05');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithExclusiveUpperBound', $mapperCompiler, $validatorCompiler);
 
@@ -87,7 +87,7 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
 
     public function testDateTimeRangeValidatorWithInclusiveLowerAndUpperBound(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
         $validatorCompiler = new AssertDateTimeRange(gte: '2000-01-05', lte: '2000-01-10');
         $validator = $this->compileValidator('DateTimeRangeValidatorWithInclusiveLowerAndUpperBound', $mapperCompiler, $validatorCompiler);
 

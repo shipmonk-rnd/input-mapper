@@ -14,7 +14,7 @@ class MapDateTest extends MapperCompilerTestCase
 
     public function testCompile(): void
     {
-        $mapperCompiler = (new MapDate())->getInputMapperCompiler();
+        $mapperCompiler = (new MapDate())->getInputMapperCompiler(self::createMapperCompilerFactory(), []);
 
         /** @var Mapper<mixed, DateTimeImmutable> $mapper */
         $mapper = $this->compileInputMapper('DateStandalone', $mapperCompiler);

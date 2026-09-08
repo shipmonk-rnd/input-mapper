@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ArrayInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ArrayOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapArray implements MapperCompilerProvider
@@ -19,19 +20,25 @@ class MapArray implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new ArrayInputMapperCompiler(
-            $this->keyMapperCompilerProvider->getInputMapperCompiler(),
-            $this->valueMapperCompilerProvider->getInputMapperCompiler(),
+            $this->keyMapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options),
+            $this->valueMapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options),
         );
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
         return new ArrayOutputMapperCompiler(
-            $this->keyMapperCompilerProvider->getOutputMapperCompiler(),
-            $this->valueMapperCompilerProvider->getOutputMapperCompiler(),
+            $this->keyMapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options),
+            $this->valueMapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options),
         );
     }
 

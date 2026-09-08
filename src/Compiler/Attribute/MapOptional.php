@@ -7,6 +7,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\OptionalOutputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\MapperFactory\MapperCompilerFactory;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
 class MapOptional implements MapperCompilerProvider
@@ -18,14 +19,20 @@ class MapOptional implements MapperCompilerProvider
     {
     }
 
-    public function getInputMapperCompiler(): MapperCompiler
+    public function getInputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new OptionalInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler());
+        return new OptionalInputMapperCompiler($this->mapperCompilerProvider->getInputMapperCompiler($mapperCompilerFactory, $options));
     }
 
-    public function getOutputMapperCompiler(): MapperCompiler
+    public function getOutputMapperCompiler(
+        MapperCompilerFactory $mapperCompilerFactory,
+        array $options,
+    ): MapperCompiler
     {
-        return new OptionalOutputMapperCompiler($this->mapperCompilerProvider->getOutputMapperCompiler());
+        return new OptionalOutputMapperCompiler($this->mapperCompilerProvider->getOutputMapperCompiler($mapperCompilerFactory, $options));
     }
 
 }

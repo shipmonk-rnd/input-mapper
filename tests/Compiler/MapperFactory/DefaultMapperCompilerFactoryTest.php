@@ -108,7 +108,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $factory = self::createFactory();
         $phpDocType = self::parseType($type);
 
-        $mapperCompiler = $factory->create($phpDocType, $options)->getInputMapperCompiler();
+        $mapperCompiler = $factory->create($phpDocType, $options)->getInputMapperCompiler($factory, $options);
 
         self::assertEquals($expectedMapperCompiler, $mapperCompiler);
     }
@@ -500,7 +500,7 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
         $factory = self::createFactory();
         $phpDocType = self::parseType($type);
 
-        $mapperCompiler = $factory->create($phpDocType, $options)->getOutputMapperCompiler();
+        $mapperCompiler = $factory->create($phpDocType, $options)->getOutputMapperCompiler($factory, $options);
 
         self::assertEquals($expectedMapperCompiler, $mapperCompiler);
     }
