@@ -3,13 +3,14 @@
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
+use ShipMonk\InputMapper\Compiler\Mapper\CompositeMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ListInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\ListOutputMapperCompiler;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapList implements MapperCompilerProvider
+class MapList implements CompositeMapperCompilerProvider, MapperCompilerProvider
 {
 
     public function __construct(
@@ -26,6 +27,14 @@ class MapList implements MapperCompilerProvider
     public function getOutputMapperCompiler(): MapperCompiler
     {
         return new ListOutputMapperCompiler($this->itemMapperCompilerProvider->getOutputMapperCompiler());
+    }
+
+    /**
+     * @return list<MapperCompilerProvider>
+     */
+    public function getInnerMapperCompilerProviders(): array
+    {
+        return [$this->itemMapperCompilerProvider];
     }
 
 }
