@@ -1,6 +1,6 @@
 # Upgrading Guide
 
-## From 0.x to 1.0 (Bidirectional Mapping)
+## From 0.x to 2.0 (Bidirectional Mapping)
 
 This release introduces **output mapping** (object → scalar) alongside the existing input mapping (scalar → object). This required significant architectural changes: attribute classes are now separated from compiler classes, mapper compilers are organized by direction (input/output), and the runtime supports both input and output mappers.
 
