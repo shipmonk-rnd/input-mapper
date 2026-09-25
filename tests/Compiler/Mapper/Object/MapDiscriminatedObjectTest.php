@@ -27,6 +27,7 @@ use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithEnumTy
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldChildInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\HierarchicalWithNoTypeFieldParentInput;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Object\Data\MovieInput;
+use function array_replace;
 
 class MapDiscriminatedObjectTest extends MapperCompilerTestCase
 {
@@ -77,13 +78,13 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, childTwo, got null',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['type' => null])),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, childTwo, got "c"',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['type' => 'c'])),
         );
 
         $childOneInputWithoutType = $childOneInputArray;
@@ -135,13 +136,13 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, got null',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => null]),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['type' => null])),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /type: Expected one of childOne, got "c"',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, 'type' => 'c']),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['type' => 'c'])),
         );
     }
 
@@ -167,13 +168,13 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /$type: Expected one of childOne, got null',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, '$type' => null]),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['$type' => null])),
         );
 
         self::assertException(
             MappingFailedException::class,
             'Failed to map data at path /$type: Expected one of childOne, got "c"',
-            static fn () => $parentInputMapper->map([...$childOneInputArray, '$type' => 'c']),
+            static fn () => $parentInputMapper->map(array_replace($childOneInputArray, ['$type' => 'c'])),
         );
     }
 
