@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapperTests\Compiler\Validator\Object;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Attribute\MapDate;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DateTimeImmutableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Object\AssertDateTimeRange;
@@ -161,6 +162,24 @@ class AssertDateTimeRangeTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected value greater than or equal to 2000-01-05 (in America/New_York timezone), got 2000-01-04 (America/New_York)',
             static fn () => $validator->map('2000-01-04'),
+        );
+    }
+
+    public function testUnparsableBoundary(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Boundary gte: not a date is not a valid date-time string, so every input would fail',
+            static fn () => new AssertDateTimeRange(gte: 'not a date'),
+        );
+    }
+
+    public function testInvalidTimezone(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Timezone Mars/Olympus is not a valid timezone, so every input would fail',
+            static fn () => new AssertDateTimeRange(gte: '2020-01-01', timezone: 'Mars/Olympus'),
         );
     }
 

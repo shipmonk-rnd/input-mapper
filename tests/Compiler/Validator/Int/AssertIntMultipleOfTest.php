@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Validator\Int;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Validator\Int\AssertIntMultipleOf;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
@@ -32,6 +33,15 @@ class AssertIntMultipleOfTest extends ValidatorCompilerTestCase
             MappingFailedException::class,
             'Failed to map data at path /: Expected multiple of 5, got 123',
             static fn () => $validator->map(123),
+        );
+    }
+
+    public function testMultipleOfZero(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Multiple of 0 is not a meaningful constraint, and the generated modulo would fail with DivisionByZeroError',
+            static fn () => new AssertIntMultipleOf(0),
         );
     }
 

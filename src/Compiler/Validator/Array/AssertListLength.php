@@ -10,6 +10,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Validator\AcceptedBounds;
 use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 
@@ -33,6 +34,12 @@ class AssertListLength implements NarrowingValidatorCompiler
 
         $this->min = $exact ?? $min;
         $this->max = $exact ?? $max;
+
+        $bounds = AcceptedBounds::overLengths(min: $this->min, max: $this->max);
+
+        if ($bounds->acceptNothing()) {
+            throw new LogicException("Bounds {$bounds->describeArguments()} accept no list length, so every input would fail");
+        }
     }
 
     /**

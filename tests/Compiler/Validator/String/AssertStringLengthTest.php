@@ -100,4 +100,19 @@ class AssertStringLengthTest extends ValidatorCompilerTestCase
         );
     }
 
+    public function testBoundsThatAcceptNoStringLength(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Bounds min: 10, max: 5 accept no string length, so every input would fail',
+            static fn () => new AssertStringLength(min: 10, max: 5),
+        );
+
+        self::assertException(
+            LogicException::class,
+            'Bounds max: -1 accept no string length, so every input would fail',
+            static fn () => new AssertStringLength(max: -1),
+        );
+    }
+
 }

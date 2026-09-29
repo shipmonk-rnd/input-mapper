@@ -2,6 +2,7 @@
 
 namespace ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper;
 
+use LogicException;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DefaultValueInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\EnumInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\IntInputMapperCompiler;
@@ -12,6 +13,7 @@ use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\Semaphore;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
+use stdClass;
 
 class MapDefaultValueTest extends MapperCompilerTestCase
 {
@@ -43,6 +45,15 @@ class MapDefaultValueTest extends MapperCompilerTestCase
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Green, null), $mapper->map([]));
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Red, null), $mapper->map(['color' => 'red']));
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Red, 'Siemens'), $mapper->map(['color' => 'red', 'manufacturer' => 'Siemens']));
+    }
+
+    public function testUnsupportedDefaultValue(): void
+    {
+        self::assertException(
+            LogicException::class,
+            'Unsupported default value type: stdClass',
+            static fn () => new DefaultValueInputMapperCompiler(new IntInputMapperCompiler(), new stdClass()),
+        );
     }
 
 }

@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Validator\Int;
 
 use Attribute;
+use LogicException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
@@ -11,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
+use ShipMonk\InputMapper\Compiler\Validator\AcceptedBounds;
 use ShipMonk\InputMapper\Compiler\Validator\NarrowingValidatorCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use function max;
@@ -29,6 +31,11 @@ class AssertIntRange implements NarrowingValidatorCompiler
         public readonly ?int $lte = null,
     )
     {
+        $bounds = AcceptedBounds::overIntegers(gte: $gte, gt: $gt, lt: $lt, lte: $lte);
+
+        if ($bounds->acceptNothing()) {
+            throw new LogicException("Bounds {$bounds->describeArguments()} accept no integer, so every input would fail");
+        }
     }
 
     /**

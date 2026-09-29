@@ -286,20 +286,10 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         array $options,
     ): MapperCompilerProvider
     {
-        $classParents = class_parents($className);
-        $classImplements = class_implements($className);
+        $factory = $this->findMapperCompilerFactory($className);
 
-        if ($classParents === false || $classImplements === false) {
-            throw new LogicException("Unable to get class parents or implements for '$className'.");
-        }
-
-        $classLikeNames = [$className => true, ...$classParents, ...$classImplements];
-
-        foreach ($classLikeNames as $classLikeName => $true) {
-            if (isset($this->mapperCompilerFactories[$classLikeName])) {
-                $factory = $this->mapperCompilerFactories[$classLikeName];
-                return $factory($className, $options);
-            }
+        if ($factory !== null) {
+            return $factory($className, $options);
         }
 
         $classReflection = new ReflectionClass($className);
@@ -348,15 +338,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         foreach ($constructor->getParameters() as $parameter) {
             $parameterName = $parameter->getName();
             $type = $constructorParameterTypes[$parameterName];
-            $sourceKeyAttributes = $parameter->getAttributes(SourceKey::class);
-
-            if (count($sourceKeyAttributes) > 0) {
-                $name = $sourceKeyAttributes[0]->newInstance()->key;
-            } elseif ($this->propertyNameTransformer !== null) {
-                $name = $this->propertyNameTransformer->transform($parameterName, $classReflection->getName());
-            } else {
-                $name = $parameterName;
-            }
+            $name = $this->resolveSourceKey($parameter, $classReflection);
 
             if (isset($constructorArgsProviders[$name])) {
                 throw CannotCreateMapperCompilerException::fromType($inputType, "multiple constructor parameters map to source key '{$name}'");
@@ -411,15 +393,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $type = $constructorTypesByClass[$declaringClassName][$propertyName]
                 ?? throw CannotCreateMapperCompilerException::fromType($inputType, "cannot determine type for property {$propertyName}");
 
-            $sourceKeyAttributes = $property->getAttributes(SourceKey::class);
-
-            if (count($sourceKeyAttributes) > 0) {
-                $outputKey = $sourceKeyAttributes[0]->newInstance()->key;
-            } elseif ($this->propertyNameTransformer !== null) {
-                $outputKey = $this->propertyNameTransformer->transform($propertyName, $classReflection->getName());
-            } else {
-                $outputKey = $propertyName;
-            }
+            $outputKey = $this->resolveSourceKey($property, $classReflection);
 
             if (isset($outputKeys[$outputKey])) {
                 throw CannotCreateMapperCompilerException::fromType($inputType, "multiple properties map to source key '{$outputKey}'");
@@ -446,6 +420,8 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         $inputType = new IdentifierTypeNode($className);
         $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($inputType)->parameters;
 
+        $this->checkDiscriminatedClass($inputType, $className, $discriminatorAttribute);
+
         $subtypeProviders = array_map(
             static fn (string $subtypeClassName): MapperCompilerProvider => new MapDelegate($subtypeClassName),
             $discriminatorAttribute->mapping,
@@ -457,6 +433,132 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $subtypeProviders,
             $genericParameters,
         );
+    }
+
+    /**
+     * The key that the mapper reads for a constructor parameter, or writes for a property.
+     *
+     * @param ReflectionClass<object> $classReflection
+     */
+    protected function resolveSourceKey(
+        ReflectionParameter|ReflectionProperty $reflection,
+        ReflectionClass $classReflection,
+    ): string
+    {
+        $sourceKeyAttributes = $reflection->getAttributes(SourceKey::class);
+
+        if (count($sourceKeyAttributes) > 0) {
+            return $sourceKeyAttributes[0]->newInstance()->key;
+        }
+
+        if ($this->propertyNameTransformer !== null) {
+            return $this->propertyNameTransformer->transform($reflection->getName(), $classReflection->getName());
+        }
+
+        return $reflection->getName();
+    }
+
+    /**
+     * @param class-string $className
+     * @return (callable(class-string, array<string, mixed>): MapperCompilerProvider)|null
+     */
+    protected function findMapperCompilerFactory(string $className): ?callable
+    {
+        $classParents = class_parents($className);
+        $classImplements = class_implements($className);
+
+        if ($classParents === false || $classImplements === false) {
+            throw new LogicException("Unable to get class parents or implements for '$className'.");
+        }
+
+        foreach ([$className => true, ...$classParents, ...$classImplements] as $classLikeName => $true) {
+            if (isset($this->mapperCompilerFactories[$classLikeName])) {
+                return $this->mapperCompilerFactories[$classLikeName];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The discriminated mapper delegates the whole mapping to the subtypes, so it never reads #[AllowExtraKeys] of the
+     * annotated class, and every input reaches a subtype mapper together with the discriminator key.
+     *
+     * @param class-string $className
+     */
+    protected function checkDiscriminatedClass(
+        IdentifierTypeNode $inputType,
+        string $className,
+        Discriminator $discriminatorAttribute,
+    ): void
+    {
+        if (count($discriminatorAttribute->mapping) === 0) {
+            throw CannotCreateMapperCompilerException::fromType($inputType, 'discriminator mapping is empty, so no input can be mapped');
+        }
+
+        $classReflection = new ReflectionClass($className);
+
+        if (count($classReflection->getAttributes(AllowExtraKeys::class)) > 0) {
+            throw CannotCreateMapperCompilerException::fromType(
+                $inputType,
+                'the discriminated mapping delegates to subtypes and never reads #[AllowExtraKeys] here, put it on every subtype instead',
+            );
+        }
+
+        foreach ($discriminatorAttribute->mapping as $key => $subtypeClassName) {
+            if (!$this->subtypeAcceptsDiscriminatorKey($subtypeClassName, $discriminatorAttribute->key)) {
+                $discriminatorKey = $discriminatorAttribute->key;
+                throw CannotCreateMapperCompilerException::fromType(
+                    $inputType,
+                    "subtype {$subtypeClassName} mapped to \"{$key}\" accepts no \"{$discriminatorKey}\" key, so every input would fail; "
+                        . 'add a constructor parameter for that key or #[AllowExtraKeys] to the subtype',
+                );
+            }
+        }
+    }
+
+    /**
+     * Answers only for subtypes that the standard object mapping covers. A subtype with its own discriminator, or one
+     * that a registered factory maps, has a shape this method cannot know, and its own mapping decides.
+     *
+     * @param class-string $subtypeClassName
+     */
+    protected function subtypeAcceptsDiscriminatorKey(
+        string $subtypeClassName,
+        string $discriminatorKey,
+    ): bool
+    {
+        if (!class_exists($subtypeClassName)) {
+            return true;
+        }
+
+        $subtypeReflection = new ReflectionClass($subtypeClassName);
+
+        if (count($subtypeReflection->getAttributes(Discriminator::class)) > 0) {
+            return true;
+        }
+
+        if (count($subtypeReflection->getAttributes(AllowExtraKeys::class)) > 0) {
+            return true;
+        }
+
+        if ($this->findMapperCompilerFactory($subtypeClassName) !== null) {
+            return true;
+        }
+
+        $constructor = $subtypeReflection->getConstructor();
+
+        if ($constructor === null || !$constructor->isPublic()) {
+            return true;
+        }
+
+        foreach ($constructor->getParameters() as $parameter) {
+            if ($this->resolveSourceKey($parameter, $subtypeReflection) === $discriminatorKey) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
