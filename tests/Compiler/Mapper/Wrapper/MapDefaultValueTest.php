@@ -10,8 +10,11 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapperTests\Compiler\Mapper\MapperCompilerTestCase;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\MapSemaphoreMode;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\Semaphore;
 use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreModeEnum;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreWithMode;
 
 class MapDefaultValueTest extends MapperCompilerTestCase
 {
@@ -43,6 +46,18 @@ class MapDefaultValueTest extends MapperCompilerTestCase
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Green, null), $mapper->map([]));
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Red, null), $mapper->map(['color' => 'red']));
         self::assertEquals(new Semaphore(SemaphoreColorEnum::Red, 'Siemens'), $mapper->map(['color' => 'red', 'manufacturer' => 'Siemens']));
+    }
+
+    public function testCompileUndefinedWithPureEnumDefaultValue(): void
+    {
+        $mapperCompiler = new ObjectInputMapperCompiler(SemaphoreWithMode::class, [
+            'mode' => new DefaultValueInputMapperCompiler(new MapSemaphoreMode(), SemaphoreModeEnum::Normal),
+        ]);
+
+        $mapper = $this->compileInputMapper('SemaphoreWithMode', $mapperCompiler);
+
+        self::assertEquals(new SemaphoreWithMode(SemaphoreModeEnum::Normal), $mapper->map([]));
+        self::assertEquals(new SemaphoreWithMode(SemaphoreModeEnum::Blinking), $mapper->map(['mode' => 'blinking']));
     }
 
 }
