@@ -2,7 +2,6 @@
 
 namespace ShipMonk\InputMapper\Compiler\Mapper\Input;
 
-use LogicException;
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
@@ -10,10 +9,6 @@ use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\UndefinedAwareMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
-use UnitEnum;
-use function get_debug_type;
-use function is_array;
-use function is_scalar;
 
 class DefaultValueInputMapperCompiler implements UndefinedAwareMapperCompiler
 {
@@ -40,15 +35,7 @@ class DefaultValueInputMapperCompiler implements UndefinedAwareMapperCompiler
         PhpCodeBuilder $builder,
     ): CompiledExpr
     {
-        if ($this->defaultValue === null || is_scalar($this->defaultValue) || is_array($this->defaultValue)) {
-            return new CompiledExpr($builder->val($this->defaultValue));
-        }
-
-        if ($this->defaultValue instanceof UnitEnum) {
-            return new CompiledExpr($builder->classConstFetch($builder->importClass($this->defaultValue::class), $this->defaultValue->name));
-        }
-
-        throw new LogicException('Unsupported default value type: ' . get_debug_type($this->defaultValue));
+        return new CompiledExpr($builder->val($this->defaultValue));
     }
 
     public function getInputType(): TypeNode

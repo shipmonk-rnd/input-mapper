@@ -16,6 +16,8 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodePrinter;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
+use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreModeEnum;
 use ShipMonk\InputMapperTests\InputMapperTestCase;
 
 class PhpCodeBuilderTest extends InputMapperTestCase
@@ -71,6 +73,48 @@ class PhpCodeBuilderTest extends InputMapperTestCase
             ),
             [BackedEnum::class, DateTimeInterface::class],
         ];
+    }
+
+    public function testVal(): void
+    {
+        $builder = new PhpCodeBuilder();
+        $printer = new PhpCodePrinter();
+
+        self::assertSame('null', $printer->prettyPrintExpr($builder->val(null)));
+        self::assertSame('[1, 2]', $printer->prettyPrintExpr($builder->val([1, 2])));
+        self::assertSame("['key' => 'value']", $printer->prettyPrintExpr($builder->val(['key' => 'value'])));
+        self::assertSame('$var', $printer->prettyPrintExpr($builder->val($builder->var('var'))));
+    }
+
+    public function testValEnum(): void
+    {
+        $builder = new PhpCodeBuilder();
+        $printer = new PhpCodePrinter();
+
+        self::assertSame('SemaphoreModeEnum::Normal', $printer->prettyPrintExpr($builder->val(SemaphoreModeEnum::Normal)));
+        self::assertSame(
+            "['first' => SemaphoreColorEnum::Red, 'nested' => [SemaphoreColorEnum::Green]]",
+            $printer->prettyPrintExpr($builder->val(['first' => SemaphoreColorEnum::Red, 'nested' => [SemaphoreColorEnum::Green]])),
+        );
+
+        self::assertCodeEquals(
+            $builder->getImports('App'),
+            <<<'PHP'
+            use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreColorEnum;
+            use ShipMonk\InputMapperTests\Compiler\Mapper\Wrapper\Data\SemaphoreModeEnum;
+            PHP,
+        );
+    }
+
+    public function testValUnsupportedType(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        self::assertException(
+            LogicException::class,
+            'Unsupported value type: DateTimeImmutable',
+            static fn () => $builder->val(new DateTimeImmutable()),
+        );
     }
 
     public function testArray(): void
