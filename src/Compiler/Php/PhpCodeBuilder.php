@@ -60,18 +60,22 @@ use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use ShipMonk\InputMapper\Runtime\Exception\MappingFailedException;
 use ShipMonk\InputMapper\Runtime\Mapper;
 use ShipMonk\InputMapper\Runtime\MapperProvider;
+use UnitEnum;
 use function array_column;
 use function array_fill_keys;
 use function array_filter;
+use function array_map;
 use function array_pop;
 use function array_slice;
 use function array_values;
 use function assert;
 use function count;
+use function get_debug_type;
 use function get_object_vars;
 use function implode;
 use function is_array;
 use function is_object;
+use function is_scalar;
 use function ksort;
 use function serialize;
 use function str_ends_with;
@@ -111,6 +115,29 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<int, array<string, bool>>
      */
     private array $variables = [];
+
+    /**
+     * Unlike parent::val(), imports the enum class of an enum case (also inside an array)
+     * and does not depend on nikic/php-parser version (enum support was added in 5.2).
+     *
+     * @param mixed $value null, scalar, enum case, Expr, or array of these
+     */
+    public function val(mixed $value): Expr
+    {
+        if ($value instanceof UnitEnum) {
+            return $this->classConstFetch($this->importClass($value::class), $value->name);
+        }
+
+        if (is_array($value)) {
+            return parent::val(array_map($this->val(...), $value));
+        }
+
+        if ($value !== null && !is_scalar($value) && !$value instanceof Expr) {
+            throw new LogicException('Unsupported value type: ' . get_debug_type($value));
+        }
+
+        return parent::val($value);
+    }
 
     /**
      * @param array<ArrayItem> $items
