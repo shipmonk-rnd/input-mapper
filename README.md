@@ -169,6 +169,36 @@ class Person
 }
 ```
 
+### Redacting sensitive values from error messages
+
+Mapping failures normally embed the offending value in the exception message, e.g.
+`Failed to map data at path /password: Expected non-empty string, got "hunter2"`. Since these messages
+typically end up in logs and in API error responses, mark credentials and other secrets with the native
+`#[SensitiveParameter]` attribute:
+
+```php
+use SensitiveParameter;
+use ShipMonk\InputMapper\Compiler\Validator\String\AssertStringNonEmpty;
+
+class LoginInput
+{
+    public function __construct(
+        public readonly string $login,
+
+        #[SensitiveParameter]
+        #[AssertStringNonEmpty]
+        public readonly string $password,
+    ) {}
+}
+```
+
+Any mapping or validation failure below such a parameter reports the type only:
+`Failed to map data at path /password: Expected non-empty string, got string (redacted)`.
+Keys, paths and the expectation itself are kept, only the value is dropped.
+
+`#[SensitiveParameter]` requires PHP 8.2. On PHP 8.1, use `#[MapSensitive(new MapString())]` instead,
+which has the same effect and lets you pick the inner mapper explicitly.
+
 ### Renaming keys
 
 If the input keys do not match the property names, you can use the `#[SourceKey]` attribute to specify the key name:
