@@ -46,7 +46,7 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
     {
         $hasOptionalProperties = false;
 
-        foreach ($this->propertyMapperCompilers as [$outputKey, $propertyMapperCompiler]) {
+        foreach ($this->propertyMapperCompilers as [, $propertyMapperCompiler]) {
             if ($propertyMapperCompiler instanceof OptionalOutputMapperCompiler) {
                 $hasOptionalProperties = true;
                 break;

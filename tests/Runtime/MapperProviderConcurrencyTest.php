@@ -129,13 +129,12 @@ class MapperProviderConcurrencyTest extends InputMapperTestCase
         $hash = substr(md5($className), 0, 8);
         $path = "$tempDir/{$shortName}Mapper_{$hash}.php";
 
-        $lockHandle = null;
+        // Parent grabs the exclusive lock a competing process must wait on.
+        $lockHandle = fopen("$path.lock", 'c+');
         $process = null;
         $pipes = [];
 
         try {
-            // Parent grabs the exclusive lock a competing process must wait on.
-            $lockHandle = fopen("$path.lock", 'c+');
             self::assertNotFalse($lockHandle);
             self::assertTrue(flock($lockHandle, LOCK_EX));
 
