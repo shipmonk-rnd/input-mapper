@@ -156,6 +156,49 @@ class MapObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithSourceKeysWhichDifferOnlyInCase(): void
+    {
+        $mapperCompiler = new ObjectInputMapperCompiler(PersonInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'ID' => new StringInputMapperCompiler(),
+            'Id' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
+        ]);
+
+        $mapper = $this->compileInputMapper('PersonWithSourceKeysWhichDifferOnlyInCase', $mapperCompiler);
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::of(30)),
+            $mapper->map(['id' => 1, 'ID' => 'John', 'Id' => 30]),
+        );
+    }
+
+    public function testCompileWithSourceKeysWhichAreNotValidIdentifiers(): void
+    {
+        $mapperCompiler = new ObjectInputMapperCompiler(PersonInput::class, [
+            'bom-ref' => new IntInputMapperCompiler(),
+            'x:y' => new StringInputMapperCompiler(),
+            '' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
+        ]);
+
+        $mapper = $this->compileInputMapper('PersonWithInvalidIdentifierSourceKeys', $mapperCompiler);
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::of(30)),
+            $mapper->map(['bom-ref' => 1, 'x:y' => 'John', '' => 30]),
+        );
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::none([], '')),
+            $mapper->map(['bom-ref' => 1, 'x:y' => 'John']),
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /x:y: Expected string, got 1',
+            static fn () => $mapper->map(['bom-ref' => 1, 'x:y' => 1]),
+        );
+    }
+
     private function createMovieInputMapperCompiler(): MapperCompiler
     {
         return new ObjectInputMapperCompiler(MovieInput::class, [

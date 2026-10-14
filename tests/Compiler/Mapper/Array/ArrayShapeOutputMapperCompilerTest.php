@@ -85,4 +85,22 @@ class ArrayShapeOutputMapperCompilerTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithKeysWhichAreNotValidIdentifiers(): void
+    {
+        $items = [
+            ['key' => 'bom-ref', 'mapper' => new PassthroughMapperCompiler(new IdentifierTypeNode('string')), 'optional' => false],
+            ['key' => 'x:y', 'mapper' => new ListOutputMapperCompiler(new EnumOutputMapperCompiler(SuitEnum::class)), 'optional' => true],
+        ];
+
+        $mapperCompiler = new ArrayShapeOutputMapperCompiler($items, sealed: true);
+        $mapper = $this->compileOutputMapper('ArrayShapeWithInvalidIdentifierKeys', $mapperCompiler);
+
+        self::assertSame(
+            ['bom-ref' => 'test', 'x:y' => ['H', 'D']],
+            $mapper->map(['bom-ref' => 'test', 'x:y' => [SuitEnum::Hearts, SuitEnum::Diamonds]]),
+        );
+
+        self::assertSame(['bom-ref' => 'test'], $mapper->map(['bom-ref' => 'test']));
+    }
+
 }

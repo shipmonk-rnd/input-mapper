@@ -109,4 +109,44 @@ class MapArrayShapeTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithKeysWhichAreNotValidIdentifiers(): void
+    {
+        $items = [
+            ['key' => 'bom-ref', 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
+            ['key' => 'x:y', 'mapper' => new StringInputMapperCompiler(), 'optional' => true],
+        ];
+
+        $mapperCompiler = new ArrayShapeInputMapperCompiler($items, sealed: true);
+        $mapper = $this->compileInputMapper('ArrayShapeWithInvalidIdentifierKeys', $mapperCompiler);
+
+        self::assertSame(['bom-ref' => 1, 'x:y' => '2'], $mapper->map(['bom-ref' => 1, 'x:y' => '2']));
+        self::assertSame(['bom-ref' => 1], $mapper->map(['bom-ref' => 1]));
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /x:y: Expected string, got 2',
+            static fn () => $mapper->map(['bom-ref' => 1, 'x:y' => 2]),
+        );
+    }
+
+    public function testCompileNestedArrayShapesWithSimilarKeys(): void
+    {
+        $createInnerMapperCompiler = static fn (string $key) => new ArrayShapeInputMapperCompiler([
+            ['key' => $key, 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
+        ], sealed: true);
+
+        $items = [
+            ['key' => 'items', 'mapper' => $createInnerMapperCompiler('items'), 'optional' => false],
+            ['key' => 'a-b', 'mapper' => $createInnerMapperCompiler('a_b'), 'optional' => false],
+            ['key' => 'aB', 'mapper' => $createInnerMapperCompiler('ab'), 'optional' => false],
+            ['key' => 'größe', 'mapper' => $createInnerMapperCompiler('grüße'), 'optional' => false],
+        ];
+
+        $mapperCompiler = new ArrayShapeInputMapperCompiler($items, sealed: true);
+        $mapper = $this->compileInputMapper('NestedArrayShapesWithSimilarKeys', $mapperCompiler);
+
+        $data = ['items' => ['items' => 1], 'a-b' => ['a_b' => 2], 'aB' => ['ab' => 3], 'größe' => ['grüße' => 4]];
+        self::assertSame($data, $mapper->map($data));
+    }
+
 }

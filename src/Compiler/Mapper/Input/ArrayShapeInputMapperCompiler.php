@@ -103,7 +103,7 @@ class ArrayShapeInputMapperCompiler implements MapperCompiler
 
         foreach ($this->items as $mapping) {
             $items[] = new ArrayShapeItemNode(
-                new IdentifierTypeNode($mapping['key']),
+                PhpDocTypeUtils::createArrayShapeKey($mapping['key']),
                 $mapping['optional'],
                 $mapping['mapper']->getOutputType(),
             );

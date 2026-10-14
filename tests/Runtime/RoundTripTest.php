@@ -19,6 +19,7 @@ use ShipMonk\InputMapperTests\Runtime\Data\DateOnlyInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EdgeValuesInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EmptyInput;
 use ShipMonk\InputMapperTests\Runtime\Data\EventInput;
+use ShipMonk\InputMapperTests\Runtime\Data\InvalidIdentifierSourceKeysInput;
 use ShipMonk\InputMapperTests\Runtime\Data\NullableDateTimeInput;
 use ShipMonk\InputMapperTests\Runtime\Data\NullableEnumInput;
 use function sys_get_temp_dir;
@@ -167,6 +168,15 @@ class RoundTripTest extends InputMapperTestCase
     {
         $data = ['a' => 1];
         self::assertSame($data, $this->roundTrip(AllOptionalInput::class, $data));
+    }
+
+    public function testSourceKeysWhichAreNotValidIdentifiers(): void
+    {
+        $data = ['bom-ref' => 'comp-1', 'x:y' => 'other', 'meta' => ['bom-ref' => 1, 'x:y' => 'value']];
+        self::assertSame($data, $this->roundTrip(InvalidIdentifierSourceKeysInput::class, $data));
+
+        $data = ['bom-ref' => 'comp-1', 'meta' => ['bom-ref' => 1]];
+        self::assertSame($data, $this->roundTrip(InvalidIdentifierSourceKeysInput::class, $data));
     }
 
     public function testDeeplyNestedObjects(): void
