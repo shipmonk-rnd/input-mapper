@@ -17,6 +17,11 @@ parameters:
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
     checkBenevolentUnionTypes: true
 
+    featureToggles:
+        # bleedingEdge in PHPStan 2.3 widens T of Mapper<T, mixed> returned by MapperProvider::getOutputMapper(Foo::class)
+        # from later usages (e.g. ->map(new Bar()) changes it to Mapper<Foo|Bar, mixed>), which hides real type errors
+        unresolvedTemplateArguments: false
+
     exceptions:
         check:
             missingCheckedExceptionInThrows: true
@@ -36,6 +41,8 @@ parameters:
                 - property.onlyWritten
                 - shipmonk.deadProperty.neverRead
                 - shipmonk.deadEnumCase
+                - method.unusedParameter # generated mapper methods always accept $path
+                - foreach.unusedKey # generated foreach always has the $index key, even when the item mapper does not use it
             paths: [tests/**/Data/*.php]
         -
             identifier: throws.unusedType
