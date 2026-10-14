@@ -156,6 +156,22 @@ class MapObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithSourceKeysWhichDifferOnlyInCase(): void
+    {
+        $mapperCompiler = new ObjectInputMapperCompiler(PersonInput::class, [
+            'id' => new IntInputMapperCompiler(),
+            'ID' => new StringInputMapperCompiler(),
+            'Id' => new OptionalInputMapperCompiler(new IntInputMapperCompiler()),
+        ]);
+
+        $mapper = $this->compileInputMapper('PersonWithSourceKeysWhichDifferOnlyInCase', $mapperCompiler);
+
+        self::assertEquals(
+            new PersonInput(1, 'John', Optional::of(30)),
+            $mapper->map(['id' => 1, 'ID' => 'John', 'Id' => 30]),
+        );
+    }
+
     public function testCompileWithSourceKeysWhichAreNotValidIdentifiers(): void
     {
         $mapperCompiler = new ObjectInputMapperCompiler(PersonInput::class, [

@@ -221,7 +221,7 @@ class PhpDocTypeUtils
      */
     public static function createArrayShapeKey(string $key): IdentifierTypeNode|ConstExprStringNode
     {
-        return Strings::match($key, '#^[a-zA-Z_][a-zA-Z0-9_]*+$#') !== null
+        return Strings::match($key, '#^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+\z#') !== null
             ? new IdentifierTypeNode($key)
             : new ConstExprStringNode($key, ConstExprStringNode::SINGLE_QUOTED);
     }

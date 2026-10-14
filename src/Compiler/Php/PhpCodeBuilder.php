@@ -89,9 +89,20 @@ class PhpCodeBuilder extends BuilderFactory
 {
 
     /**
-     * Lowercase names of methods which {@see mapperClass()} adds without {@see addMethod()}
+     * Variables which exist in every method: assignment to them fails or changes global state
      */
-    private const RESERVED_METHOD_NAMES = ['__construct' => true, 'map' => true];
+    private const RESERVED_VARIABLE_NAMES = [
+        'this' => true,
+        'GLOBALS' => true,
+        '_SERVER' => true,
+        '_GET' => true,
+        '_POST' => true,
+        '_FILES' => true,
+        '_COOKIE' => true,
+        '_SESSION' => true,
+        '_REQUEST' => true,
+        '_ENV' => true,
+    ];
 
     /**
      * @var list<GenericMapperParameter>
@@ -117,6 +128,14 @@ class PhpCodeBuilder extends BuilderFactory
      * @var array<string, ClassMethod> lowercase method name => method
      */
     private array $methods = [];
+
+    /**
+     * Lowercase names of added methods, of names returned by {@see uniqMethodName()} for methods which are not added yet,
+     * and of methods which {@see mapperClass()} adds without {@see addMethod()}
+     *
+     * @var array<string, true>
+     */
+    private array $reservedMethodNames = ['__construct' => true, 'map' => true];
 
     /**
      * @var array<int, array<string, bool>>
@@ -422,7 +441,8 @@ class PhpCodeBuilder extends BuilderFactory
 
     /**
      * Returns a valid PHP identifier made from $name (e.g. from a source key such as 'bom-ref')
-     * that does not collide with any method added by {@see addMethod()}, ignoring case like PHP.
+     * that does not collide with any added method or any name returned before, ignoring case like PHP.
+     * The name is reserved immediately, because the method is usually added only after its inner mappers are compiled.
      */
     public function uniqMethodName(string $name): string
     {
@@ -430,10 +450,11 @@ class PhpCodeBuilder extends BuilderFactory
         $i = 1;
         $uniqueName = $name;
 
-        while (isset($this->methods[strtolower($uniqueName)]) || isset(self::RESERVED_METHOD_NAMES[strtolower($uniqueName)])) {
+        while (isset($this->reservedMethodNames[strtolower($uniqueName)])) {
             $uniqueName = $name . ++$i;
         }
 
+        $this->reservedMethodNames[strtolower($uniqueName)] = true;
         return $uniqueName;
     }
 
@@ -484,7 +505,7 @@ class PhpCodeBuilder extends BuilderFactory
     public function withVariableScope(callable $cb): mixed
     {
         try {
-            $this->variables[] = ['this' => true]; // $this cannot be re-assigned
+            $this->variables[] = self::RESERVED_VARIABLE_NAMES;
             return $cb();
         } finally {
             array_pop($this->variables);
@@ -515,6 +536,7 @@ class PhpCodeBuilder extends BuilderFactory
         }
 
         $this->methods[$lowerName] = $method;
+        $this->reservedMethodNames[$lowerName] = true;
     }
 
     public function importClass(string $className): string
@@ -844,12 +866,13 @@ class PhpCodeBuilder extends BuilderFactory
 
     /**
      * Replaces each run of characters not allowed in a PHP identifier with '_'
-     * and prepends '_' when the name is empty or starts with a digit (e.g. 'x:y' -> 'x_y', '1st' -> '_1st')
+     * and prepends '_' when the name is empty or starts with a digit (e.g. 'x:y' -> 'x_y', '1st' -> '_1st').
+     * Like PHP, it allows bytes \x80-\xff, so non-ASCII names such as 'größe' do not change.
      */
     private function toIdentifier(string $name): string
     {
-        $identifier = Strings::replace($name, '#[^a-zA-Z0-9_]++#', '_');
-        return Strings::match($identifier, '#^[a-zA-Z_]#') !== null ? $identifier : "_{$identifier}";
+        $identifier = Strings::replace($name, '#[^a-zA-Z0-9_\x80-\xff]++#', '_');
+        return Strings::match($identifier, '#^[a-zA-Z_\x80-\xff]#') !== null ? $identifier : "_{$identifier}";
     }
 
 }

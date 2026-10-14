@@ -79,6 +79,48 @@ class DiscriminatedObjectOutputMapperCompilerTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithDiscriminatorValuesWhichAreNotValidIdentifiers(): void
+    {
+        $mapperCompiler = new DiscriminatedObjectOutputMapperCompiler(
+            HierarchicalParentInput::class,
+            [
+                'child-one' => new DelegateOutputMapperCompiler(HierarchicalChildOneInput::class),
+                'child:two' => new DelegateOutputMapperCompiler(HierarchicalChildTwoInput::class),
+            ],
+        );
+
+        $childOneOutputMapperCompiler = new ObjectOutputMapperCompiler(HierarchicalChildOneInput::class, [
+            'id' => ['id', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+            'name' => ['name', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            'age' => ['age', new OptionalOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int')))],
+            'type' => ['type', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            'childOneField' => ['childOneField', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+        ]);
+
+        $childTwoOutputMapperCompiler = new ObjectOutputMapperCompiler(HierarchicalChildTwoInput::class, [
+            'id' => ['id', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+            'name' => ['name', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            'age' => ['age', new OptionalOutputMapperCompiler(new PassthroughMapperCompiler(new IdentifierTypeNode('int')))],
+            'type' => ['type', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            'childTwoField' => ['childTwoField', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+        ]);
+
+        $mapper = $this->compileOutputMapper('HierarchicalParentWithInvalidIdentifierValues', $mapperCompiler, [
+            HierarchicalChildOneInput::class => $childOneOutputMapperCompiler,
+            HierarchicalChildTwoInput::class => $childTwoOutputMapperCompiler,
+        ]);
+
+        self::assertSame(
+            ['id' => 1, 'name' => 'Alice', 'type' => 'child-one', 'childOneField' => 'extra'],
+            $mapper->map(new HierarchicalChildOneInput(id: 1, name: 'Alice', age: Optional::none([], 'age'), type: 'child-one', childOneField: 'extra')),
+        );
+
+        self::assertSame(
+            ['id' => 2, 'name' => 'Bob', 'age' => 30, 'type' => 'child:two', 'childTwoField' => 42],
+            $mapper->map(new HierarchicalChildTwoInput(id: 2, name: 'Bob', age: Optional::of(30), type: 'child:two', childTwoField: 42)),
+        );
+    }
+
     public function testGetInputTypeWithGenericParameters(): void
     {
         $mapperCompiler = new DiscriminatedObjectOutputMapperCompiler(

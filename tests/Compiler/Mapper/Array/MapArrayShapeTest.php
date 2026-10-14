@@ -129,4 +129,24 @@ class MapArrayShapeTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileNestedArrayShapesWithSimilarKeys(): void
+    {
+        $createInnerMapperCompiler = static fn (string $key) => new ArrayShapeInputMapperCompiler([
+            ['key' => $key, 'mapper' => new IntInputMapperCompiler(), 'optional' => false],
+        ], sealed: true);
+
+        $items = [
+            ['key' => 'items', 'mapper' => $createInnerMapperCompiler('items'), 'optional' => false],
+            ['key' => 'a-b', 'mapper' => $createInnerMapperCompiler('a_b'), 'optional' => false],
+            ['key' => 'aB', 'mapper' => $createInnerMapperCompiler('ab'), 'optional' => false],
+            ['key' => 'größe', 'mapper' => $createInnerMapperCompiler('grüße'), 'optional' => false],
+        ];
+
+        $mapperCompiler = new ArrayShapeInputMapperCompiler($items, sealed: true);
+        $mapper = $this->compileInputMapper('NestedArrayShapesWithSimilarKeys', $mapperCompiler);
+
+        $data = ['items' => ['items' => 1], 'a-b' => ['a_b' => 2], 'aB' => ['ab' => 3], 'größe' => ['grüße' => 4]];
+        self::assertSame($data, $mapper->map($data));
+    }
+
 }

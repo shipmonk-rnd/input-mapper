@@ -629,7 +629,8 @@ class PhpCodeBuilderTest extends InputMapperTestCase
         yield ['mapBom-ref', 'mapBom_ref'];
         yield ['mapX:y', 'mapX_y'];
         yield ['mapA - b', 'mapA_b'];
-        yield ['mapŽluťoučký kůň', 'map_lu_ou_k_k_'];
+        yield ['mapŽluťoučký kůň', 'mapŽluťoučký_kůň'];
+        yield ['größe', 'größe'];
         yield ['1st', '_1st'];
         yield ['', '_'];
     }
@@ -655,12 +656,29 @@ class PhpCodeBuilderTest extends InputMapperTestCase
         });
     }
 
-    public function testUniqVariableNameWithThis(): void
+    public function testUniqMethodNameReservesReturnedName(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        self::assertSame('mapItems', $builder->uniqMethodName('mapItems'));
+        self::assertSame('mapITEMS2', $builder->uniqMethodName('mapITEMS'));
+
+        $builder->withVariableScope(static function () use ($builder): void {
+            $builder->addMethod($builder->method('mapItems')->makePrivate()->getNode());
+        });
+
+        self::assertSame('mapItems3', $builder->uniqMethodName('mapItems'));
+    }
+
+    public function testUniqVariableNameWithReservedName(): void
     {
         $builder = new PhpCodeBuilder();
 
         $builder->withVariableScope(static function () use ($builder): void {
             self::assertSame('this2', $builder->uniqVariableName('this'));
+            self::assertSame('GLOBALS2', $builder->uniqVariableName('GLOBALS'));
+            self::assertSame('_GET2', $builder->uniqVariableName('_GET'));
+            self::assertSame('_get', $builder->uniqVariableName('_get'));
         });
     }
 
