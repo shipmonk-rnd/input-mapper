@@ -6,6 +6,7 @@ use BackedEnum;
 use LogicException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Reflection;
+use Nette\Utils\Strings;
 use Nette\Utils\Validators;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
@@ -171,7 +172,7 @@ class PhpDocTypeUtils
                 $keyName = match (true) {
                     $isList => null,
                     is_int($k) => new ConstExprIntegerNode((string) $k),
-                    is_string($k) => new IdentifierTypeNode($k),
+                    is_string($k) => self::createArrayShapeKey($k),
                 };
 
                 $items[] = new ArrayShapeItemNode(
@@ -213,6 +214,16 @@ class PhpDocTypeUtils
         return $sealed
             ? ArrayShapeNode::createSealed($items)
             : ArrayShapeNode::createUnsealed($items, null);
+    }
+
+    /**
+     * Builds an array shape key node, quoted when the key is not a valid identifier (e.g. `array{'x:y': int}`).
+     */
+    public static function createArrayShapeKey(string $key): IdentifierTypeNode|ConstExprStringNode
+    {
+        return Strings::match($key, '#^[a-zA-Z_][a-zA-Z0-9_]*+$#') !== null
+            ? new IdentifierTypeNode($key)
+            : new ConstExprStringNode($key, ConstExprStringNode::SINGLE_QUOTED);
     }
 
     /**

@@ -58,6 +58,24 @@ class MapOutputObjectTest extends MapperCompilerTestCase
         );
     }
 
+    public function testCompileWithSourceKeysWhichAreNotValidIdentifiers(): void
+    {
+        $mapperCompiler = new ObjectOutputMapperCompiler(
+            PersonWithSourceKeyInput::class,
+            [
+                'id' => ['bom-ref', new PassthroughMapperCompiler(new IdentifierTypeNode('int'))],
+                'name' => ['x:y', new PassthroughMapperCompiler(new IdentifierTypeNode('string'))],
+            ],
+        );
+
+        $mapper = $this->compileOutputMapper('PersonWithInvalidIdentifierSourceKeys', $mapperCompiler);
+
+        self::assertSame(
+            ['bom-ref' => 1, 'x:y' => 'John'],
+            $mapper->map(new PersonWithSourceKeyInput(1, 'John')),
+        );
+    }
+
     public function testCompileWithNullableProperty(): void
     {
         $mapperCompiler = new ObjectOutputMapperCompiler(

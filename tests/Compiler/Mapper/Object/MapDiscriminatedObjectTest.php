@@ -115,6 +115,33 @@ class MapDiscriminatedObjectTest extends MapperCompilerTestCase
         self::assertEquals($childTwoInputObject, $parentInputMapper->map($childTwoInputArray));
     }
 
+    public function testCompileWithDiscriminatorValuesWhichAreNotValidIdentifiers(): void
+    {
+        $mapperCompiler = new DiscriminatedObjectInputMapperCompiler(
+            HierarchicalParentInput::class,
+            'type',
+            [
+                'child-one' => new DelegateInputMapperCompiler(HierarchicalChildOneInput::class),
+                'child:two' => new DelegateInputMapperCompiler(HierarchicalChildTwoInput::class),
+            ],
+        );
+
+        $parentInputMapper = $this->compileInputMapper('HierarchicalParentWithInvalidIdentifierValuesInput', $mapperCompiler, [
+            HierarchicalChildOneInput::class => $this->createHierarchicalChildOneInputMapperCompiler(),
+            HierarchicalChildTwoInput::class => $this->createHierarchicalChildTwoInputMapperCompiler(),
+        ]);
+
+        self::assertEquals(
+            new HierarchicalChildOneInput(id: 1, name: 'John Doe', age: Optional::of(30), type: 'child-one', childOneField: 'abc'),
+            $parentInputMapper->map(['id' => 1, 'name' => 'John Doe', 'age' => 30, 'type' => 'child-one', 'childOneField' => 'abc']),
+        );
+
+        self::assertEquals(
+            new HierarchicalChildTwoInput(id: 1, name: 'John Doe', age: Optional::of(30), type: 'child:two', childTwoField: 5),
+            $parentInputMapper->map(['id' => 1, 'name' => 'John Doe', 'age' => 30, 'type' => 'child:two', 'childTwoField' => 5]),
+        );
+    }
+
     public function testCompileWithEnumAsType(): void
     {
         $parentInputMapper = $this->compileInputMapper('HierarchicalWithEnumParentInput', $this->createParentInputWithEnumMapperCompiler(), [

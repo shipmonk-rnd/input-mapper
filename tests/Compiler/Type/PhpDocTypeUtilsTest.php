@@ -174,6 +174,7 @@ class PhpDocTypeUtilsTest extends InputMapperTestCase
         yield [[1, 2, 'abc'], 'array{int, int, string}'];
         yield [['key' => 'value'], 'array{key: string}'];
         yield [['foo' => 'abc', 'bar' => null], 'array{foo: string, bar: null}'];
+        yield [['bom-ref' => 'abc', 'x:y' => 1], "array{'bom-ref': string, 'x:y': int}"];
         yield [new DateTimeImmutable(), DateTimeImmutable::class];
     }
 

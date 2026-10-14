@@ -579,6 +579,91 @@ class PhpCodeBuilderTest extends InputMapperTestCase
         self::assertSame('method2', $name2);
     }
 
+    public function testUniqMethodNameIsCaseInsensitive(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        $builder->withVariableScope(static function () use ($builder): void {
+            $builder->addMethod($builder->method('mapId')->makePrivate()->getNode());
+        });
+
+        self::assertSame('mapID2', $builder->uniqMethodName('mapID'));
+        self::assertSame('Map2', $builder->uniqMethodName('Map'));
+        self::assertSame('__construct2', $builder->uniqMethodName('__construct'));
+
+        self::assertException(
+            LogicException::class,
+            'Method already exists',
+            static fn () => $builder->addMethod($builder->method('mapID')->makePrivate()->getNode()),
+        );
+    }
+
+    #[DataProvider('provideInvalidIdentifierData')]
+    public function testUniqMethodNameWithInvalidIdentifier(
+        string $name,
+        string $expectedName,
+    ): void
+    {
+        $builder = new PhpCodeBuilder();
+        self::assertSame($expectedName, $builder->uniqMethodName($name));
+    }
+
+    #[DataProvider('provideInvalidIdentifierData')]
+    public function testUniqVariableNameWithInvalidIdentifier(
+        string $name,
+        string $expectedName,
+    ): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        $builder->withVariableScope(static function () use ($builder, $name, $expectedName): void {
+            self::assertSame($expectedName, $builder->uniqVariableName($name));
+        });
+    }
+
+    /**
+     * @return iterable<array{string, string}>
+     */
+    public static function provideInvalidIdentifierData(): iterable
+    {
+        yield ['mapBom-ref', 'mapBom_ref'];
+        yield ['mapX:y', 'mapX_y'];
+        yield ['mapA - b', 'mapA_b'];
+        yield ['mapŽluťoučký kůň', 'map_lu_ou_k_k_'];
+        yield ['1st', '_1st'];
+        yield ['', '_'];
+    }
+
+    public function testUniqMethodNameWithInvalidIdentifierCollision(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        $builder->withVariableScope(static function () use ($builder): void {
+            $builder->addMethod($builder->method('mapA_b')->makePrivate()->getNode());
+        });
+
+        self::assertSame('mapA_b2', $builder->uniqMethodName('mapA-b'));
+    }
+
+    public function testUniqVariableNameWithInvalidIdentifierCollision(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        $builder->withVariableScope(static function () use ($builder): void {
+            self::assertSame('a_b', $builder->uniqVariableName('a-b'));
+            self::assertSame('a_b2', $builder->uniqVariableName('a_b'));
+        });
+    }
+
+    public function testUniqVariableNameWithThis(): void
+    {
+        $builder = new PhpCodeBuilder();
+
+        $builder->withVariableScope(static function () use ($builder): void {
+            self::assertSame('this2', $builder->uniqVariableName('this'));
+        });
+    }
+
     public function testUniqVariableNameOutsideScope(): void
     {
         $builder = new PhpCodeBuilder();

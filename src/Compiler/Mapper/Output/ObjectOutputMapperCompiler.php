@@ -15,6 +15,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\GenericMapperParameter;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Php\PhpCodeBuilder;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
+use ShipMonk\InputMapper\Compiler\Type\PhpDocTypeUtils;
 use function array_map;
 use function count;
 use function ucfirst;
@@ -146,7 +147,7 @@ class ObjectOutputMapperCompiler implements GenericMapperCompiler
         foreach ($this->propertyMapperCompilers as [$outputKey, $propertyMapperCompiler]) {
             $optional = $propertyMapperCompiler instanceof OptionalOutputMapperCompiler;
             $items[] = new ArrayShapeItemNode(
-                new IdentifierTypeNode($outputKey),
+                PhpDocTypeUtils::createArrayShapeKey($outputKey),
                 $optional,
                 $propertyMapperCompiler->getOutputType(),
             );

@@ -4,6 +4,7 @@ namespace ShipMonk\InputMapper\Compiler\Php;
 
 use LogicException;
 use Nette\Utils\Arrays;
+use Nette\Utils\Strings;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
@@ -80,11 +81,17 @@ use function ksort;
 use function serialize;
 use function str_ends_with;
 use function strrpos;
+use function strtolower;
 use function substr;
 use function unserialize;
 
 class PhpCodeBuilder extends BuilderFactory
 {
+
+    /**
+     * Lowercase names of methods which {@see mapperClass()} adds without {@see addMethod()}
+     */
+    private const RESERVED_METHOD_NAMES = ['__construct' => true, 'map' => true];
 
     /**
      * @var list<GenericMapperParameter>
@@ -107,7 +114,7 @@ class PhpCodeBuilder extends BuilderFactory
     private array $constants = [];
 
     /**
-     * @var array<string, ClassMethod>
+     * @var array<string, ClassMethod> lowercase method name => method
      */
     private array $methods = [];
 
@@ -413,20 +420,30 @@ class PhpCodeBuilder extends BuilderFactory
         return $uniqueName;
     }
 
+    /**
+     * Returns a valid PHP identifier made from $name (e.g. from a source key such as 'bom-ref')
+     * that does not collide with any method added by {@see addMethod()}, ignoring case like PHP.
+     */
     public function uniqMethodName(string $name): string
     {
+        $name = $this->toIdentifier($name);
         $i = 1;
         $uniqueName = $name;
 
-        while (isset($this->methods[$uniqueName])) {
+        while (isset($this->methods[strtolower($uniqueName)]) || isset(self::RESERVED_METHOD_NAMES[strtolower($uniqueName)])) {
             $uniqueName = $name . ++$i;
         }
 
         return $uniqueName;
     }
 
+    /**
+     * Returns a valid PHP identifier made from $name (e.g. from a source key such as 'bom-ref')
+     * that does not collide with any variable in the current variable scope.
+     */
     public function uniqVariableName(string $name): string
     {
+        $name = $this->toIdentifier($name);
         $i = 1;
         $uniqueName = $name;
 
@@ -467,7 +484,7 @@ class PhpCodeBuilder extends BuilderFactory
     public function withVariableScope(callable $cb): mixed
     {
         try {
-            $this->variables[] = [];
+            $this->variables[] = ['this' => true]; // $this cannot be re-assigned
             return $cb();
         } finally {
             array_pop($this->variables);
@@ -491,11 +508,13 @@ class PhpCodeBuilder extends BuilderFactory
 
     public function addMethod(ClassMethod $method): void
     {
-        if (isset($this->methods[$method->name->name])) {
+        $lowerName = $method->name->toLowerString();
+
+        if (isset($this->methods[$lowerName])) {
             throw new LogicException('Method already exists');
         }
 
-        $this->methods[$method->name->name] = $method;
+        $this->methods[$lowerName] = $method;
     }
 
     public function importClass(string $className): string
@@ -821,6 +840,16 @@ class PhpCodeBuilder extends BuilderFactory
         ksort($functionImports);
 
         return [...array_values($classLikeImports), ...array_values($functionImports)];
+    }
+
+    /**
+     * Replaces each run of characters not allowed in a PHP identifier with '_'
+     * and prepends '_' when the name is empty or starts with a digit (e.g. 'x:y' -> 'x_y', '1st' -> '_1st')
+     */
+    private function toIdentifier(string $name): string
+    {
+        $identifier = Strings::replace($name, '#[^a-zA-Z0-9_]++#', '_');
+        return Strings::match($identifier, '#^[a-zA-Z_]#') !== null ? $identifier : "_{$identifier}";
     }
 
 }

@@ -4,7 +4,6 @@ namespace ShipMonk\InputMapper\Compiler\Mapper\Output;
 
 use PhpParser\Node\Expr;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ShipMonk\InputMapper\Compiler\CompiledExpr;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -116,7 +115,7 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
 
         foreach ($this->items as $mapping) {
             $items[] = new ArrayShapeItemNode(
-                new IdentifierTypeNode($mapping['key']),
+                PhpDocTypeUtils::createArrayShapeKey($mapping['key']),
                 $mapping['optional'],
                 $mapping['mapper']->getInputType(),
             );
@@ -131,7 +130,7 @@ class ArrayShapeOutputMapperCompiler implements MapperCompiler
 
         foreach ($this->items as $mapping) {
             $items[] = new ArrayShapeItemNode(
-                new IdentifierTypeNode($mapping['key']),
+                PhpDocTypeUtils::createArrayShapeKey($mapping['key']),
                 $mapping['optional'],
                 $mapping['mapper']->getOutputType(),
             );
