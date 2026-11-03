@@ -428,8 +428,9 @@ class PhpDocTypeUtils
                     && $b instanceof GenericTypeNode
                     && self::isSubTypeOf($b->type, $a->type)
                 ) {
-                    $typeDef = self::getGenericTypeDefinition($b->type);
-                    $downCastedType = self::downCast($a, $b->type->name);
+                    $bIdentifier = self::getGenericTypeIdentifier($b);
+                    $typeDef = self::getGenericTypeDefinition($bIdentifier);
+                    $downCastedType = self::downCast($a, $bIdentifier->name);
 
                     $intersectedParameters = [];
                     $intersectedParameterMapping = [];
@@ -508,7 +509,7 @@ class PhpDocTypeUtils
             if (!self::isKeyword($b)) {
                 return match (true) {
                     $a instanceof IdentifierTypeNode => $a->name === $b->name || is_a($a->name, $b->name, true),
-                    $a instanceof GenericTypeNode => is_a($a->type->name, $b->name, true),
+                    $a instanceof GenericTypeNode => is_a(self::getGenericTypeIdentifier($a)->name, $b->name, true),
                     default => false,
                 };
             }
@@ -518,7 +519,7 @@ class PhpDocTypeUtils
                     $a instanceof ArrayTypeNode => true,
                     $a instanceof ArrayShapeNode => true,
                     $a instanceof IdentifierTypeNode => in_array($a->name, ['array', 'list', 'non-empty-list'], true),
-                    $a instanceof GenericTypeNode => in_array($a->type->name, ['array', 'list', 'non-empty-list'], true),
+                    $a instanceof GenericTypeNode => in_array(self::getGenericTypeIdentifier($a)->name, ['array', 'list', 'non-empty-list'], true),
                     default => false,
                 },
 
@@ -555,7 +556,7 @@ class PhpDocTypeUtils
 
                 'int' => match (true) {
                     $a instanceof IdentifierTypeNode => $a->name === 'int',
-                    $a instanceof GenericTypeNode => $a->type->name === 'int',
+                    $a instanceof GenericTypeNode => self::getGenericTypeIdentifier($a)->name === 'int',
                     $a instanceof ConstTypeNode => match (true) {
                         $a->constExpr instanceof ConstExprIntegerNode => true,
                         $a->constExpr instanceof ConstFetchNode => is_int(constant((string) $a->constExpr)),
@@ -567,7 +568,7 @@ class PhpDocTypeUtils
                 'list' => match (true) {
                     $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx),
                     $a instanceof IdentifierTypeNode => $a->name === 'list' || $a->name === 'non-empty-list',
-                    $a instanceof GenericTypeNode => $a->type->name === 'list' || $a->type->name === 'non-empty-list',
+                    $a instanceof GenericTypeNode => in_array(self::getGenericTypeIdentifier($a)->name, ['list', 'non-empty-list'], true),
                     default => false,
                 },
 
@@ -589,7 +590,7 @@ class PhpDocTypeUtils
                     $a instanceof ArrayShapeNode => Arrays::every($a->items, static fn (ArrayShapeItemNode $item, int $idx) => self::getArrayShapeKey($item) === (string) $idx)
                         && Arrays::some($a->items, static fn (ArrayShapeItemNode $item) => !$item->optional),
                     $a instanceof IdentifierTypeNode => $a->name === 'non-empty-list',
-                    $a instanceof GenericTypeNode => $a->type->name === 'non-empty-list',
+                    $a instanceof GenericTypeNode => self::getGenericTypeIdentifier($a)->name === 'non-empty-list',
                     default => false,
                 },
 
@@ -606,7 +607,7 @@ class PhpDocTypeUtils
                 'object' => match (true) {
                     $a instanceof ObjectShapeNode => true,
                     $a instanceof IdentifierTypeNode => $a->name === 'object' || !self::isKeyword($a),
-                    $a instanceof GenericTypeNode => !self::isKeyword($a->type),
+                    $a instanceof GenericTypeNode => !self::isKeyword(self::getGenericTypeIdentifier($a)),
                     default => false,
                 },
 
@@ -639,7 +640,7 @@ class PhpDocTypeUtils
         }
 
         if ($b instanceof GenericTypeNode) {
-            if ($b->type->name === 'int' && count($b->genericTypes) === 2) {
+            if (self::getGenericTypeIdentifier($b)->name === 'int' && count($b->genericTypes) === 2) {
                 $bLowerBound = self::resolveIntegerBoundary($b->genericTypes[0], 'min', PHP_INT_MIN);
                 $bUpperBound = self::resolveIntegerBoundary($b->genericTypes[1], 'max', PHP_INT_MAX);
 
@@ -735,7 +736,7 @@ class PhpDocTypeUtils
         }
 
         if ($type instanceof GenericTypeNode) {
-            if (strcasecmp($type->type->name, $typeName) === 0) {
+            if (strcasecmp(self::getGenericTypeIdentifier($type)->name, $typeName) === 0) {
                 return self::getGenericTypeParameter($type, $parameter);
             }
 
@@ -757,10 +758,11 @@ class PhpDocTypeUtils
         string $targetTypeName,
     ): GenericTypeNode
     {
-        $path = self::findDownCastPath($type->type->name, $targetTypeName);
+        $typeName = self::getGenericTypeIdentifier($type)->name;
+        $path = self::findDownCastPath($typeName, $targetTypeName);
 
         if ($path === null) {
-            throw new LogicException("Unable to downcast {$type->type->name} to {$targetTypeName}");
+            throw new LogicException("Unable to downcast {$typeName} to {$targetTypeName}");
         }
 
         return self::downCastOverPath($type, $path);
@@ -805,8 +807,9 @@ class PhpDocTypeUtils
 
         $step = array_shift($path);
         $targetTypeDef = self::getGenericTypeDefinition(new IdentifierTypeNode($step));
+        $typeName = self::getGenericTypeIdentifier($type)->name;
 
-        if (!isset($targetTypeDef->extends[$type->type->name])) {
+        if (!isset($targetTypeDef->extends[$typeName])) {
             throw new LogicException('Invalid downcast path');
         }
 
@@ -814,7 +817,7 @@ class PhpDocTypeUtils
             return $parameter->default ?? $parameter->bound ?? new IdentifierTypeNode('mixed');
         });
 
-        foreach ($targetTypeDef->extends[$type->type->name] as $sourceIndex => $typeOrIndex) {
+        foreach ($targetTypeDef->extends[$typeName] as $sourceIndex => $typeOrIndex) {
             if (is_int($typeOrIndex)) {
                 $targetTypeParameters[$typeOrIndex] = self::getGenericTypeParameter($type, $sourceIndex);
             }
@@ -828,8 +831,10 @@ class PhpDocTypeUtils
         GenericTypeNode $b,
     ): bool
     {
-        if (strcasecmp($a->type->name, $b->type->name) === 0) {
-            $typeDef = self::getGenericTypeDefinition($a->type);
+        $aIdentifier = self::getGenericTypeIdentifier($a);
+
+        if (strcasecmp($aIdentifier->name, self::getGenericTypeIdentifier($b)->name) === 0) {
+            $typeDef = self::getGenericTypeDefinition($aIdentifier);
             return Arrays::every($typeDef->parameters, static function (GenericTypeParameter $parameter, int $idx) use ($a, $b): bool {
                 $genericTypeA = self::getGenericTypeParameter($a, $idx);
                 $genericTypeB = self::getGenericTypeParameter($b, $idx);
@@ -852,7 +857,7 @@ class PhpDocTypeUtils
      */
     public static function getGenericTypeSuperTypes(GenericTypeNode $type): array
     {
-        $typeDef = self::getGenericTypeDefinition($type->type);
+        $typeDef = self::getGenericTypeDefinition(self::getGenericTypeIdentifier($type));
 
         return Arrays::map($typeDef->extends, static function (array $mapping, string $superTypeName) use ($type): GenericTypeNode {
             return new GenericTypeNode(new IdentifierTypeNode($superTypeName), Arrays::map($mapping, static function (TypeNode|int $typeOrIndex) use ($type): TypeNode {
@@ -866,7 +871,7 @@ class PhpDocTypeUtils
         int $index,
     ): TypeNode
     {
-        $typeDef = self::getGenericTypeDefinition($type->type);
+        $typeDef = self::getGenericTypeDefinition(self::getGenericTypeIdentifier($type));
 
         if (!isset($typeDef->parameters[$index])) {
             throw new LogicException("Generic type {$type->type} has no parameter at index {$index}");
@@ -880,6 +885,18 @@ class PhpDocTypeUtils
         }
 
         return $type->genericTypes[$index] ?? $parameterDef->default ?? $parameterDef->bound ?? new IdentifierTypeNode('mixed');
+    }
+
+    /**
+     * Since phpstan/phpdoc-parser 2.4, the type of GenericTypeNode can also be a NameNode, but its parser creates only IdentifierTypeNode.
+     */
+    public static function getGenericTypeIdentifier(GenericTypeNode $type): IdentifierTypeNode
+    {
+        if ($type->type instanceof IdentifierTypeNode) {
+            return $type->type;
+        }
+
+        throw new LogicException('Generic type with ' . $type->type::class . ' is not supported');
     }
 
     public static function getGenericTypeDefinition(IdentifierTypeNode $type): GenericTypeDefinition
@@ -1003,7 +1020,7 @@ class PhpDocTypeUtils
         foreach ($phpDocNode->children as $node) {
             if ($node instanceof PhpDocTagNode && ($node->value instanceof ImplementsTagValueNode || $node->value instanceof ExtendsTagValueNode)) {
                 self::resolve($node->value->type, $classReflection, array_keys($genericParameters));
-                $extends[$node->value->type->type->name] = array_values(
+                $extends[self::getGenericTypeIdentifier($node->value->type)->name] = array_values(
                     Arrays::map($node->value->type->genericTypes, static function (TypeNode $type) use ($genericParameterOffsets): TypeNode|int {
                         return $type instanceof IdentifierTypeNode && isset($genericParameterOffsets[$type->name])
                             ? $genericParameterOffsets[$type->name]
@@ -1156,8 +1173,10 @@ class PhpDocTypeUtils
         }
 
         if ($type instanceof GenericTypeNode) {
+            $typeIdentifier = self::getGenericTypeIdentifier($type);
+
             if (
-                strtolower($type->type->name) === 'int'
+                strtolower($typeIdentifier->name) === 'int'
                 && count($type->genericTypes) === 2
                 && $type->genericTypes[0] instanceof IdentifierTypeNode
                 && $type->genericTypes[1] instanceof IdentifierTypeNode
@@ -1167,8 +1186,8 @@ class PhpDocTypeUtils
                 return new IdentifierTypeNode('int');
             }
 
-            if (self::isKeyword($type->type)) {
-                return new GenericTypeNode(new IdentifierTypeNode(strtolower($type->type->name)), $type->genericTypes);
+            if (self::isKeyword($typeIdentifier)) {
+                return new GenericTypeNode(new IdentifierTypeNode(strtolower($typeIdentifier->name)), $type->genericTypes);
             }
         }
 

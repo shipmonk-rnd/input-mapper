@@ -164,7 +164,9 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         }
 
         if ($type instanceof GenericTypeNode) {
-            return match (strtolower($type->type->name)) {
+            $typeName = PhpDocTypeUtils::getGenericTypeIdentifier($type)->name;
+
+            return match (strtolower($typeName)) {
                 'array' => match (count($type->genericTypes)) {
                     1 => new MapArray(new MapMixed(), $this->createInner($type->genericTypes[0], $options)),
                     2 => new MapArray($this->createInner($type->genericTypes[0], $options), $this->createInner($type->genericTypes[1], $options)),
@@ -179,7 +181,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
                     ]),
                     default => throw CannotCreateMapperCompilerException::fromType($type),
                 },
-                default => match ($type->type->name) {
+                default => match ($typeName) {
                     'list' => match (count($type->genericTypes)) {
                         1 => new MapList($this->createInner($type->genericTypes[0], $options)),
                         default => throw CannotCreateMapperCompilerException::fromType($type),
@@ -257,11 +259,13 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
         array $options,
     ): MapperCompilerProvider
     {
-        if (!class_exists($type->type->name) && !interface_exists($type->type->name)) {
+        $typeIdentifier = PhpDocTypeUtils::getGenericTypeIdentifier($type);
+
+        if (!class_exists($typeIdentifier->name) && !interface_exists($typeIdentifier->name)) {
             throw CannotCreateMapperCompilerException::fromType($type, 'there is no class or interface with this name');
         }
 
-        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($type->type)->parameters;
+        $genericParameters = PhpDocTypeUtils::getGenericTypeDefinition($typeIdentifier)->parameters;
         $innerMapperCompilerProviders = [];
 
         foreach ($type->genericTypes as $index => $genericType) {
@@ -274,7 +278,7 @@ class DefaultMapperCompilerFactory implements MapperCompilerFactory
             $innerMapperCompilerProviders[] = $this->createInner($genericType, $options);
         }
 
-        return new MapDelegate($type->type->name, $innerMapperCompilerProviders);
+        return new MapDelegate($typeIdentifier->name, $innerMapperCompilerProviders);
     }
 
     /**
