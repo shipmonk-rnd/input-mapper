@@ -12,17 +12,17 @@
     },
     "require-dev": {
         "editorconfig-checker/editorconfig-checker": "^10.7.0",
-        "phpstan/phpstan": "^2.3.1",
-        "phpstan/phpstan-phpunit": "^2.0.19",
-        "phpstan/phpstan-strict-rules": "^2.0.12",
-        "phpunit/phpunit": "^10.5.65",
+        "phpstan/phpstan": "^2.3.4",
+        "phpstan/phpstan-phpunit": "^2.1.1",
+        "phpstan/phpstan-strict-rules": "^2.1.0",
+        "phpunit/phpunit": "^10.5.66",
         "shipmonk/coding-standard": "^0.3.0",
         "shipmonk/composer-dependency-analyser": "^1.8.4",
         "shipmonk/composer-normalizer": "^0.1.0",
-        "shipmonk/coverage-guard": "^1.1.0",
+        "shipmonk/coverage-guard": "^1.2.0",
         "shipmonk/dead-code-detector": "^1.4",
         "shipmonk/name-collision-detector": "^2.1.1",
-        "shipmonk/phpstan-rules": "^4.4.0"
+        "shipmonk/phpstan-rules": "^4.4.1"
     },
     "autoload": {
         "psr-4": {
