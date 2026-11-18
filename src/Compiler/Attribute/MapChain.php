@@ -2,13 +2,14 @@
 
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
+use ShipMonk\InputMapper\Compiler\Mapper\CompositeMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ChainMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use function array_map;
 use function array_reverse;
 
-class MapChain implements MapperCompilerProvider
+class MapChain implements CompositeMapperCompilerProvider, MapperCompilerProvider
 {
 
     /**
@@ -38,6 +39,14 @@ class MapChain implements MapperCompilerProvider
                 array_reverse($this->providers),
             ),
         );
+    }
+
+    /**
+     * @return list<MapperCompilerProvider>
+     */
+    public function getInnerMapperCompilerProviders(): array
+    {
+        return $this->providers;
     }
 
 }

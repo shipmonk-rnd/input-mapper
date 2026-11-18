@@ -3,6 +3,7 @@
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
 use Attribute;
+use ShipMonk\InputMapper\Compiler\Mapper\CompositeMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DelegateInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
@@ -10,7 +11,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Output\DelegateOutputMapperCompiler;
 use function array_map;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_PROPERTY)]
-class MapDelegate implements MapperCompilerProvider
+class MapDelegate implements CompositeMapperCompilerProvider, MapperCompilerProvider
 {
 
     /**
@@ -38,6 +39,14 @@ class MapDelegate implements MapperCompilerProvider
             $this->className,
             array_map(static fn (MapperCompilerProvider $p): MapperCompiler => $p->getOutputMapperCompiler(), $this->innerMapperCompilerProviders),
         );
+    }
+
+    /**
+     * @return list<MapperCompilerProvider>
+     */
+    public function getInnerMapperCompilerProviders(): array
+    {
+        return $this->innerMapperCompilerProviders;
     }
 
 }

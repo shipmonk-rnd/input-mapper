@@ -2,17 +2,19 @@
 
 namespace ShipMonk\InputMapper\Compiler\Attribute;
 
+use ShipMonk\InputMapper\Compiler\Mapper\CompositeMapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\DiscriminatedObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompilerProvider;
 use ShipMonk\InputMapper\Compiler\Mapper\Output\DiscriminatedObjectOutputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Type\GenericTypeParameter;
 use function array_map;
+use function array_values;
 
 /**
  * @template T of object
  */
-class MapDiscriminatedObject implements MapperCompilerProvider
+class MapDiscriminatedObject implements CompositeMapperCompilerProvider, MapperCompilerProvider
 {
 
     /**
@@ -52,6 +54,14 @@ class MapDiscriminatedObject implements MapperCompilerProvider
             ),
             $this->genericParameters,
         );
+    }
+
+    /**
+     * @return list<MapperCompilerProvider>
+     */
+    public function getInnerMapperCompilerProviders(): array
+    {
+        return array_values($this->subtypeProviders);
     }
 
 }
