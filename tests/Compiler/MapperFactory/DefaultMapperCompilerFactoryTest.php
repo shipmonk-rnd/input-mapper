@@ -31,6 +31,7 @@ use ShipMonk\InputMapper\Compiler\Mapper\Input\MixedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\NullableInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ObjectInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\OptionalInputMapperCompiler;
+use ShipMonk\InputMapper\Compiler\Mapper\Input\SensitiveInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\StringInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\Input\ValidatedInputMapperCompiler;
 use ShipMonk\InputMapper\Compiler\Mapper\MapperCompiler;
@@ -84,9 +85,11 @@ use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithDate;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleDefaultValue;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleMapperCompiler;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithIncompatibleValidator;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithMapSensitive;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithoutConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithPrivateConstructor;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithRenamedSourceKey;
+use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithSensitiveParameter;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithSourceKeyCollidingWithPlainProperty;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\InputWithTransformerCollidingKeys;
 use ShipMonk\InputMapperTests\Compiler\MapperFactory\Data\IntRangeLimit;
@@ -288,6 +291,38 @@ class DefaultMapperCompilerFactoryTest extends InputMapperTestCase
                 constructorArgsMapperCompilers: [
                     'old_value' => new IntInputMapperCompiler(),
                     'new_value' => new IntInputMapperCompiler(),
+                ],
+            ),
+        ];
+
+        yield 'InputWithMapSensitive' => [
+            InputWithMapSensitive::class,
+            [],
+            new ObjectInputMapperCompiler(
+                className: InputWithMapSensitive::class,
+                constructorArgsMapperCompilers: [
+                    'password' => new SensitiveInputMapperCompiler(
+                        new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertStringNonEmpty()]),
+                    ),
+                    'token' => new SensitiveInputMapperCompiler(new StringInputMapperCompiler()),
+                ],
+            ),
+        ];
+
+        yield 'InputWithSensitiveParameter' => [
+            InputWithSensitiveParameter::class,
+            [],
+            new ObjectInputMapperCompiler(
+                className: InputWithSensitiveParameter::class,
+                constructorArgsMapperCompilers: [
+                    'password' => new SensitiveInputMapperCompiler(
+                        new ValidatedInputMapperCompiler(new StringInputMapperCompiler(), [new AssertStringLength(max: 64)]),
+                    ),
+                    'token' => new DefaultValueInputMapperCompiler(
+                        new SensitiveInputMapperCompiler(new StringInputMapperCompiler()),
+                        '',
+                    ),
+                    'login' => new StringInputMapperCompiler(),
                 ],
             ),
         ];

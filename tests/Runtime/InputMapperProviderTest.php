@@ -20,6 +20,7 @@ use ShipMonk\InputMapperTests\Runtime\Data\InterfaceImplementationInput;
 use ShipMonk\InputMapperTests\Runtime\Data\MkdirTestInput;
 use ShipMonk\InputMapperTests\Runtime\Data\Optional\OptionalNotNullInput;
 use ShipMonk\InputMapperTests\Runtime\Data\Optional\OptionalNullableInput;
+use ShipMonk\InputMapperTests\Runtime\Data\SensitiveInput;
 use function getmypid;
 use function md5;
 use function mkdir;
@@ -72,6 +73,29 @@ class InputMapperProviderTest extends InputMapperTestCase
 
         self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(InterfaceImplementationInput::class));
         self::assertSame($myCustomMapper, $mapperProvider->getInputMapper(InterfaceImplementationInput::class));
+    }
+
+    public function testMapperForSensitiveInput(): void
+    {
+        $mapperProvider = $this->createMapperProvider();
+        $mapper = $mapperProvider->getInputMapper(SensitiveInput::class);
+        self::assertEquals(new SensitiveInput('joe', 'hunter2'), $mapper->map(['login' => 'joe', 'password' => 'hunter2']));
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /login: Expected string, got 12345',
+            static function () use ($mapper): void {
+                $mapper->map(['login' => 12_345, 'password' => 'hunter2']);
+            },
+        );
+
+        self::assertException(
+            MappingFailedException::class,
+            'Failed to map data at path /password: Expected string, got int (redacted)',
+            static function () use ($mapper): void {
+                $mapper->map(['login' => 'joe', 'password' => 12_345]);
+            },
+        );
     }
 
     public function testMapperForOptionalNotNullInput(): void
